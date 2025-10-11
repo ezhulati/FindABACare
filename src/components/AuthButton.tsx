@@ -1,12 +1,8 @@
-import { useState, useEffect } from 'react';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  import.meta.env.PUBLIC_SUPABASE_URL,
-  import.meta.env.PUBLIC_SUPABASE_ANON_KEY
-);
+import { useState, useEffect, useRef } from 'react';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 export default function AuthButton() {
+  const supabaseRef = useRef<SupabaseClient | null>(null);
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showEmailInput, setShowEmailInput] = useState(false);
@@ -15,6 +11,22 @@ export default function AuthButton() {
   const [message, setMessage] = useState('');
 
   useEffect(() => {
+    // Initialize Supabase client only on the client side
+    if (!supabaseRef.current) {
+      const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
+      const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+
+      if (!supabaseUrl || !supabaseAnonKey) {
+        console.error('Supabase environment variables are not set');
+        setLoading(false);
+        return;
+      }
+
+      supabaseRef.current = createClient(supabaseUrl, supabaseAnonKey);
+    }
+
+    const supabase = supabaseRef.current;
+
     // Check current session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
@@ -33,11 +45,13 @@ export default function AuthButton() {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!supabaseRef.current) return;
+
     setSending(true);
     setMessage('');
 
     try {
-      const { error } = await supabase.auth.signInWithOtp({
+      const { error } = await supabaseRef.current.auth.signInWithOtp({
         email,
         options: {
           emailRedirectTo: window.location.origin,
@@ -60,7 +74,8 @@ export default function AuthButton() {
   };
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
+    if (!supabaseRef.current) return;
+    await supabaseRef.current.auth.signOut();
     window.location.href = '/';
   };
 

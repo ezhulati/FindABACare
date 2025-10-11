@@ -7,6 +7,7 @@ const { chromium } = require('playwright');
   const context = await browser.newContext();
   const page = await context.newPage();
   await page.goto('http://localhost:4321/venue/perot-museum-of-nature-and-science');
+  await page.close();
 
   // ---------------------
   await context.close();
