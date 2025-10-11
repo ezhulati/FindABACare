@@ -48,12 +48,26 @@ if (!cityData) {
 }
 
 // Fetch venues for this city
-const { data: venues = [] } = await supabase
+const { data: venuesRaw = [] } = await supabase
   .from('venues')
   .select('*')
   .eq('city_id', cityData.id)
   .eq('status', 'active')
   .order('name');
+
+// Prioritize venues with photos - venues without photos go to the end
+const venues = venuesRaw.sort((a, b) => {
+  const aHasPhotos = a.photo_keys && a.photo_keys.length > 0;
+  const bHasPhotos = b.photo_keys && b.photo_keys.length > 0;
+
+  // If both have photos or both don't have photos, keep alphabetical order
+  if (aHasPhotos === bHasPhotos) {
+    return (a.name || '').localeCompare(b.name || '');
+  }
+
+  // Venues with photos come first
+  return aHasPhotos ? -1 : 1;
+});
 
 // Calculate map center
 const validVenues = venues.filter(v => v.lat && v.lng);
@@ -231,6 +245,16 @@ checkSEOInDev({ title, description, ogImage, ogImageAlt }, `/${state}/${city}`);
 
     function sortVenues(venues: typeof allVenues, sortBy: string): typeof allVenues {
       return [...venues].sort((a, b) => {
+        // ALWAYS prioritize venues with photos first
+        const aHasPhotos = a.data.photo_keys && a.data.photo_keys.length > 0;
+        const bHasPhotos = b.data.photo_keys && b.data.photo_keys.length > 0;
+
+        // If one has photos and the other doesn't, prioritize the one with photos
+        if (aHasPhotos !== bHasPhotos) {
+          return aHasPhotos ? -1 : 1;
+        }
+
+        // Both have same photo status, apply the selected sort
         switch (sortBy) {
           case 'name':
             return (a.data.name || '').localeCompare(b.data.name || '');
