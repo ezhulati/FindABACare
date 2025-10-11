@@ -10,23 +10,40 @@ export default function AddressSearchIsland({ apiKey }: AddressSearchIslandProps
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
 
   useEffect(() => {
-    // Load Google Places Autocomplete
-    if (typeof google !== 'undefined' && inputRef.current) {
-      autocompleteRef.current = new google.maps.places.Autocomplete(inputRef.current, {
-        types: ['geocode'],
-        componentRestrictions: { country: 'us' },
-      });
+    // Wait for Google Maps API to load
+    const initAutocomplete = () => {
+      if (typeof google !== 'undefined' && inputRef.current && !autocompleteRef.current) {
+        autocompleteRef.current = new google.maps.places.Autocomplete(inputRef.current, {
+          types: ['geocode'],
+          componentRestrictions: { country: 'us' },
+        });
 
-      autocompleteRef.current.addListener('place_changed', () => {
-        const place = autocompleteRef.current?.getPlace();
-        if (place?.geometry?.location) {
-          const lat = place.geometry.location.lat();
-          const lng = place.geometry.location.lng();
+        autocompleteRef.current.addListener('place_changed', () => {
+          const place = autocompleteRef.current?.getPlace();
+          if (place?.geometry?.location) {
+            const lat = place.geometry.location.lat();
+            const lng = place.geometry.location.lng();
 
-          // Redirect to search results
-          window.location.href = `/search?lat=${lat}&lng=${lng}&address=${encodeURIComponent(place.formatted_address || '')}`;
+            // Redirect to search results
+            window.location.href = `/search?lat=${lat}&lng=${lng}&address=${encodeURIComponent(place.formatted_address || '')}`;
+          }
+        });
+      }
+    };
+
+    // Try immediately
+    initAutocomplete();
+
+    // If Google Maps isn't loaded yet, wait for window.google
+    if (typeof google === 'undefined') {
+      const checkGoogle = setInterval(() => {
+        if (typeof google !== 'undefined') {
+          initAutocomplete();
+          clearInterval(checkGoogle);
         }
-      });
+      }, 100);
+
+      return () => clearInterval(checkGoogle);
     }
   }, []);
 
