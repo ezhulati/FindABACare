@@ -30,7 +30,17 @@ const meterClass = meterColors[meter as keyof typeof meterColors] || meterColors
 const featuredImage = venue.photo_keys && venue.photo_keys.length > 0 ? venue.photo_keys[0] : null;
 ---
 
-<article class="group relative bg-white border border-gray-200 rounded-xl overflow-hidden hover:border-gray-300 hover:shadow-lg transition-all duration-200">
+<article
+  class="group relative bg-white border border-gray-200 rounded-xl overflow-hidden hover:border-gray-300 hover:shadow-lg transition-all duration-200 venue-card"
+  data-venue={JSON.stringify({
+    id: venue.id,
+    name: venue.name,
+    amenities: venue.amenities || {},
+    sensory_hours: venue.sensory_hours,
+    meter: meter,
+    last_verified: venue.last_verified
+  })}
+>
   <!-- Featured Image -->
   {featuredImage && (
     <a href={`/venue/${venue.slug || venue.id}`} class="block">

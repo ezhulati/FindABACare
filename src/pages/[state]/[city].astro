@@ -114,12 +114,7 @@ checkSEOInDev({ title, description, ogImage, ogImageAlt }, `/${state}/${city}`);
       <!-- Filters Sidebar -->
       <div class="lg:col-span-1">
         <div class="lg:sticky lg:top-20">
-          <VenueFiltersIsland
-            client:load
-            onFilterChange={(filters) => {
-              // This will be handled by JavaScript on the client
-            }}
-          />
+          <VenueFiltersIsland client:load />
         </div>
       </div>
 
@@ -180,8 +175,8 @@ checkSEOInDev({ title, description, ogImage, ogImageAlt }, `/${state}/${city}`);
   </div>
 
   <script>
-    // Client-side filtering
-    let allVenues: any[] = [];
+    // Client-side filtering and sorting
+    let allVenues: Array<{ element: HTMLElement; data: any }> = [];
     let currentFilters: Record<string, any> = {};
     let currentSort = 'name';
 
@@ -189,8 +184,9 @@ checkSEOInDev({ title, description, ogImage, ogImageAlt }, `/${state}/${city}`);
     document.addEventListener('DOMContentLoaded', () => {
       const venuesGrid = document.getElementById('venues-grid');
       if (venuesGrid) {
-        allVenues = Array.from(venuesGrid.children).map((el) => ({
-          element: el,
+        const cards = venuesGrid.querySelectorAll('.venue-card');
+        allVenues = Array.from(cards).map((el) => ({
+          element: el as HTMLElement,
           data: JSON.parse(el.getAttribute('data-venue') || '{}')
         }));
       }
@@ -201,12 +197,91 @@ checkSEOInDev({ title, description, ogImage, ogImageAlt }, `/${state}/${city}`);
         currentSort = (e.target as HTMLSelectElement).value;
         applyFiltersAndSort();
       });
+
+      // Listen for filter changes from React component
+      window.addEventListener('venueFiltersChanged', ((e: CustomEvent) => {
+        currentFilters = e.detail;
+        applyFiltersAndSort();
+      }) as EventListener);
     });
 
+    function matchesFilters(venue: any, filters: Record<string, any>): boolean {
+      // Check quiet room filter
+      if (filters['amenities.quiet_room'] && !venue.amenities?.quiet_room) {
+        return false;
+      }
+
+      // Check no hand dryers filter
+      if (filters['amenities.hand_dryer'] === false && venue.amenities?.hand_dryer !== false) {
+        return false;
+      }
+
+      // Check sensory hours filter
+      if (filters['has_sensory_hours'] && (!venue.sensory_hours || (Array.isArray(venue.sensory_hours) && venue.sensory_hours.length === 0))) {
+        return false;
+      }
+
+      // Check visual supports filter
+      if (filters['amenities.visual_supports'] && !venue.amenities?.visual_supports) {
+        return false;
+      }
+
+      return true;
+    }
+
+    function sortVenues(venues: typeof allVenues, sortBy: string): typeof allVenues {
+      return [...venues].sort((a, b) => {
+        switch (sortBy) {
+          case 'name':
+            return (a.data.name || '').localeCompare(b.data.name || '');
+          case 'recent':
+            const dateA = a.data.last_verified ? new Date(a.data.last_verified).getTime() : 0;
+            const dateB = b.data.last_verified ? new Date(b.data.last_verified).getTime() : 0;
+            return dateB - dateA;
+          case 'meter':
+            const meterOrder = { 'Quiet': 0, 'Moderate': 1, 'Busy': 2 };
+            const meterA = meterOrder[a.data.meter as keyof typeof meterOrder] ?? 1;
+            const meterB = meterOrder[b.data.meter as keyof typeof meterOrder] ?? 1;
+            return meterA - meterB;
+          default:
+            return 0;
+        }
+      });
+    }
+
     function applyFiltersAndSort() {
-      // This will be connected to the VenueFiltersIsland component
-      // For now, just a placeholder
-      console.log('Applying filters:', currentFilters);
+      const venuesGrid = document.getElementById('venues-grid');
+      if (!venuesGrid) return;
+
+      // Filter venues
+      const filteredVenues = allVenues.filter(v => matchesFilters(v.data, currentFilters));
+
+      // Sort venues
+      const sortedVenues = sortVenues(filteredVenues, currentSort);
+
+      // Clear grid
+      venuesGrid.innerHTML = '';
+
+      // Re-append in new order
+      sortedVenues.forEach(v => {
+        venuesGrid.appendChild(v.element);
+      });
+
+      // Update count
+      const countElement = document.querySelector('h2.text-lg');
+      if (countElement) {
+        countElement.textContent = `All Venues (${filteredVenues.length})`;
+      }
+
+      // Show/hide empty state
+      const emptyState = document.querySelector('.text-center.py-12');
+      if (filteredVenues.length === 0 && emptyState) {
+        emptyState.classList.remove('hidden');
+        venuesGrid.classList.add('hidden');
+      } else if (emptyState) {
+        emptyState.classList.add('hidden');
+        venuesGrid.classList.remove('hidden');
+      }
     }
   </script>
 </Base>

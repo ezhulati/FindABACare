@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 interface Props {
-  onFilterChange: (filters: Record<string, any>) => void;
+  onFilterChange?: (filters: Record<string, any>) => void;
 }
 
 export default function VenueFiltersIsland({ onFilterChange }: Props) {
@@ -23,7 +23,11 @@ export default function VenueFiltersIsland({ onFilterChange }: Props) {
     if (newFilters.sensoryHours) apiFilters['has_sensory_hours'] = true;
     if (newFilters.visualSupports) apiFilters['amenities.visual_supports'] = true;
 
-    onFilterChange(apiFilters);
+    // Dispatch custom event for Astro page to listen to
+    window.dispatchEvent(new CustomEvent('venueFiltersChanged', { detail: apiFilters }));
+
+    // Also call callback if provided (for backward compatibility)
+    onFilterChange?.(apiFilters);
   };
 
   const activeCount = Object.values(filters).filter(Boolean).length;
@@ -41,7 +45,10 @@ export default function VenueFiltersIsland({ onFilterChange }: Props) {
                 sensoryHours: false,
                 visualSupports: false,
               });
-              onFilterChange({});
+              // Dispatch custom event for clearing filters
+              window.dispatchEvent(new CustomEvent('venueFiltersChanged', { detail: {} }));
+              // Also call callback if provided
+              onFilterChange?.({});
             }}
             className="text-xs text-blue-600 hover:text-blue-700 font-medium"
           >
