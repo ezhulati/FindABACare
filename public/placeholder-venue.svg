@@ -1,0 +1,17 @@
+<svg width="800" height="450" viewBox="0 0 800 450" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background gradient -->
+  <rect width="800" height="450" fill="#F3F4F6"/>
+
+  <!-- Icon -->
+  <g transform="translate(350, 150)">
+    <!-- Building/venue icon -->
+    <path d="M50 0L0 25V100H100V25L50 0Z" fill="#D1D5DB"/>
+    <path d="M20 40H35V55H20V40Z" fill="#9CA3AF"/>
+    <path d="M45 40H60V55H45V40Z" fill="#9CA3AF"/>
+    <path d="M65 40H80V55H65V40Z" fill="#9CA3AF"/>
+    <path d="M20 65H35V80H20V65Z" fill="#9CA3AF"/>
+    <path d="M45 65H60V80H45V65Z" fill="#9CA3AF"/>
+    <path d="M65 65H80V80H65V65Z" fill="#9CA3AF"/>
+    <path d="M35 85H65V100H35V85Z" fill="#6B7280"/>
+  </g>
+</svg>

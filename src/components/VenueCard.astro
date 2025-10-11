@@ -27,7 +27,7 @@ const meterColors = {
 };
 
 const meterClass = meterColors[meter as keyof typeof meterColors] || meterColors.Moderate;
-const featuredImage = venue.photo_keys && venue.photo_keys.length > 0 ? venue.photo_keys[0] : null;
+const featuredImage = venue.photo_keys && venue.photo_keys.length > 0 ? venue.photo_keys[0] : '/placeholder-venue.svg';
 ---
 
 <article
@@ -42,23 +42,21 @@ const featuredImage = venue.photo_keys && venue.photo_keys.length > 0 ? venue.ph
   })}
 >
   <!-- Featured Image -->
-  {featuredImage && (
-    <a href={`/venue/${venue.slug || venue.id}`} class="block">
-      <div class="aspect-video relative overflow-hidden">
-        <img
-          src={featuredImage}
-          alt={venue.name}
-          class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          loading="lazy"
-        />
-        <div class="absolute top-3 right-3">
-          <span class={`px-3 py-1.5 text-xs font-medium rounded-full border ${meterClass}`}>
-            {meter}
-          </span>
-        </div>
+  <a href={`/venue/${venue.slug || venue.id}`} class="block">
+    <div class="aspect-video relative overflow-hidden bg-gray-50">
+      <img
+        src={featuredImage}
+        alt={venue.name}
+        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+        loading="lazy"
+      />
+      <div class="absolute top-3 right-3">
+        <span class={`px-3 py-1.5 text-xs font-medium rounded-full border ${meterClass}`}>
+          {meter}
+        </span>
       </div>
-    </a>
-  )}
+    </div>
+  </a>
 
   <div class="p-5">
     <div class="mb-3">
@@ -69,11 +67,6 @@ const featuredImage = venue.photo_keys && venue.photo_keys.length > 0 ? venue.ph
         <p class="text-sm text-gray-600 mt-1 line-clamp-1">
           {venue.address}
         </p>
-      )}
-      {!featuredImage && (
-        <span class={`inline-block mt-2 px-3 py-1.5 text-xs font-medium rounded-full border ${meterClass}`}>
-          {meter}
-        </span>
       )}
     </div>
 
