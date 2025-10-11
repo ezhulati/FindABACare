@@ -16,8 +16,46 @@ export interface SEOMetadata {
   description: string;
   canonical?: string;
   ogImage?: string;
+  ogImageAlt?: string;
   noindex?: boolean;
 }
+
+/**
+ * Stock images available for use throughout the site
+ */
+export const STOCK_IMAGES = {
+  // City images
+  dallas: '/Stock Images/Dallas.jpg',
+  dallasAlt: '/Stock Images/DallasABA.jpg',
+  dallasOutdoor: '/Stock Images/Outdoor Dallas ABA.jpg',
+  houstonOutdoor: '/Stock Images/Outdoor Houston ABA.jpg',
+
+  // Hero/Feature images
+  group: '/Stock Images/GroupABA.jpg',
+  cityKids: '/Stock Images/City_ABA_Kids.jpg',
+  parentConnect: '/Stock Images/ParentConnectABA.jpg',
+
+  // Feature section images
+  peacefulRoom: '/Stock Images/PeacefulRoomAba.jpg',
+  sensoryVenue: '/Stock Images/Sensory-Friendly Public Venue.jpg',
+  sensory: '/Stock Images/SensoryABA.jpg',
+  kidsPlay: '/Stock Images/kids_play_indoor.jpg',
+  library: '/Stock Images/kid_library_reading.jpg',
+
+  // OG/Social images
+  ogDefault: '/Stock Images/AutismVenue.jpg',
+  ogCity: '/Stock Images/kids_city_indoor_play.jpg',
+
+  // Additional images
+  boyABA: '/Stock Images/BoyABA.jpg',
+  boyArt: '/Stock Images/BoyArt.jpg',
+  boyRead: '/Stock Images/BoyReadABA.jpg',
+  girlABA: '/Stock Images/GirlABA.jpg',
+  kidMom: '/Stock Images/KidMomABA.jpg',
+  outdoorABA: '/Stock Images/OutdoorABA.jpg',
+  kidsPlayABA: '/Stock Images/kidsplayaba.jpg',
+  modernABA: '/Stock Images/modernABA.jpg',
+};
 
 export interface SEOValidationResult {
   valid: boolean;
@@ -164,11 +202,15 @@ export const SEO_TEMPLATES = {
     title: 'findABA.care - Find Autism-Friendly Places for Your Child',
     description:
       'Discover sensory-friendly venues, quiet hours, and parent-verified places for children with autism in Dallas and Houston. Real experiences from real families.',
+    ogImage: STOCK_IMAGES.cityKids,
+    ogImageAlt: 'Children enjoying autism-friendly activities in the city',
   },
   about: {
     title: 'About findABA.care - Our Mission for Autism Families',
     description:
       'findABA.care helps families find autism-friendly venues through parent verification and community reviews. Safe, sensory-friendly places that work for your child.',
+    ogImage: STOCK_IMAGES.parentConnect,
+    ogImageAlt: 'Parents connecting and sharing autism-friendly venue experiences',
   },
   stateDirectory: (stateName: string) => ({
     title: `${stateName} Autism-Friendly Venues & Events | findABA.care`,

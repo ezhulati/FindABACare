@@ -4,12 +4,22 @@ import AuthButton from '../components/AuthButton';
 interface Props {
   title?: string;
   description?: string;
+  ogImage?: string;
+  ogImageAlt?: string;
+  canonical?: string;
 }
 
 const {
   title = 'findABA.care - Find places that work for your child',
-  description = 'Quiet hours, visual guides, and small-group meetups verified by local parents. Autism-friendly venues in Dallas and Houston.'
+  description = 'Quiet hours, visual guides, and small-group meetups verified by local parents. Autism-friendly venues in Dallas and Houston.',
+  ogImage = '/Stock Images/AutismVenue.jpg',
+  ogImageAlt = 'Autism-friendly venue with sensory accommodations',
+  canonical
 } = Astro.props;
+
+const url = canonical || Astro.url.pathname;
+const fullUrl = `https://findaba.care${url}`;
+const fullOgImage = new URL(ogImage, Astro.url.origin).href;
 ---
 
 <!doctype html>
@@ -26,6 +36,26 @@ const {
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
     <meta name="theme-color" content="#3B82F6" />
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href={fullUrl} />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={fullUrl} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={fullOgImage} />
+    <meta property="og:image:alt" content={ogImageAlt} />
+    <meta property="og:site_name" content="findABA.care" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content={fullUrl} />
+    <meta property="twitter:title" content={title} />
+    <meta property="twitter:description" content={description} />
+    <meta property="twitter:image" content={fullOgImage} />
+    <meta property="twitter:image:alt" content={ogImageAlt} />
 
     <title>{title}</title>
   </head>

@@ -1,55 +1,69 @@
 ---
 import Base from '../layouts/Base.astro';
-import { SEO_TEMPLATES, checkSEOInDev } from '../lib/seo';
+import { SEO_TEMPLATES, STOCK_IMAGES, checkSEOInDev } from '../lib/seo';
 
 // SEO metadata for homepage
-const { title, description } = SEO_TEMPLATES.home;
-checkSEOInDev({ title, description }, '/');
+const { title, description, ogImage, ogImageAlt } = SEO_TEMPLATES.home;
+checkSEOInDev({ title, description, ogImage, ogImageAlt }, '/');
 
 const cities = [
   {
     name: 'Dallas',
     slug: 'dallas',
     state: 'TX',
-    image: '/images/dallas.jpg',
+    image: STOCK_IMAGES.dallasOutdoor,
     description: 'Discover autism-friendly venues and events in the Dallas-Fort Worth metroplex',
   },
   {
     name: 'Houston',
     slug: 'houston',
     state: 'TX',
-    image: '/images/houston.jpg',
+    image: STOCK_IMAGES.houstonOutdoor,
     description: 'Find sensory-friendly places and meetups across Greater Houston',
   },
 ];
 ---
 
-<Base title={title} description={description}>
+<Base title={title} description={description} ogImage={ogImage} ogImageAlt={ogImageAlt}>
   <div class="bg-gradient-to-b from-gray-50 to-white">
     <!-- Hero Section -->
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
-      <div class="text-center">
-        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
-          Find autism-friendly places<br />
-          <span class="text-blue-600">where your child can thrive</span>
-        </h1>
-        <p class="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-          Quiet hours, visual guides, and small-group meetups verified by local parents.
-          Autism-friendly venues in Dallas and Houston.
-        </p>
-        <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
-          <a
-            href="#cities"
-            class="px-8 py-4 bg-black text-white font-medium rounded-lg hover:bg-gray-800 transition-colors"
-          >
-            Explore your city
-          </a>
-          <a
-            href="/about"
-            class="px-8 py-4 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            Learn more
-          </a>
+    <section class="relative overflow-hidden">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <!-- Hero Text -->
+          <div>
+            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
+              Find autism-friendly places<br />
+              <span class="text-blue-600">where your child can thrive</span>
+            </h1>
+            <p class="text-xl text-gray-600 mb-8">
+              Quiet hours, visual guides, and small-group meetups verified by local parents.
+              Autism-friendly venues in Dallas and Houston.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4">
+              <a
+                href="#cities"
+                class="px-8 py-4 bg-black text-white font-medium rounded-lg hover:bg-gray-800 transition-colors text-center"
+              >
+                Explore your city
+              </a>
+              <a
+                href="/about"
+                class="px-8 py-4 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors text-center"
+              >
+                Learn more
+              </a>
+            </div>
+          </div>
+
+          <!-- Hero Image -->
+          <div class="relative">
+            <img
+              src={STOCK_IMAGES.cityKids}
+              alt="Children enjoying autism-friendly activities"
+              class="rounded-2xl shadow-2xl w-full h-auto"
+            />
+          </div>
         </div>
       </div>
     </section>
@@ -112,10 +126,17 @@ const cities = [
             href={`/${city.state.toLowerCase()}/${city.slug}`}
             class="group relative bg-white border border-gray-200 rounded-xl overflow-hidden hover:border-gray-300 hover:shadow-xl transition-all duration-200"
           >
-            <div class="aspect-video bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center">
-              <div class="text-center">
-                <div class="text-6xl font-bold text-gray-900 mb-2">{city.name}</div>
-                <div class="text-2xl text-gray-600">{city.state}</div>
+            <div class="relative aspect-video overflow-hidden">
+              <img
+                src={city.image}
+                alt={`Autism-friendly venues in ${city.name}, ${city.state}`}
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+              <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent flex items-end">
+                <div class="p-6 text-white">
+                  <div class="text-4xl font-bold mb-1">{city.name}</div>
+                  <div class="text-xl opacity-90">{city.state}</div>
+                </div>
               </div>
             </div>
             <div class="p-6">
@@ -129,6 +150,62 @@ const cities = [
             </div>
           </a>
         ))}
+      </div>
+    </section>
+
+    <!-- Visual Features Showcase -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 border-t border-gray-200">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+          What makes a place autism-friendly?
+        </h2>
+        <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+          We look for specific accommodations that make venues work for families
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="group">
+          <div class="aspect-square overflow-hidden rounded-xl mb-4">
+            <img
+              src={STOCK_IMAGES.peacefulRoom}
+              alt="Quiet sensory-friendly room"
+              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            />
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-2">Quiet Spaces</h3>
+          <p class="text-gray-600">
+            Designated calm areas and quiet rooms where kids can decompress when overwhelmed
+          </p>
+        </div>
+
+        <div class="group">
+          <div class="aspect-square overflow-hidden rounded-xl mb-4">
+            <img
+              src={STOCK_IMAGES.sensoryVenue}
+              alt="Sensory-friendly public venue"
+              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            />
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-2">Visual Supports</h3>
+          <p class="text-gray-600">
+            Clear signage, visual schedules, and predictable layouts that reduce anxiety
+          </p>
+        </div>
+
+        <div class="group">
+          <div class="aspect-square overflow-hidden rounded-xl mb-4">
+            <img
+              src={STOCK_IMAGES.group}
+              alt="Small group autism-friendly activities"
+              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            />
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-2">Trained Staff</h3>
+          <p class="text-gray-600">
+            Employees who understand autism and can provide appropriate support
+          </p>
+        </div>
       </div>
     </section>
 
