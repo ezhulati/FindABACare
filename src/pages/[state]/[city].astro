@@ -29,7 +29,7 @@ const stateName = stateNames[stateUpper];
 const supabase = getServerClient(Astro.request);
 
 // Fetch city data
-const { data: cityData } = await supabase
+const { data: cityData, error: cityError } = await supabase
   .from('cities')
   .select('*')
   .eq('slug', city)
@@ -37,7 +37,12 @@ const { data: cityData } = await supabase
   .eq('status', 'active')
   .single();
 
+if (cityError) {
+  console.error('Error fetching city:', cityError);
+}
+
 if (!cityData) {
+  console.log(`City not found: ${city} in ${stateUpper}`);
   return Astro.redirect(`/${state}`);
 }
 
