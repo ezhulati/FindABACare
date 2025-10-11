@@ -1,4 +1,4 @@
-# Deploy FindABACare - Copy/Paste Instructions
+# Deploy findABA.care - Copy/Paste Instructions
 
 ## Part 1: Supabase Database (5 minutes)
 
@@ -55,7 +55,7 @@ on conflict (slug) do nothing;
 3. Click **Create a token**
 
 4. Settings:
-   - Name: `FindABACare Production`
+   - Name: `findABA.care Production`
    - Leave all default scopes checked
 
 5. Click **Create token**
@@ -74,7 +74,7 @@ on conflict (slug) do nothing;
 
 2. Sign in with GitHub (if not already)
 
-3. Find repository: `ezhulati/FindABACare`
+3. Find repository: `ezhulati/findABA.care`
 
 4. Click **Import**
 

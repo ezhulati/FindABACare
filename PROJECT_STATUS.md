@@ -1,8 +1,8 @@
-# FindABACare - Project Status
+# findABA.care - Project Status
 
 **Last Updated**: October 10, 2025
 **Status**: ✅ Ready for Vercel Deployment
-**Repository**: https://github.com/ezhulati/FindABACare
+**Repository**: https://github.com/ezhulati/findABA.care
 
 ---
 
@@ -86,7 +86,7 @@
 ## File Structure
 
 ```
-FindABACare/
+findABA.care/
 ├── src/
 │   ├── components/        # React islands & Astro components
 │   │   ├── AuthIsland.tsx
@@ -145,7 +145,7 @@ FindABACare/
 
 ### 2. Deploy to Vercel (10 min)
 1. Go to https://vercel.com/new
-2. Import GitHub repository: `ezhulati/FindABACare`
+2. Import GitHub repository: `ezhulati/findABA.care`
 3. Add environment variables (see `.env.example`)
 4. Click Deploy
 
@@ -284,6 +284,6 @@ TWILIO_PHONE_NUMBER=+1...
 ## Quick Links
 
 - **Supabase Dashboard**: https://supabase.com/dashboard/project/gvfkyfzukwnjomksuvaq
-- **GitHub Repo**: https://github.com/ezhulati/FindABACare
+- **GitHub Repo**: https://github.com/ezhulati/findABA.care
 - **Deployment Guide**: [QUICK_DEPLOY.md](./QUICK_DEPLOY.md)
 - **Full Documentation**: [DEPLOYMENT.md](./DEPLOYMENT.md)

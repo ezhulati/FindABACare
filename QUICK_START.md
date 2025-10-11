@@ -1,8 +1,8 @@
-# FindABACare.com - Quick Start Guide
+# findABA.care.com - Quick Start Guide
 
 ## Overview
 
-This guide will help you get the FindABACare MVP up and running in **one development session**.
+This guide will help you get the findABA.care MVP up and running in **one development session**.
 
 ---
 
@@ -22,7 +22,7 @@ This guide will help you get the FindABACare MVP up and running in **one develop
 ### 1.1 Create Astro Project
 
 ```bash
-cd "/Users/ez/Desktop/AI Library/Apps/FindABACare"
+cd "/Users/ez/Desktop/AI Library/Apps/findABA.care"
 pnpm create astro@latest . --template minimal --typescript strict --git
 ```
 

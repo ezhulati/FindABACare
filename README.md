@@ -1,4 +1,4 @@
-# FindABACare.com - MVP
+# findABA.care.com - MVP
 
 > **Mission:** Create a trusted community and care discovery platform for families with autistic children to find sensory-friendly venues, micro-events, and predictable social opportunities.
 
@@ -6,7 +6,7 @@
 
 ## 🎯 Project Overview
 
-FindABACare connects families with autism-friendly places and micro-events in Dallas and Houston. The platform provides:
+findABA.care connects families with autism-friendly places and micro-events in Dallas and Houston. The platform provides:
 
 - **Sensory-Friendly Venues**: Detailed information about quiet rooms, sensory hours, and environmental triggers
 - **"Go Now" Meter**: Real-time predictions of venue occupancy (Quiet/Moderate/Busy)
@@ -49,7 +49,7 @@ Visit http://localhost:4321
 - **[DEVELOPMENT_PLAN.md](./DEVELOPMENT_PLAN.md)** - Complete 15-phase implementation roadmap
 - **[SUPABASE_SETUP.md](./SUPABASE_SETUP.md)** - Step-by-step Supabase configuration
 - **[QUICK_START.md](./QUICK_START.md)** - Get up and running in one session
-- **[FindABACare.com Product Vision.md](./FindABACare.com%20Product%20Vision.md)** - Product requirements and user stories
+- **[findABA.care.com Product Vision.md](./findABA.care.com%20Product%20Vision.md)** - Product requirements and user stories
 
 ---
 
@@ -220,7 +220,7 @@ This is a private MVP project. For questions or issues, contact the development 
 
 ## 📄 License
 
-© 2025 FindABACare.com | All rights reserved
+© 2025 findABA.care.com | All rights reserved
 
 ---
 

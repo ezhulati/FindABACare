@@ -1,4 +1,4 @@
-# FindABACare Deployment Guide
+# findABA.care Deployment Guide
 
 ## Prerequisites
 
@@ -69,7 +69,7 @@ From your Supabase project dashboard:
 
 1. Go to https://vercel.com
 2. Click **Add New Project**
-3. Import your GitHub repository: `ezhulati/FindABACare`
+3. Import your GitHub repository: `ezhulati/findABA.care`
 4. Vercel will auto-detect it as an Astro project
 
 ### Configure Environment Variables
@@ -263,7 +263,7 @@ If using Upstash Redis:
 ## Support
 
 For issues or questions:
-- Check GitHub Issues: https://github.com/ezhulati/FindABACare/issues
+- Check GitHub Issues: https://github.com/ezhulati/findABA.care/issues
 - Review Astro docs: https://docs.astro.build
 - Review Supabase docs: https://supabase.com/docs
 - Review Vercel docs: https://vercel.com/docs

@@ -1,7 +1,7 @@
-# Supabase Setup for FindABACare
+# Supabase Setup for findABA.care
 
 ## Your Project
-**Project Name:** FindABACare
+**Project Name:** findABA.care
 **Project ID:** gvfkyfzukwnjomksuvaq
 **Region:** East US (North Virginia)
 

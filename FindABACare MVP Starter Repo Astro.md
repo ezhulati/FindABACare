@@ -1,4 +1,4 @@
-# FindABACare MVP Starter Repo (Astro + Supabase)
+# findABA.care MVP Starter Repo (Astro + Supabase)
 
 > **Stack:** Astro (TypeScript) + Supabase (Postgres/Auth/Storage) + Mapbox + Twilio (SMS) + Resend (Email) + Zod + PostHog
 
@@ -525,7 +525,7 @@ export default function RSVPButtonIsland({ eventId }: { eventId: string }) {
 
 ```astro
 ---
-const { title = 'FindABACare' } = Astro.props;
+const { title = 'findABA.care' } = Astro.props;
 ---
 <html lang="en">
   <head>
@@ -536,7 +536,7 @@ const { title = 'FindABACare' } = Astro.props;
   <body class="min-h-screen bg-white text-gray-900">
     <header class="p-4 border-b">
       <div class="max-w-6xl mx-auto flex items-center justify-between">
-        <a href="/" class="font-semibold">FindABACare</a>
+        <a href="/" class="font-semibold">findABA.care</a>
         <nav class="text-sm flex gap-4">
           <a href="/events/dallas">Dallas</a>
           <a href="/events/houston">Houston</a>
@@ -766,7 +766,7 @@ export const POST: APIRoute = async ({ request }) => {
 **README.md**
 
 ````md
-# FindABACare MVP (Places + Micro-Events)
+# findABA.care MVP (Places + Micro-Events)
 
 ## Prerequisites
 - Node 18+
@@ -1331,7 +1331,7 @@ ADMIN_BASIC_PASS="change-me"
 ```ts
 import type { MiddlewareHandler } from 'astro';
 
-function unauthorized(realm = 'FindABACare Admin') {
+function unauthorized(realm = 'findABA.care Admin') {
   return new Response('Unauthorized', {
     status: 401,
     headers: { 'WWW-Authenticate': `Basic realm="${realm}", charset="UTF-8"` },
@@ -2277,7 +2277,7 @@ A structured checklist for the launch of a new metro rollout (e.g., Austin, Phoe
 * **Press:**
 
   * Pitch to local family & parenting media.
-  * Issue PRNewswire or EIN press release titled “FindABACare Launches Autism‑Friendly City Guide for [City] Families.”
+  * Issue PRNewswire or EIN press release titled “findABA.care Launches Autism‑Friendly City Guide for [City] Families.”
   * Feature 1 parent story (quote + image).
 * **SEO:**
 

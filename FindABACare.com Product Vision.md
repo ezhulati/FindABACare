@@ -1,6 +1,6 @@
 # Product Vision
 
-**FindABACare.com** starts by solving day-to-day life for families: *where can we go today that will work for our child, and who can we meet safely?*
+**findABA.care.com** starts by solving day-to-day life for families: *where can we go today that will work for our child, and who can we meet safely?*
 MVP = **Autism-friendly Places + Micro-Events + RSVP** for two metros. Community traffic is the trust engine. The directory and monetization come next.
 
 **North Star**

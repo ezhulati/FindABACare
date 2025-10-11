@@ -1,6 +1,6 @@
 # Quick Deploy to Vercel
 
-Follow these steps to deploy FindABACare to Vercel in ~10 minutes.
+Follow these steps to deploy findABA.care to Vercel in ~10 minutes.
 
 ## Step 1: Deploy Database Schema (5 min)
 
@@ -27,7 +27,7 @@ Keep these for Step 4.
 
 1. Go to [Mapbox Account](https://account.mapbox.com/access-tokens/)
 2. Click **Create a token**
-3. Name it "FindABACare Production"
+3. Name it "findABA.care Production"
 4. Leave default scopes
 5. Click **Create token**
 6. Copy the token (starts with `pk.`)
@@ -38,7 +38,7 @@ Keep these for Step 4.
 
 1. Go to [Vercel Dashboard](https://vercel.com/new)
 2. Click **Add New Project**
-3. Find and import: `ezhulati/FindABACare`
+3. Find and import: `ezhulati/findABA.care`
 4. Vercel auto-detects Astro framework
 
 ### Add Environment Variables

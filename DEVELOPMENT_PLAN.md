@@ -1,8 +1,8 @@
-# FindABACare.com - Complete Development Plan
+# findABA.care.com - Complete Development Plan
 
 ## Executive Summary
 
-This development plan outlines the end-to-end implementation of **FindABACare.com**, an autism-friendly community discovery platform connecting families with sensory-friendly venues, micro-events, and verified community spaces in Dallas and Houston.
+This development plan outlines the end-to-end implementation of **findABA.care.com**, an autism-friendly community discovery platform connecting families with sensory-friendly venues, micro-events, and verified community spaces in Dallas and Houston.
 
 ### Mission
 Create a trusted community and care discovery platform that makes low-stress social time predictable and accessible for families with autistic children.
@@ -416,7 +416,7 @@ from venues v join cities c on v.city_id=c.id where c.slug='dallas' limit 1;
 - Breadcrumb navigation
 
 ### Meta Tags
-- Title: "{VenueName} - Sensory-Friendly in {City} | FindABACare"
+- Title: "{VenueName} - Sensory-Friendly in {City} | findABA.care"
 - Description: 150 chars with key amenities
 - Open Graph images (venue photos)
 - Twitter Cards
@@ -589,7 +589,7 @@ services:
 
 ### Full Launch (Dallas + Houston)
 - [ ] Press release to local autism advocacy orgs
-- [ ] Social media campaign (#FindABACare)
+- [ ] Social media campaign (#findABA.care)
 - [ ] Partner with 5 venues for sensory hours
 - [ ] Host 4 micro-events (2 per city)
 
@@ -667,7 +667,7 @@ services:
 
 ## Conclusion
 
-This plan provides a complete, actionable roadmap to build and launch **FindABACare.com** as a community-driven, empathy-centered platform. The phased approach balances technical rigor with user-centric design, ensuring families can find predictable, low-stress social opportunities for their autistic children.
+This plan provides a complete, actionable roadmap to build and launch **findABA.care.com** as a community-driven, empathy-centered platform. The phased approach balances technical rigor with user-centric design, ensuring families can find predictable, low-stress social opportunities for their autistic children.
 
 By Week 8, the MVP will be live in Dallas and Houston with 300+ verified venues, weekly micro-events, and a foundation for long-term growth.
 
