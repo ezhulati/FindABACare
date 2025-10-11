@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Location Pin with Infinity Symbol -->
+  <defs>
+    <linearGradient id="pinGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#3B82F6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8B5CF6;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Pin Shadow -->
+  <ellipse cx="256" cy="480" rx="60" ry="20" fill="#000000" opacity="0.15"/>
+
+  <!-- Pin Body -->
+  <path d="M 256 32
+           C 176 32 112 96 112 176
+           C 112 256 256 480 256 480
+           C 256 480 400 256 400 176
+           C 400 96 336 32 256 32 Z"
+        fill="url(#pinGradient)"
+        stroke="#1E40AF"
+        stroke-width="8"/>
+
+  <!-- Inner Circle Background -->
+  <circle cx="256" cy="176" r="90" fill="white"/>
+
+  <!-- Infinity Symbol -->
+  <path d="M 196 176
+           C 196 156 176 136 156 136
+           C 136 136 116 156 116 176
+           C 116 196 136 216 156 216
+           C 176 216 196 196 196 176 Z
+
+           M 316 176
+           C 316 196 336 216 356 216
+           C 376 216 396 196 396 176
+           C 396 156 376 136 356 136
+           C 336 136 316 156 316 176 Z
+
+           M 196 176
+           L 316 176"
+        fill="none"
+        stroke="url(#pinGradient)"
+        stroke-width="24"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        opacity="0.9"/>
+
+  <!-- Cleaner Infinity Symbol Path -->
+  <g transform="translate(256, 176)">
+    <path d="M -80 0
+             C -80 -30 -60 -50 -40 -50
+             C -10 -50 10 -30 40 0
+             C 70 30 90 50 120 50
+             C 150 50 170 30 170 0
+             C 170 -30 150 -50 120 -50
+             C 90 -50 70 -30 40 0
+             C 10 30 -10 50 -40 50
+             C -60 50 -80 30 -80 0 Z"
+          fill="url(#pinGradient)"
+          transform="scale(0.35)"/>
+  </g>
+</svg>

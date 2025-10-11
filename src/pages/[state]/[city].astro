@@ -4,7 +4,7 @@ import VenueCard from '../../components/VenueCard.astro';
 import VenueFiltersIsland from '../../components/VenueFiltersIsland';
 import MapIsland from '../../components/MapIsland';
 import { getServerClient } from '../../lib/supabaseServer';
-import { generateCityTitle, generateCityDescription, checkSEOInDev } from '../../lib/seo';
+import { generateCityTitle, generateCityDescription, generateCityOGImage, checkSEOInDev } from '../../lib/seo';
 
 const { state, city } = Astro.params;
 
@@ -64,12 +64,13 @@ let mapCenter: [number, number] = cityData.center_lat && cityData.center_lng
 // Generate SEO-optimized metadata
 const title = generateCityTitle(cityData.name, stateUpper);
 const description = generateCityDescription(cityData.name, stateName, venues.length);
+const { ogImage, ogImageAlt } = generateCityOGImage(cityData.name);
 
 // Check SEO in development mode
-checkSEOInDev({ title, description }, `/${state}/${city}`);
+checkSEOInDev({ title, description, ogImage, ogImageAlt }, `/${state}/${city}`);
 ---
 
-<Base title={title} description={description}>
+<Base title={title} description={description} ogImage={ogImage} ogImageAlt={ogImageAlt}>
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <!-- Header -->
     <div class="mb-8">

@@ -150,6 +150,27 @@ export function generateCityDescription(
 }
 
 /**
+ * Generates OG image for city pages based on city name
+ */
+export function generateCityOGImage(cityName: string): { ogImage: string; ogImageAlt: string } {
+  const cityImages: Record<string, { ogImage: string; ogImageAlt: string }> = {
+    'Dallas': {
+      ogImage: STOCK_IMAGES.dallasOutdoor,
+      ogImageAlt: 'Autism-friendly outdoor activities in Dallas, Texas'
+    },
+    'Houston': {
+      ogImage: STOCK_IMAGES.houstonOutdoor,
+      ogImageAlt: 'Autism-friendly outdoor activities in Houston, Texas'
+    },
+  };
+
+  return cityImages[cityName] || {
+    ogImage: STOCK_IMAGES.ogCity,
+    ogImageAlt: `Autism-friendly venues in ${cityName}`
+  };
+}
+
+/**
  * Generates SEO-optimized title for venue pages
  */
 export function generateVenueTitle(venueName: string, cityName: string, state: string): string {
@@ -166,6 +187,39 @@ export function generateVenueDescription(
 ): string {
   const desc = `Autism-friendly ${venueType} in ${cityName}. ${venueName} offers sensory-friendly accommodations, quiet hours, and visual supports. Parent-verified for children with autism.`;
   return truncateAtWord(desc, 160);
+}
+
+/**
+ * Generates OG image for venue pages based on venue type
+ */
+export function generateVenueOGImage(venueType?: string): { ogImage: string; ogImageAlt: string } {
+  const typeImages: Record<string, { ogImage: string; ogImageAlt: string }> = {
+    'Library': {
+      ogImage: STOCK_IMAGES.library,
+      ogImageAlt: 'Autism-friendly library with quiet reading spaces'
+    },
+    'Museum': {
+      ogImage: STOCK_IMAGES.sensoryVenue,
+      ogImageAlt: 'Sensory-friendly museum with accommodations'
+    },
+    'Park': {
+      ogImage: STOCK_IMAGES.outdoorABA,
+      ogImageAlt: 'Autism-friendly outdoor park and playground'
+    },
+    'Restaurant': {
+      ogImage: STOCK_IMAGES.peacefulRoom,
+      ogImageAlt: 'Quiet autism-friendly dining space'
+    },
+    'Indoor Play': {
+      ogImage: STOCK_IMAGES.kidsPlay,
+      ogImageAlt: 'Indoor sensory-friendly play area'
+    },
+  };
+
+  return typeImages[venueType || ''] || {
+    ogImage: STOCK_IMAGES.sensoryVenue,
+    ogImageAlt: 'Autism-friendly venue with sensory accommodations'
+  };
 }
 
 /**

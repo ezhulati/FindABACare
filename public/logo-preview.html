@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>findABA.care Logo Concepts</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    h1 {
+      text-align: center;
+      color: white;
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    .subtitle {
+      text-align: center;
+      color: rgba(255,255,255,0.9);
+      font-size: 1.2rem;
+      margin-bottom: 3rem;
+    }
+    .logo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 30px;
+      margin-bottom: 50px;
+    }
+    .logo-card {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .logo-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 25px 70px rgba(0,0,0,0.4);
+    }
+    .logo-card.recommended {
+      border: 4px solid #10B981;
+      position: relative;
+    }
+    .logo-card.recommended::before {
+      content: "⭐ RECOMMENDED";
+      position: absolute;
+      top: -15px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #10B981;
+      color: white;
+      padding: 5px 20px;
+      border-radius: 20px;
+      font-weight: bold;
+      font-size: 0.85rem;
+    }
+    .logo-display {
+      width: 100%;
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #F9FAFB;
+      border-radius: 15px;
+      margin-bottom: 20px;
+    }
+    .logo-display img {
+      max-width: 80%;
+      max-height: 80%;
+    }
+    .logo-title {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #1F2937;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+    .logo-description {
+      color: #6B7280;
+      line-height: 1.6;
+      margin-bottom: 15px;
+    }
+    .pros-cons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-top: 15px;
+    }
+    .pros, .cons {
+      padding: 15px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+    }
+    .pros {
+      background: #D1FAE5;
+      border-left: 4px solid #10B981;
+    }
+    .cons {
+      background: #FEE2E2;
+      border-left: 4px solid #EF4444;
+    }
+    .pros h4, .cons h4 {
+      margin-bottom: 8px;
+      font-size: 1rem;
+    }
+    .pros ul, .cons ul {
+      list-style: none;
+      padding-left: 0;
+    }
+    .pros li::before {
+      content: "✓ ";
+      color: #10B981;
+      font-weight: bold;
+    }
+    .cons li::before {
+      content: "✗ ";
+      color: #EF4444;
+      font-weight: bold;
+    }
+    .size-demo {
+      background: white;
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    .size-demo h2 {
+      margin-bottom: 30px;
+      color: #1F2937;
+      text-align: center;
+    }
+    .size-row {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 30px;
+      padding: 20px;
+      background: #F9FAFB;
+      border-radius: 10px;
+    }
+    .size-label {
+      min-width: 120px;
+      font-weight: bold;
+      color: #4B5563;
+    }
+    .navbar-demo {
+      background: white;
+      padding: 15px 30px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .navbar-demo .logo {
+      width: 40px;
+      height: 40px;
+    }
+    .navbar-demo .text {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #1F2937;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>findABA.care Logo Concepts</h1>
+    <p class="subtitle">Choose the icon that best represents your brand</p>
+
+    <div class="logo-grid">
+      <!-- Logo 1: Heart -->
+      <div class="logo-card recommended">
+        <div class="logo-display">
+          <img src="logo-heart.svg" alt="Heart Logo">
+        </div>
+        <div class="logo-title">🩷 The Caring Pin</div>
+        <div class="logo-description">
+          A location pin with a heart inside. Perfectly combines "finding" (location) with "care" (heart).
+          Universal symbol that parents immediately understand and connect with emotionally.
+        </div>
+        <div class="pros-cons">
+          <div class="pros">
+            <h4>Pros</h4>
+            <ul>
+              <li>Universal recognition</li>
+              <li>Emotional connection</li>
+              <li>Perfect favicon clarity</li>
+              <li>Brand name alignment</li>
+            </ul>
+          </div>
+          <div class="cons">
+            <h4>Cons</h4>
+            <ul>
+              <li>Not autism-specific</li>
+              <li>Could feel generic</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Logo 2: Rainbow Infinity -->
+      <div class="logo-card">
+        <div class="logo-display">
+          <img src="logo-infinity-clean.svg" alt="Infinity Logo">
+        </div>
+        <div class="logo-title">🌈 Neurodiversity Symbol</div>
+        <div class="logo-description">
+          Location pin with rainbow infinity symbol - the modern, community-preferred symbol for autism and neurodiversity.
+          Shows respect and alignment with autistic community values.
+        </div>
+        <div class="pros-cons">
+          <div class="pros">
+            <h4>Pros</h4>
+            <ul>
+              <li>Community-approved symbol</li>
+              <li>Modern & inclusive</li>
+              <li>Clearly autism-related</li>
+              <li>Colorful & memorable</li>
+            </ul>
+          </div>
+          <div class="cons">
+            <h4>Cons</h4>
+            <ul>
+              <li>Complex for tiny favicons</li>
+              <li>Colors may not scale</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Logo 3: Verified Badge -->
+      <div class="logo-card">
+        <div class="logo-display">
+          <img src="logo-simple-badge.svg" alt="Badge Logo">
+        </div>
+        <div class="logo-title">✓ Verified Safe</div>
+        <div class="logo-description">
+          Simple location pin with checkmark. Emphasizes "parent-verified" and "trusted" aspects.
+          Clean, professional, and immediately communicates safety and quality.
+        </div>
+        <div class="pros-cons">
+          <div class="pros">
+            <h4>Pros</h4>
+            <ul>
+              <li>Trust & verification focus</li>
+              <li>Super simple & scalable</li>
+              <li>Professional appearance</li>
+              <li>Works at any size</li>
+            </ul>
+          </div>
+          <div class="cons">
+            <h4>Cons</h4>
+            <ul>
+              <li>Less emotional warmth</li>
+              <li>Generic tech feel</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="size-demo">
+      <h2>Logo Usage Examples</h2>
+
+      <div class="size-row">
+        <div class="size-label">Navbar (40x40)</div>
+        <div class="navbar-demo">
+          <img src="logo-heart.svg" class="logo" alt="Logo">
+          <span class="text">findABA.care</span>
+        </div>
+      </div>
+
+      <div class="size-row">
+        <div class="size-label">Favicon (32x32)</div>
+        <img src="logo-heart.svg" style="width: 32px; height: 32px;" alt="Favicon 32">
+        <img src="logo-infinity-clean.svg" style="width: 32px; height: 32px;" alt="Favicon 32">
+        <img src="logo-simple-badge.svg" style="width: 32px; height: 32px;" alt="Favicon 32">
+      </div>
+
+      <div class="size-row">
+        <div class="size-label">Favicon (16x16)</div>
+        <img src="logo-heart.svg" style="width: 16px; height: 16px;" alt="Favicon 16">
+        <img src="logo-infinity-clean.svg" style="width: 16px; height: 16px;" alt="Favicon 16">
+        <img src="logo-simple-badge.svg" style="width: 16px; height: 16px;" alt="Favicon 16">
+      </div>
+
+      <div class="size-row">
+        <div class="size-label">Map Marker</div>
+        <img src="logo-heart.svg" style="width: 50px; height: 50px;" alt="Map">
+        <img src="logo-infinity-clean.svg" style="width: 50px; height: 50px;" alt="Map">
+        <img src="logo-simple-badge.svg" style="width: 50px; height: 50px;" alt="Map">
+        <span style="color: #6B7280; font-size: 0.9rem;">These will appear on your interactive maps</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

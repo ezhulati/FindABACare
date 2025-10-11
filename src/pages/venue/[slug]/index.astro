@@ -6,6 +6,7 @@ import PhotoGallery from '../../../components/PhotoGallery';
 import { getServerClient } from '../../../lib/supabaseServer';
 import { goNow } from '../../../lib/goNow';
 import { timeAgo, formatTime } from '../../../lib/utils';
+import { generateVenueOGImage } from '../../../lib/seo';
 
 const { slug } = Astro.params;
 
@@ -52,6 +53,7 @@ const meterClass = meterColors[meter as keyof typeof meterColors] || meterColors
 
 const title = `${venue.name} - Autism-Friendly in ${venue.city?.name}`;
 const description = `${venue.name} - Autism-friendly venue in ${venue.city?.name}. ${venue.description?.substring(0, 100) || 'See sensory hours, amenities, and parent reviews.'}`;
+const { ogImage, ogImageAlt } = generateVenueOGImage(venue.type);
 
 // Build JSON-LD Place schema
 const placeSchema = {
@@ -103,7 +105,7 @@ const placeSchema = {
 };
 ---
 
-<Base title={title} description={description}>
+<Base title={title} description={description} ogImage={ogImage} ogImageAlt={ogImageAlt}>
   <SEO
     title={title}
     description={description}

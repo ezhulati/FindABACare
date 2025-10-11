@@ -1,11 +1,11 @@
 ---
 import Base from '../layouts/Base.astro';
+import { SEO_TEMPLATES } from '../lib/seo';
 
-const title = 'About findABA.care | Our Mission';
-const description = 'Learn about findABA.care and our mission to help families find autism-friendly venues and events.';
+const { title, description, ogImage, ogImageAlt } = SEO_TEMPLATES.about;
 ---
 
-<Base title={title} description={description}>
+<Base title={title} description={description} ogImage={ogImage} ogImageAlt={ogImageAlt}>
   <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
     <!-- Header -->
     <div class="text-center mb-16">
