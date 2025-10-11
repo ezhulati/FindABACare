@@ -4,7 +4,7 @@ import path from 'path';
 
 const supabaseUrl = 'https://gvfkyfzukwnjomksuvaq.supabase.co';
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
-const googleApiKey = 'AIzaSyDzaHqZcpfdSKPCNkDizt7wTX2NPRlHLWc';
+const googleApiKey = process.env.GOOGLE_MAPS_API_KEY || '';
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 const placeId = 'ChIJcf6vtjm_QIYRLD07rhduhG4';
