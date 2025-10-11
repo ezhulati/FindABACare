@@ -1,10 +1,13 @@
 ---
 import Base from '../layouts/Base.astro';
 import { SEO_TEMPLATES, STOCK_IMAGES, checkSEOInDev } from '../lib/seo';
+import AddressSearchIsland from '../components/AddressSearchIsland';
 
 // SEO metadata for homepage
-const { title, description, ogImage, ogImageAlt } = SEO_TEMPLATES.home;
+const { title, description, ogImage, ogImageAlt} = SEO_TEMPLATES.home;
 checkSEOInDev({ title, description, ogImage, ogImageAlt }, '/');
+
+const GOOGLE_MAPS_API_KEY = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY || import.meta.env.GOOGLE_MAPS_API_KEY;
 
 const cities = [
   {
@@ -33,24 +36,23 @@ const cities = [
           <!-- Hero Text -->
           <div>
             <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight max-w-xl" style="text-wrap: balance;">
-              Find autism-friendly places <span class="text-blue-600">where your child can thrive</span>
+              Find autism-friendly places <span class="text-blue-600">near you</span>
             </h1>
-            <p class="text-xl text-gray-600 mb-8 max-w-lg">
-              Quiet hours, visual guides, and small-group meetups verified by local parents.
-              Autism-friendly venues in Dallas and Houston.
+            <p class="text-xl text-gray-600 mb-6 max-w-lg">
+              Discover verified autism-friendly venues with quiet hours, visual guides, and sensory-friendly accommodations nationwide.
             </p>
+
+            <!-- Address Search -->
+            <div class="mb-8">
+              <AddressSearchIsland client:load apiKey={GOOGLE_MAPS_API_KEY} />
+            </div>
+
             <div class="flex flex-col sm:flex-row gap-4">
               <a
                 href="#cities"
-                class="px-8 py-4 bg-black text-white font-medium rounded-lg hover:bg-gray-800 transition-colors text-center"
-              >
-                Explore your city
-              </a>
-              <a
-                href="/about"
                 class="px-8 py-4 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors text-center"
               >
-                Learn more
+                Or browse by city
               </a>
             </div>
           </div>
@@ -112,10 +114,10 @@ const cities = [
     <section id="cities" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 border-t border-gray-200">
       <div class="text-center mb-12">
         <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-          Choose your city
+          Popular cities
         </h2>
         <p class="text-lg text-gray-600">
-          Start exploring autism-friendly venues and events near you
+          Browse curated venues in these cities, or search your location above
         </p>
       </div>
 
