@@ -9,7 +9,10 @@ export default defineConfig({
   adapter: vercel({
     webAnalytics: {
       enabled: true
-    }
+    },
+    functionPerRoute: false,
+    edgeMiddleware: false,
+    imageService: false
   }),
   integrations: [
     tailwind({ applyBaseStyles: true }),
