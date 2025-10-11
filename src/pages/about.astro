@@ -1,0 +1,205 @@
+---
+import Base from '../layouts/Base.astro';
+
+const title = 'About FindABACare | Our Mission';
+const description = 'Learn about FindABACare and our mission to help families find autism-friendly venues and events.';
+---
+
+<Base title={title} description={description}>
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <!-- Header -->
+    <div class="text-center mb-16">
+      <h1 class="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
+        About FindABACare
+      </h1>
+      <p class="text-xl text-gray-600">
+        Helping families find places and moments that work
+      </p>
+    </div>
+
+    <!-- Mission -->
+    <section class="mb-16">
+      <h2 class="text-3xl font-bold text-gray-900 mb-6">Our Mission</h2>
+      <div class="prose prose-lg max-w-none">
+        <p class="text-gray-700 leading-relaxed mb-4">
+          FindABACare was created by parents, for parents navigating the challenges of finding
+          autism-friendly venues and activities. We know firsthand how exhausting it can be to
+          research whether a museum has quiet hours, if a restaurant tolerates longer wait times,
+          or if a park has sensory-friendly equipment.
+        </p>
+        <p class="text-gray-700 leading-relaxed mb-4">
+          Our platform brings together parent-verified information about venues, real-time
+          occupancy predictions through our Go Now™ meter, and small-group meetups designed
+          specifically for autistic children and their families.
+        </p>
+        <p class="text-gray-700 leading-relaxed">
+          We believe every family deserves to explore their community with confidence, knowing
+          they'll find understanding, accommodations, and support wherever they go.
+        </p>
+      </div>
+    </section>
+
+    <!-- What We Offer -->
+    <section class="mb-16">
+      <h2 class="text-3xl font-bold text-gray-900 mb-6">What We Offer</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div class="bg-white border border-gray-200 rounded-lg p-6">
+          <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+            <svg class="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-2">Venue Directory</h3>
+          <p class="text-gray-600">
+            Searchable database of autism-friendly venues with detailed information about
+            amenities, sensory hours, and potential triggers.
+          </p>
+        </div>
+
+        <div class="bg-white border border-gray-200 rounded-lg p-6">
+          <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+            <svg class="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-2">Go Now™ Meter</h3>
+          <p class="text-gray-600">
+            Smart occupancy predictions help you plan visits during quieter times, reducing
+            sensory overload and improving predictability.
+          </p>
+        </div>
+
+        <div class="bg-white border border-gray-200 rounded-lg p-6">
+          <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
+            <svg class="w-6 h-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-2">Micro-Events</h3>
+          <p class="text-gray-600">
+            Small group meetups capped at 12 kids, hosted at verified venues. Build community
+            without overwhelming social demands.
+          </p>
+        </div>
+
+        <div class="bg-white border border-gray-200 rounded-lg p-6">
+          <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mb-4">
+            <svg class="w-6 h-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-2">First Visit Kits</h3>
+          <p class="text-gray-600">
+            Downloadable PDFs with visual supports, social stories, and preparation materials
+            customized for each venue.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="mb-16">
+      <h2 class="text-3xl font-bold text-gray-900 mb-6">How It Works</h2>
+      <div class="space-y-6">
+        <div class="flex gap-6">
+          <div class="flex-shrink-0 w-12 h-12 bg-gray-900 text-white rounded-full flex items-center justify-center font-bold">
+            1
+          </div>
+          <div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">Browse & Filter</h3>
+            <p class="text-gray-600">
+              Search venues by city and filter by amenities like quiet rooms, visual supports,
+              or no hand dryers. Read reviews from other parents.
+            </p>
+          </div>
+        </div>
+
+        <div class="flex gap-6">
+          <div class="flex-shrink-0 w-12 h-12 bg-gray-900 text-white rounded-full flex items-center justify-center font-bold">
+            2
+          </div>
+          <div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">Check Go Now Meter</h3>
+            <p class="text-gray-600">
+              Our predictive meter shows whether venues are likely to be Quiet, Moderate, or
+              Busy based on time of day, day of week, and historical patterns.
+            </p>
+          </div>
+        </div>
+
+        <div class="flex gap-6">
+          <div class="flex-shrink-0 w-12 h-12 bg-gray-900 text-white rounded-full flex items-center justify-center font-bold">
+            3
+          </div>
+          <div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">Download First Visit Kit</h3>
+            <p class="text-gray-600">
+              Get a personalized PDF with photos, visual schedules, and social stories to help
+              prepare your child for their visit.
+            </p>
+          </div>
+        </div>
+
+        <div class="flex gap-6">
+          <div class="flex-shrink-0 w-12 h-12 bg-gray-900 text-white rounded-full flex items-center justify-center font-bold">
+            4
+          </div>
+          <div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">Join Events & Share</h3>
+            <p class="text-gray-600">
+              RSVP to micro-events, meet other families, and leave reviews to help the community
+              grow stronger.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Values -->
+    <section class="mb-16 bg-gray-50 rounded-2xl p-8 sm:p-12">
+      <h2 class="text-3xl font-bold text-gray-900 mb-6 text-center">Our Values</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-2">Parent-Led</h3>
+          <p class="text-gray-600">
+            Every review, every venue verification comes from real parents who've been there.
+          </p>
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-2">Evidence-Based</h3>
+          <p class="text-gray-600">
+            We use data and research to inform our Go Now predictions and recommendations.
+          </p>
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-2">Community-Driven</h3>
+          <p class="text-gray-600">
+            Our platform grows stronger with each family that joins and contributes.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="text-center">
+      <h2 class="text-3xl font-bold text-gray-900 mb-4">Ready to get started?</h2>
+      <p class="text-lg text-gray-600 mb-8">
+        Join families across Dallas and Houston finding places that work
+      </p>
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <a
+          href="/dallas"
+          class="px-8 py-4 bg-black text-white font-medium rounded-lg hover:bg-gray-800 transition-colors"
+        >
+          Explore Dallas
+        </a>
+        <a
+          href="/houston"
+          class="px-8 py-4 bg-black text-white font-medium rounded-lg hover:bg-gray-800 transition-colors"
+        >
+          Explore Houston
+        </a>
+      </div>
+    </section>
+  </div>
+</Base>

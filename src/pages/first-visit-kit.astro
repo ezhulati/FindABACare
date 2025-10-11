@@ -1,0 +1,232 @@
+---
+import Base from '../layouts/Base.astro';
+import { getServerClient } from '../lib/supabaseServer';
+
+const venueId = Astro.url.searchParams.get('venue');
+
+if (!venueId) {
+  return Astro.redirect('/');
+}
+
+const supabase = getServerClient(Astro.request);
+
+const { data: venue } = await supabase
+  .from('venues')
+  .select(`
+    *,
+    city:cities(*)
+  `)
+  .eq('id', venueId)
+  .single();
+
+if (!venue) {
+  return Astro.redirect('/');
+}
+
+const title = `First Visit Kit: ${venue.name} | FindABACare`;
+const description = `Download a personalized First Visit Kit for ${venue.name} with visual supports and preparation materials.`;
+---
+
+<Base title={title} description={description}>
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Breadcrumbs -->
+    <div class="flex items-center gap-2 text-sm text-gray-600 mb-6">
+      <a href="/" class="hover:text-gray-900">Home</a>
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+      </svg>
+      <a href={`/${venue.city?.slug}`} class="hover:text-gray-900">{venue.city?.name}</a>
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+      </svg>
+      <a href={`/venue/${venue.slug || venue.id}`} class="hover:text-gray-900">{venue.name}</a>
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+      </svg>
+      <span class="text-gray-900">First Visit Kit</span>
+    </div>
+
+    <!-- Header -->
+    <div class="text-center mb-12">
+      <h1 class="text-4xl font-bold text-gray-900 mb-4">
+        First Visit Kit
+      </h1>
+      <p class="text-xl text-gray-600">
+        {venue.name}
+      </p>
+    </div>
+
+    <!-- Info Banner -->
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
+      <div class="flex items-start gap-3">
+        <svg class="w-6 h-6 text-blue-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+        </svg>
+        <div class="flex-1">
+          <h3 class="text-lg font-semibold text-blue-900 mb-1">What's a First Visit Kit?</h3>
+          <p class="text-blue-800">
+            A customized PDF with photos, visual schedules, and social stories to help prepare
+            your child for their visit to {venue.name}. Print it out and review it together
+            before your trip!
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Kit Preview -->
+    <div class="bg-white border border-gray-200 rounded-lg p-8 mb-8">
+      <h2 class="text-2xl font-semibold text-gray-900 mb-6">Your kit will include:</h2>
+
+      <div class="space-y-6">
+        <!-- Venue Overview -->
+        <div class="flex items-start gap-4">
+          <div class="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+            <svg class="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            </svg>
+          </div>
+          <div class="flex-1">
+            <h3 class="font-semibold text-gray-900 mb-1">Venue Overview</h3>
+            <p class="text-sm text-gray-600">
+              Photos and description of {venue.name}, including what to expect when you arrive.
+            </p>
+          </div>
+        </div>
+
+        <!-- Visual Schedule -->
+        <div class="flex items-start gap-4">
+          <div class="flex-shrink-0 w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+            <svg class="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+            </svg>
+          </div>
+          <div class="flex-1">
+            <h3 class="font-semibold text-gray-900 mb-1">Visual Schedule</h3>
+            <p class="text-sm text-gray-600">
+              Step-by-step visual guide showing what will happen during your visit.
+            </p>
+          </div>
+        </div>
+
+        <!-- Sensory Map -->
+        <div class="flex items-start gap-4">
+          <div class="flex-shrink-0 w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+            <svg class="w-5 h-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+            </svg>
+          </div>
+          <div class="flex-1">
+            <h3 class="font-semibold text-gray-900 mb-1">Sensory Map</h3>
+            <p class="text-sm text-gray-600">
+              Information about potential sensory triggers and quiet spaces available.
+            </p>
+          </div>
+        </div>
+
+        <!-- Social Story -->
+        <div class="flex items-start gap-4">
+          <div class="flex-shrink-0 w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
+            <svg class="w-5 h-5 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            </svg>
+          </div>
+          <div class="flex-1">
+            <h3 class="font-semibold text-gray-900 mb-1">Social Story</h3>
+            <p class="text-sm text-gray-600">
+              A simple narrative about visiting {venue.name} to build familiarity and reduce anxiety.
+            </p>
+          </div>
+        </div>
+
+        <!-- Tips from Parents -->
+        <div class="flex items-start gap-4">
+          <div class="flex-shrink-0 w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+            <svg class="w-5 h-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+          </div>
+          <div class="flex-1">
+            <h3 class="font-semibold text-gray-900 mb-1">Tips from Parents</h3>
+            <p class="text-sm text-gray-600">
+              Real advice from parents who've visited {venue.name} with their kids.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Venue Info Summary -->
+    <div class="bg-gray-50 rounded-lg p-6 mb-8">
+      <h3 class="font-semibold text-gray-900 mb-4">Venue Highlights</h3>
+      <dl class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+        {venue.amenities?.quiet_room && (
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+            </svg>
+            <span class="text-gray-700">Quiet room available</span>
+          </div>
+        )}
+        {venue.amenities?.visual_supports && (
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+            </svg>
+            <span class="text-gray-700">Visual supports provided</span>
+          </div>
+        )}
+        {venue.amenities?.hand_dryer === false && (
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+            </svg>
+            <span class="text-gray-700">No hand dryers</span>
+          </div>
+        )}
+        {venue.sensory_hours && venue.sensory_hours.length > 0 && (
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+            </svg>
+            <span class="text-gray-700">Sensory-friendly hours</span>
+          </div>
+        )}
+      </dl>
+    </div>
+
+    <!-- Download Button -->
+    <div class="text-center">
+      <button
+        id="download-btn"
+        class="px-8 py-4 bg-black text-white font-medium rounded-lg hover:bg-gray-800 transition-colors inline-flex items-center gap-2"
+      >
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        Download First Visit Kit (PDF)
+      </button>
+      <p class="text-sm text-gray-500 mt-4">
+        Free • Printer-friendly • Customized for your child
+      </p>
+    </div>
+
+    <!-- Coming Soon Notice -->
+    <div class="mt-8 bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
+      <svg class="w-12 h-12 text-yellow-600 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+      </svg>
+      <h3 class="text-lg font-semibold text-yellow-900 mb-2">Coming Soon!</h3>
+      <p class="text-yellow-800">
+        First Visit Kits are currently being created for all venues. Check back soon or
+        <a href={`/venue/${venue.slug || venue.id}`} class="underline hover:no-underline">return to venue page</a>.
+      </p>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('download-btn')?.addEventListener('click', () => {
+      // Placeholder for PDF generation
+      alert('First Visit Kit download will be available soon! We\'re currently creating customized kits for all venues.');
+    });
+  </script>
+</Base>

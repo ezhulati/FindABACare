@@ -1,0 +1,98 @@
+---
+import { goNow } from '../lib/goNow';
+import { timeAgo } from '../lib/utils';
+
+interface Props {
+  venue: {
+    id: string;
+    name: string;
+    slug?: string;
+    address?: string;
+    type?: string;
+    amenities?: any;
+    last_verified?: string;
+    meter?: string;
+  };
+}
+
+const { venue } = Astro.props;
+const meter = venue.meter || goNow(venue.type);
+
+// Meter color classes
+const meterColors = {
+  'Quiet': 'bg-green-100 text-green-800 border-green-200',
+  'Moderate': 'bg-yellow-100 text-yellow-800 border-yellow-200',
+  'Busy': 'bg-red-100 text-red-800 border-red-200',
+};
+
+const meterClass = meterColors[meter as keyof typeof meterColors] || meterColors.Moderate;
+---
+
+<article class="group relative bg-white border border-gray-200 rounded-xl p-5 hover:border-gray-300 hover:shadow-lg transition-all duration-200">
+  <div class="flex items-start justify-between gap-3 mb-3">
+    <div class="flex-1 min-w-0">
+      <h3 class="text-lg font-semibold text-gray-900 group-hover:text-black transition-colors truncate">
+        {venue.name}
+      </h3>
+      {venue.address && (
+        <p class="text-sm text-gray-600 mt-1 truncate">
+          {venue.address}
+        </p>
+      )}
+    </div>
+
+    <!-- Go Now Meter -->
+    <span class={`px-3 py-1.5 text-xs font-medium rounded-full border shrink-0 ${meterClass}`}>
+      {meter}
+    </span>
+  </div>
+
+  <!-- Amenities -->
+  {venue.amenities && (
+    <div class="flex flex-wrap gap-2 mb-3">
+      {venue.amenities.quiet_room && (
+        <span class="inline-flex items-center px-2.5 py-1 rounded-md bg-blue-50 text-blue-700 text-xs font-medium">
+          <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M10 2a8 8 0 100 16 8 8 0 000-16zM8 11a1 1 0 112 0v2a1 1 0 11-2 0v-2zm1-5a1 1 0 011 1v1a1 1 0 11-2 0V7a1 1 0 011-1z"/>
+          </svg>
+          Quiet room
+        </span>
+      )}
+      {venue.amenities.visual_supports && (
+        <span class="inline-flex items-center px-2.5 py-1 rounded-md bg-purple-50 text-purple-700 text-xs font-medium">
+          <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+            <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
+          </svg>
+          Visual supports
+        </span>
+      )}
+      {venue.amenities.hand_dryer === false && (
+        <span class="inline-flex items-center px-2.5 py-1 rounded-md bg-green-50 text-green-700 text-xs font-medium">
+          <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM18 10a8 8 0 11-16 0 8 8 0 0116 0z" clip-rule="evenodd"/>
+          </svg>
+          No hand dryers
+        </span>
+      )}
+    </div>
+  )}
+
+  <!-- Last verified -->
+  {venue.last_verified && (
+    <p class="text-xs text-gray-500 mb-3">
+      Last verified {timeAgo(venue.last_verified)}
+    </p>
+  )}
+
+  <!-- View details link -->
+  <a
+    href={`/venue/${venue.slug || venue.id}`}
+    class="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
+  >
+    View details
+    <svg class="w-4 h-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+    </svg>
+  </a>
+</article>

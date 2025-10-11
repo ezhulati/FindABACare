@@ -1,0 +1,135 @@
+---
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = 'FindABACare - Find places that work for your child',
+  description = 'Quiet hours, visual guides, and small-group meetups verified by local parents. Autism-friendly venues in Dallas and Houston.'
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content={description} />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title}</title>
+  </head>
+  <body class="min-h-screen bg-white text-gray-900">
+    <header class="border-b border-gray-200 bg-white sticky top-0 z-50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+          <!-- Logo -->
+          <div class="flex items-center">
+            <a href="/" class="text-xl font-bold text-gray-900 hover:text-gray-700 transition-colors">
+              FindABACare
+            </a>
+          </div>
+
+          <!-- Navigation -->
+          <nav class="hidden md:flex items-center space-x-8">
+            <a href="/dallas" class="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors">
+              Dallas
+            </a>
+            <a href="/houston" class="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors">
+              Houston
+            </a>
+            <a href="/about" class="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors">
+              About
+            </a>
+          </nav>
+
+          <!-- Auth (placeholder for now) -->
+          <div class="flex items-center space-x-4">
+            <div id="auth-container"></div>
+          </div>
+
+          <!-- Mobile menu button -->
+          <div class="md:hidden">
+            <button id="mobile-menu-button" class="p-2 rounded-md text-gray-700 hover:text-gray-900 hover:bg-gray-100" aria-label="Toggle menu">
+              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mobile menu -->
+      <div id="mobile-menu" class="hidden md:hidden border-t border-gray-200">
+        <div class="px-4 pt-2 pb-3 space-y-1">
+          <a href="/dallas" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
+            Dallas
+          </a>
+          <a href="/houston" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
+            Houston
+          </a>
+          <a href="/about" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
+            About
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <main class="min-h-[calc(100vh-4rem)]">
+      <slot />
+    </main>
+
+    <footer class="border-t border-gray-200 bg-gray-50 mt-16">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div>
+            <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wider">About</h3>
+            <p class="mt-4 text-sm text-gray-600">
+              FindABACare helps families find autism-friendly venues and events in their community.
+            </p>
+          </div>
+
+          <div>
+            <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wider">Cities</h3>
+            <ul class="mt-4 space-y-2">
+              <li><a href="/dallas" class="text-sm text-gray-600 hover:text-gray-900">Dallas, TX</a></li>
+              <li><a href="/houston" class="text-sm text-gray-600 hover:text-gray-900">Houston, TX</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wider">Resources</h3>
+            <ul class="mt-4 space-y-2">
+              <li><a href="/about" class="text-sm text-gray-600 hover:text-gray-900">About Us</a></li>
+              <li><a href="/privacy" class="text-sm text-gray-600 hover:text-gray-900">Privacy Policy</a></li>
+              <li><a href="/terms" class="text-sm text-gray-600 hover:text-gray-900">Terms of Service</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wider">Contact</h3>
+            <p class="mt-4 text-sm text-gray-600">
+              Email: <a href="mailto:hello@findabacare.com" class="hover:text-gray-900">hello@findabacare.com</a>
+            </p>
+          </div>
+        </div>
+
+        <div class="mt-8 pt-8 border-t border-gray-200">
+          <p class="text-sm text-gray-500 text-center">
+            © 2025 FindABACare. All rights reserved. Built with ❤️ for families navigating autism.
+          </p>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      // Mobile menu toggle
+      const mobileMenuButton = document.getElementById('mobile-menu-button');
+      const mobileMenu = document.getElementById('mobile-menu');
+
+      mobileMenuButton?.addEventListener('click', () => {
+        mobileMenu?.classList.toggle('hidden');
+      });
+    </script>
+  </body>
+</html>
