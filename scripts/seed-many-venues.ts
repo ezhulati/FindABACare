@@ -300,15 +300,33 @@ async function seedCityVenues(citySlug: string, cityName: string, state: string,
 }
 
 async function main() {
-  console.log('🚀 Starting mass venue seeding...\n');
+  console.log('🚀 Starting mass venue seeding for all cities...\n');
 
-  // Seed Dallas
-  await seedCityVenues('dallas', 'Dallas', 'TX', 200);
+  // Fetch all active cities from database
+  const { data: cities, error } = await supabase
+    .from('cities')
+    .select('slug, name, state')
+    .eq('status', 'active')
+    .order('priority_tier', { ascending: true })
+    .order('population', { ascending: false });
 
-  // Seed Houston
-  await seedCityVenues('houston', 'Houston', 'TX', 200);
+  if (error || !cities) {
+    console.error('❌ Error fetching cities:', error);
+    process.exit(1);
+  }
+
+  console.log(`📊 Found ${cities.length} cities to seed\n`);
+
+  // Seed each city with 200 venues
+  for (const city of cities) {
+    await seedCityVenues(city.slug, city.name, city.state, 200);
+
+    // Delay between cities to avoid rate limits
+    await new Promise(resolve => setTimeout(resolve, 1000));
+  }
 
   console.log('\n\n🎉 Mass venue seeding complete!');
+  console.log(`✅ Seeded ${cities.length} cities with venues`);
   process.exit(0);
 }
 
