@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Simple "Verified Safe" Pin with Badge/Checkmark -->
+  <defs>
+    <linearGradient id="blueGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#3B82F6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2563EB;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Pin Shadow -->
+  <ellipse cx="256" cy="485" rx="50" ry="15" fill="#000000" opacity="0.2"/>
+
+  <!-- Pin Body -->
+  <path d="M 256 40
+           C 180 40 120 100 120 176
+           C 120 280 256 470 256 470
+           C 256 470 392 280 392 176
+           C 392 100 332 40 256 40 Z"
+        fill="url(#blueGradient)"
+        stroke="#1E40AF"
+        stroke-width="6"/>
+
+  <!-- Inner Circle Background -->
+  <circle cx="256" cy="176" r="85" fill="white"/>
+
+  <!-- Checkmark Badge -->
+  <circle cx="256" cy="176" r="65" fill="#10B981" opacity="0.15"/>
+  <path d="M 220 176
+           L 245 201
+           L 292 154"
+        fill="none"
+        stroke="#10B981"
+        stroke-width="20"
+        stroke-linecap="round"
+        stroke-linejoin="round"/>
+</svg>

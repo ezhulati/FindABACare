@@ -18,7 +18,15 @@ const {
     <meta charset="UTF-8" />
     <meta name="description" content={description} />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#3B82F6" />
+
     <title>{title}</title>
   </head>
   <body class="min-h-screen bg-white text-gray-900">
@@ -27,8 +35,9 @@ const {
         <div class="flex items-center justify-between h-16">
           <!-- Logo -->
           <div class="flex items-center">
-            <a href="/" class="text-xl font-bold text-gray-900 hover:text-gray-700 transition-colors">
-              findABA.care
+            <a href="/" class="flex items-center gap-2 text-xl font-bold text-gray-900 hover:text-gray-700 transition-colors group">
+              <img src="/logo-infinity-clean.svg" alt="findABA.care Logo" class="w-10 h-10 transition-transform group-hover:scale-110" />
+              <span>findABA.care</span>
             </a>
           </div>
 
