@@ -1,0 +1,256 @@
+---
+import Base from '../layouts/Base.astro';
+import { getServerClient, requireAuth } from '../lib/supabaseServer';
+
+// Require authentication
+const user = await requireAuth(Astro.request);
+
+const supabase = getServerClient(Astro.request);
+
+// Check if user already has a profile
+const { data: existingProfile } = await supabase
+  .from('profiles')
+  .select('*')
+  .eq('auth_user', user.id)
+  .single();
+
+// If profile exists, redirect to home
+if (existingProfile) {
+  return Astro.redirect('/');
+}
+
+// Get cities for dropdown
+const { data: cities } = await supabase
+  .from('cities')
+  .select('id, name, state')
+  .order('name');
+
+const title = 'Welcome to findABA.care';
+const description = 'Tell us a bit about your family to personalize your experience';
+---
+
+<Base title={title} description={description}>
+  <div class="min-h-[calc(100vh-4rem)] bg-gradient-to-b from-blue-50 to-white py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-2xl mx-auto">
+      <!-- Header -->
+      <div class="text-center mb-8">
+        <h1 class="text-4xl font-bold text-gray-900 mb-3">
+          Welcome to findABA.care! 👋
+        </h1>
+        <p class="text-lg text-gray-600">
+          Let's personalize your experience. This helps us show you the most relevant venues and events.
+        </p>
+        <p class="text-sm text-gray-500 mt-2">
+          Don't worry - you can update this anytime, and we never share your child's information.
+        </p>
+      </div>
+
+      <!-- Onboarding Form -->
+      <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-8">
+        <form id="onboarding-form" class="space-y-6">
+          <!-- Display Name -->
+          <div>
+            <label for="display_name" class="block text-sm font-medium text-gray-900 mb-2">
+              What should we call you? *
+            </label>
+            <input
+              type="text"
+              id="display_name"
+              name="display_name"
+              required
+              placeholder="First name or nickname"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <p class="mt-1 text-sm text-gray-500">Just your first name is fine!</p>
+          </div>
+
+          <!-- City Selection -->
+          <div>
+            <label for="city_id" class="block text-sm font-medium text-gray-900 mb-2">
+              Which city are you in? *
+            </label>
+            <select
+              id="city_id"
+              name="city_id"
+              required
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Select your city</option>
+              {cities?.map((city) => (
+                <option value={city.id}>{city.name}, {city.state}</option>
+              ))}
+            </select>
+          </div>
+
+          <!-- Child Age Band -->
+          <div>
+            <label for="child_age_band" class="block text-sm font-medium text-gray-900 mb-2">
+              Child's age range (optional)
+            </label>
+            <select
+              id="child_age_band"
+              name="child_age_band"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Prefer not to say</option>
+              <option value="2-4">2-4 years</option>
+              <option value="5-7">5-7 years</option>
+              <option value="8-10">8-10 years</option>
+              <option value="11-13">11-13 years</option>
+              <option value="14+">14+ years</option>
+            </select>
+            <p class="mt-1 text-sm text-gray-500">Helps us recommend age-appropriate venues</p>
+          </div>
+
+          <!-- Interests (Multi-select) -->
+          <div>
+            <label class="block text-sm font-medium text-gray-900 mb-3">
+              What does your child enjoy? (optional)
+            </label>
+            <div class="grid grid-cols-2 gap-3">
+              {['Animals', 'Art', 'Books', 'Building', 'Music', 'Nature', 'Science', 'Sports', 'Technology', 'Water play'].map((interest) => (
+                <label class="flex items-center p-3 border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="interests"
+                    value={interest.toLowerCase()}
+                    class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3"
+                  />
+                  <span class="text-sm text-gray-700">{interest}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <!-- Sensory Preferences -->
+          <div>
+            <label class="block text-sm font-medium text-gray-900 mb-3">
+              Sensory sensitivities (optional)
+            </label>
+            <div class="space-y-2">
+              <label class="flex items-center p-3 border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="hand_dryer"
+                  class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3"
+                />
+                <span class="text-sm text-gray-700">Sensitive to hand dryers</span>
+              </label>
+              <label class="flex items-center p-3 border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="loud_noise"
+                  class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3"
+                />
+                <span class="text-sm text-gray-700">Sensitive to loud noises</span>
+              </label>
+              <label class="flex items-center p-3 border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="bright_lights"
+                  class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3"
+                />
+                <span class="text-sm text-gray-700">Sensitive to bright/fluorescent lights</span>
+              </label>
+              <label class="flex items-center p-3 border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="crowds"
+                  class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3"
+                />
+                <span class="text-sm text-gray-700">Prefers smaller groups</span>
+              </label>
+            </div>
+            <p class="mt-2 text-sm text-gray-500">Helps us filter venues that might be a better fit</p>
+          </div>
+
+          <!-- Submit Button -->
+          <div class="pt-4">
+            <button
+              type="submit"
+              id="submit-btn"
+              class="w-full px-6 py-4 bg-blue-600 text-white text-lg font-semibold rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed"
+            >
+              Complete setup
+            </button>
+          </div>
+
+          <div id="error-message" class="hidden p-4 rounded-lg bg-red-50 border border-red-200 text-red-800"></div>
+        </form>
+      </div>
+
+      <!-- Privacy Note -->
+      <div class="mt-6 text-center">
+        <p class="text-sm text-gray-600">
+          🔒 Your information is private and secure. We never share your child's details with other users.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    import { createClient } from '@supabase/supabase-js';
+
+    const supabase = createClient(
+      import.meta.env.PUBLIC_SUPABASE_URL,
+      import.meta.env.PUBLIC_SUPABASE_ANON_KEY
+    );
+
+    const form = document.getElementById('onboarding-form') as HTMLFormElement;
+    const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
+    const errorDiv = document.getElementById('error-message') as HTMLDivElement;
+
+    form?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Setting up your profile...';
+      errorDiv.classList.add('hidden');
+
+      try {
+        // Get form data
+        const formData = new FormData(form);
+
+        // Collect interests
+        const interests = Array.from(formData.getAll('interests')) as string[];
+
+        // Build sensory flags
+        const sensoryFlags: Record<string, boolean> = {
+          hand_dryer: formData.has('hand_dryer'),
+          loud_noise: formData.has('loud_noise'),
+          bright_lights: formData.has('bright_lights'),
+          crowds: formData.has('crowds'),
+        };
+
+        // Get current user
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('Not authenticated');
+
+        // Create profile
+        const { error } = await supabase
+          .from('profiles')
+          .insert({
+            auth_user: user.id,
+            role: 'parent',
+            display_name: formData.get('display_name') as string,
+            city_id: formData.get('city_id') as string || null,
+            child_age_band: formData.get('child_age_band') as string || null,
+            interests: interests.length > 0 ? interests : null,
+            sensory_flags: sensoryFlags,
+            privacy: { show_to_event_peers_only: true }
+          });
+
+        if (error) throw error;
+
+        // Redirect to home
+        window.location.href = '/';
+      } catch (error: any) {
+        console.error('Error creating profile:', error);
+        errorDiv.textContent = error.message || 'Failed to create profile. Please try again.';
+        errorDiv.classList.remove('hidden');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Complete setup';
+      }
+    });
+  </script>
+</Base>

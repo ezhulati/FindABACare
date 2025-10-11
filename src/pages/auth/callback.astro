@@ -1,0 +1,30 @@
+---
+/**
+ * Auth callback handler for magic link sign-in
+ * Checks if user has a profile and redirects appropriately
+ */
+import { getAuthUser, getServerClient } from '../../lib/supabaseServer';
+
+const user = await getAuthUser(Astro.request);
+
+if (!user) {
+  // No user found, redirect to login
+  return Astro.redirect('/auth/login');
+}
+
+// Check if user has a profile
+const supabase = getServerClient(Astro.request);
+const { data: profile } = await supabase
+  .from('profiles')
+  .select('id')
+  .eq('auth_user', user.id)
+  .single();
+
+if (!profile) {
+  // New user - send to onboarding
+  return Astro.redirect('/onboarding');
+}
+
+// Existing user - send to home
+return Astro.redirect('/');
+---

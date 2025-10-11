@@ -1,6 +1,6 @@
 ---
 import Base from '../../layouts/Base.astro';
-import { getAuthUser } from '../../lib/supabaseServer';
+import { getAuthUser, getServerClient } from '../../lib/supabaseServer';
 
 // Get redirect URL from query params
 const url = new URL(Astro.request.url);
@@ -9,7 +9,20 @@ const redirect = url.searchParams.get('redirect') || '/';
 // Check if user is already logged in
 const user = await getAuthUser(Astro.request);
 if (user) {
-  // User is already logged in, redirect them
+  // Check if they have a profile
+  const supabase = getServerClient(Astro.request);
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('auth_user', user.id)
+    .single();
+
+  // If no profile, send to onboarding
+  if (!profile) {
+    return Astro.redirect('/onboarding');
+  }
+
+  // User is already logged in with profile, redirect them
   return Astro.redirect(redirect);
 }
 
@@ -106,7 +119,7 @@ const description = 'Sign in to leave reviews and access personalized features.'
         const { data, error } = await supabase.auth.signInWithOtp({
           email,
           options: {
-            emailRedirectTo: redirectUrl,
+            emailRedirectTo: `${window.location.origin}/auth/callback`,
           },
         });
 
