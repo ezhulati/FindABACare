@@ -1,0 +1,164 @@
+---
+import Base from '../layouts/Base.astro';
+import { createClient } from '@supabase/supabase-js';
+import AddressSearchIsland from '../components/AddressSearchIsland';
+
+// Google Maps API Key
+const GOOGLE_MAPS_API_KEY = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY || import.meta.env.GOOGLE_MAPS_API_KEY;
+
+// Initialize Supabase
+const supabase = createClient(
+  import.meta.env.PUBLIC_SUPABASE_URL!,
+  import.meta.env.PUBLIC_SUPABASE_ANON_KEY!
+);
+
+// Fetch all active cities with venue counts
+const { data: cities } = await supabase
+  .from('cities')
+  .select('id, name, slug, state, center_lat, center_lng, population, priority_tier')
+  .eq('status', 'active')
+  .order('priority_tier', { ascending: true })
+  .order('population', { ascending: false });
+
+// Get venue counts for each city
+const citiesWithCounts = await Promise.all(
+  (cities || []).map(async (city) => {
+    const { count } = await supabase
+      .from('venues')
+      .select('id', { count: 'exact', head: true })
+      .eq('city_id', city.id)
+      .eq('status', 'active');
+
+    return {
+      ...city,
+      venueCount: count || 0
+    };
+  })
+);
+
+// Group by state
+const citiesByState = citiesWithCounts.reduce((acc, city) => {
+  if (!acc[city.state]) {
+    acc[city.state] = [];
+  }
+  acc[city.state].push(city);
+  return acc;
+}, {} as Record<string, typeof citiesWithCounts>);
+
+// Sort states alphabetically
+const sortedStates = Object.keys(citiesByState).sort();
+
+const totalVenues = citiesWithCounts.reduce((sum, city) => sum + city.venueCount, 0);
+const totalCities = citiesWithCounts.length;
+
+const title = `${totalCities} Cities with Autism-Friendly Venues`;
+const description = `Browse ${totalVenues.toLocaleString()}+ autism-friendly venues across ${totalCities} major US cities. Find museums, parks, libraries, and more with sensory accommodations.`;
+---
+
+<Base title={title} description={description}>
+  <div class="min-h-screen bg-gray-50">
+    <!-- Header -->
+    <div class="bg-white border-b border-gray-200">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div class="text-center">
+          <h1 class="text-4xl font-bold text-gray-900 mb-4">
+            All Cities
+          </h1>
+          <p class="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
+            Discover {totalVenues.toLocaleString()}+ autism-friendly venues across {totalCities} major cities in the United States
+          </p>
+
+          <!-- Address Search -->
+          <div class="flex justify-center">
+            <AddressSearchIsland client:load apiKey={GOOGLE_MAPS_API_KEY} />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cities Grid -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      {sortedStates.map(state => (
+        <div class="mb-12">
+          <!-- State Header -->
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-2xl font-bold text-gray-900">{state}</h2>
+            <span class="text-sm text-gray-600">
+              {citiesByState[state].length} {citiesByState[state].length === 1 ? 'city' : 'cities'}
+            </span>
+          </div>
+
+          <!-- Cities Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {citiesByState[state].map(city => (
+              <a
+                href={`/${city.state.toLowerCase()}/${city.slug}`}
+                class="block bg-white rounded-lg border border-gray-200 p-6 hover:border-blue-500 hover:shadow-lg transition-all duration-200 group"
+              >
+                <div class="flex items-start justify-between">
+                  <div class="flex-1">
+                    <h3 class="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                      {city.name}
+                    </h3>
+                    <p class="text-sm text-gray-600 mt-1">
+                      {city.state}
+                    </p>
+                  </div>
+
+                  {city.priority_tier <= 2 && (
+                    <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-800">
+                      Featured
+                    </span>
+                  )}
+                </div>
+
+                <div class="mt-4 flex items-center gap-4 text-sm text-gray-600">
+                  <div class="flex items-center gap-1">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                    <span>{city.venueCount} venues</span>
+                  </div>
+
+                  {city.population && (
+                    <div class="flex items-center gap-1">
+                      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                      <span>{(city.population / 1000000).toFixed(1)}M people</span>
+                    </div>
+                  )}
+                </div>
+
+                <div class="mt-4 flex items-center text-sm text-blue-600 font-medium group-hover:text-blue-700">
+                  <span>Explore venues</span>
+                  <svg class="w-4 h-4 ml-1 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <!-- CTA Section -->
+    <div class="bg-blue-600 mt-16">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
+        <h2 class="text-3xl font-bold text-white mb-4">
+          Don't see your city?
+        </h2>
+        <p class="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
+          We're constantly adding new cities and venues. Check back soon or let us know which city you'd like to see next.
+        </p>
+        <a
+          href="mailto:hello@findaba.care?subject=Request a City"
+          class="inline-flex items-center px-6 py-3 border-2 border-white text-white font-medium rounded-lg hover:bg-white hover:text-blue-600 transition-all duration-200"
+        >
+          Request a City
+        </a>
+      </div>
+    </div>
+  </div>
+</Base>
