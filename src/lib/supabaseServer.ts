@@ -7,20 +7,27 @@ import { createServerClient } from '@supabase/ssr';
 import type { Database } from './database.types';
 
 export function getServerClient(request: Request) {
-  // Try multiple sources for env vars (Astro has issues with import.meta.env for non-PUBLIC vars)
+  // In Vercel serverless, use process.env directly
   const supabaseUrl =
-    import.meta.env.PUBLIC_SUPABASE_URL ||
-    import.meta.env.SUPABASE_URL ||
     process.env.PUBLIC_SUPABASE_URL ||
     process.env.SUPABASE_URL ||
+    import.meta.env.PUBLIC_SUPABASE_URL ||
     '';
 
   const supabaseAnonKey =
-    import.meta.env.PUBLIC_SUPABASE_ANON_KEY ||
-    import.meta.env.SUPABASE_ANON_KEY ||
     process.env.PUBLIC_SUPABASE_ANON_KEY ||
     process.env.SUPABASE_ANON_KEY ||
+    import.meta.env.PUBLIC_SUPABASE_ANON_KEY ||
     '';
+
+  // Add error logging for debugging
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.error('Supabase configuration missing:', {
+      hasUrl: !!supabaseUrl,
+      hasKey: !!supabaseAnonKey,
+      envKeys: Object.keys(process.env).filter(k => k.includes('SUPABASE'))
+    });
+  }
 
   const supabase = createServerClient<Database>(
     supabaseUrl,
