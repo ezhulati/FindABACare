@@ -1,0 +1,142 @@
+---
+import Base from '../../../layouts/Base.astro';
+import ReviewForm from '../../../components/ReviewForm';
+import { getServerClient, getAuthUser } from '../../../lib/supabaseServer';
+
+const { slug } = Astro.params;
+
+const supabase = getServerClient(Astro.request);
+
+// Check authentication
+const user = await getAuthUser(Astro.request);
+if (!user) {
+  return Astro.redirect(`/auth/login?redirect=/venue/${slug}/review`);
+}
+
+// Fetch venue
+const { data: venue } = await supabase
+  .from('venues')
+  .select(`
+    *,
+    city:cities(*)
+  `)
+  .eq('slug', slug)
+  .eq('status', 'active')
+  .single();
+
+if (!venue) {
+  return Astro.redirect('/');
+}
+
+// Check if user already reviewed this venue
+const { data: existingReview } = await supabase
+  .from('reviews')
+  .select('id')
+  .eq('venue_id', venue.id)
+  .eq('profile_id', user.id)
+  .single();
+
+const title = `Review ${venue.name} | findABA.care`;
+const description = `Share your experience at ${venue.name} to help other families`;
+---
+
+<Base title={title} description={description}>
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Breadcrumbs -->
+    <div class="flex items-center gap-2 text-sm text-gray-600 mb-6">
+      <a href="/" class="hover:text-gray-900">Home</a>
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+      </svg>
+      <a href={`/${venue.city?.state?.toLowerCase() || 'tx'}/${venue.city?.slug}`} class="hover:text-gray-900">{venue.city?.name}</a>
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+      </svg>
+      <a href={`/venue/${venue.slug}`} class="hover:text-gray-900">{venue.name}</a>
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+      </svg>
+      <span class="text-gray-900">Review</span>
+    </div>
+
+    <!-- Header -->
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">Review {venue.name}</h1>
+      <p class="text-gray-600">
+        Share your experience to help other families make informed decisions
+      </p>
+    </div>
+
+    <!-- Already Reviewed Notice -->
+    {existingReview && (
+      <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
+        <div class="flex items-start gap-3">
+          <svg class="w-6 h-6 text-blue-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+          </svg>
+          <div class="flex-1">
+            <h3 class="text-lg font-semibold text-blue-900 mb-1">You've already reviewed this venue</h3>
+            <p class="text-blue-800 mb-4">
+              You can only submit one review per venue. If you'd like to update your review, please contact us.
+            </p>
+            <a
+              href={`/venue/${venue.slug}`}
+              class="inline-block px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Back to venue
+            </a>
+          </div>
+        </div>
+      </div>
+    )}
+
+    <!-- Review Form -->
+    {!existingReview && (
+      <div class="bg-white rounded-lg border border-gray-200 p-6">
+        <div class="mb-6">
+          <h2 class="text-xl font-semibold text-gray-900 mb-2">Rate Your Experience</h2>
+          <p class="text-sm text-gray-600">
+            Your ratings help us understand what works for autistic individuals and their families.
+          </p>
+        </div>
+
+        <ReviewForm
+          client:load
+          venueId={venue.id}
+          venueName={venue.name}
+        />
+      </div>
+    )}
+
+    <!-- Info Box -->
+    <div class="mt-8 bg-gray-50 border border-gray-200 rounded-lg p-6">
+      <h3 class="text-lg font-semibold text-gray-900 mb-3">Review Guidelines</h3>
+      <ul class="space-y-2 text-sm text-gray-700">
+        <li class="flex items-start gap-2">
+          <svg class="w-5 h-5 text-green-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+          </svg>
+          <span>Be specific about your experience and what worked or didn't work</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <svg class="w-5 h-5 text-green-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+          </svg>
+          <span>Include helpful details like time of day, day of week, or specific accommodations</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <svg class="w-5 h-5 text-green-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+          </svg>
+          <span>Identify potential sensory triggers that others should know about</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <svg class="w-5 h-5 text-green-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+          </svg>
+          <span>All reviews are moderated to ensure quality and helpfulness</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+</Base>

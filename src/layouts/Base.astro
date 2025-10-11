@@ -1,4 +1,6 @@
 ---
+import AuthButton from '../components/AuthButton';
+
 interface Props {
   title?: string;
   description?: string;
@@ -43,9 +45,11 @@ const {
             </a>
           </nav>
 
-          <!-- Auth (placeholder for now) -->
+          <!-- Auth -->
           <div class="flex items-center space-x-4">
-            <div id="auth-container"></div>
+            <div id="auth-container">
+              <AuthButton client:load />
+            </div>
           </div>
 
           <!-- Mobile menu button -->

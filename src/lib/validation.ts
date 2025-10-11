@@ -7,10 +7,11 @@ export const RSVPCreate = z.object({
 export const ReviewCreate = z.object({
   venue_id: z.string().uuid(),
   predictability: z.number().min(1).max(5),
-  staff_helpfulness: z.number().min(1).max(5),
-  clarity_of_signage: z.number().min(1).max(5),
-  would_return: z.boolean(),
-  tips: z.string().max(1000).optional(),
+  sensory_level: z.number().min(1).max(5),
+  staff_knowledge: z.number().min(1).max(5),
+  content: z.string().max(1000).optional(),
+  best_time: z.string().max(200).optional(),
+  triggers: z.array(z.string()).optional(),
 });
 
 export const VenueImport = z.object({
