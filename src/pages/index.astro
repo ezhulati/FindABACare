@@ -11,18 +11,46 @@ const GOOGLE_MAPS_API_KEY = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY || import
 
 const cities = [
   {
-    name: 'Dallas',
-    slug: 'dallas',
-    state: 'TX',
-    image: STOCK_IMAGES.dallasOutdoor,
-    description: 'Discover autism-friendly venues and events in the Dallas-Fort Worth metroplex',
+    name: 'New York',
+    slug: 'new-york',
+    state: 'NY',
+    image: STOCK_IMAGES.cityKids,
+    description: 'Autism-friendly venues across NYC boroughs - from museums to parks',
+  },
+  {
+    name: 'Los Angeles',
+    slug: 'los-angeles',
+    state: 'CA',
+    image: STOCK_IMAGES.sensoryVenue,
+    description: 'Sensory-friendly places throughout LA and Orange County',
+  },
+  {
+    name: 'Chicago',
+    slug: 'chicago',
+    state: 'IL',
+    image: STOCK_IMAGES.group,
+    description: 'Find quiet hours and accommodations across Chicagoland',
   },
   {
     name: 'Houston',
     slug: 'houston',
     state: 'TX',
     image: STOCK_IMAGES.houstonOutdoor,
-    description: 'Find sensory-friendly places and meetups across Greater Houston',
+    description: 'Parent-verified venues across Greater Houston',
+  },
+  {
+    name: 'Phoenix',
+    slug: 'phoenix',
+    state: 'AZ',
+    image: STOCK_IMAGES.dallasOutdoor,
+    description: 'Autism-friendly activities in the Valley of the Sun',
+  },
+  {
+    name: 'Philadelphia',
+    slug: 'philadelphia',
+    state: 'PA',
+    image: STOCK_IMAGES.peacefulRoom,
+    description: 'Sensory-friendly spots in Philly and surrounding areas',
   },
 ];
 ---
@@ -121,7 +149,7 @@ const cities = [
         </p>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {cities.map((city) => (
           <a
             href={`/${city.state.toLowerCase()}/${city.slug}`}

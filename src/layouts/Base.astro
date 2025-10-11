@@ -1,5 +1,6 @@
 ---
 import AuthButton from '../components/AuthButton';
+import { createClient } from '@supabase/supabase-js';
 
 interface Props {
   title?: string;
@@ -20,6 +21,34 @@ const {
 const url = canonical || Astro.url.pathname;
 const fullUrl = `https://findaba.care${url}`;
 const fullOgImage = new URL(ogImage, Astro.url.origin).href;
+
+// Fetch cities dynamically for navigation
+const supabase = createClient(
+  import.meta.env.PUBLIC_SUPABASE_URL!,
+  import.meta.env.PUBLIC_SUPABASE_ANON_KEY!
+);
+
+const { data: cities } = await supabase
+  .from('cities')
+  .select('id, name, slug, state, priority_tier')
+  .eq('status', 'active')
+  .order('priority_tier', { ascending: true })
+  .order('population', { ascending: false });
+
+// Top 6 cities for header navigation
+const topCities = (cities || []).slice(0, 6);
+
+// Group all cities by state for footer
+const citiesByState = (cities || []).reduce((acc, city) => {
+  if (!acc[city.state]) {
+    acc[city.state] = [];
+  }
+  acc[city.state].push(city);
+  return acc;
+}, {} as Record<string, typeof cities>);
+
+// Sort states alphabetically
+const sortedStates = Object.keys(citiesByState).sort();
 ---
 
 <!doctype html>
@@ -57,6 +86,9 @@ const fullOgImage = new URL(ogImage, Astro.url.origin).href;
     <meta property="twitter:image" content={fullOgImage} />
     <meta property="twitter:image:alt" content={ogImageAlt} />
 
+    <!-- Google Maps API -->
+    <script src={`https://maps.googleapis.com/maps/api/js?key=${import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY || import.meta.env.GOOGLE_MAPS_API_KEY}&libraries=places`}></script>
+
     <title>{title}</title>
   </head>
   <body class="min-h-screen bg-white text-gray-900">
@@ -73,11 +105,11 @@ const fullOgImage = new URL(ogImage, Astro.url.origin).href;
 
           <!-- Navigation -->
           <nav class="hidden md:flex items-center space-x-8">
-            <a href="/tx/dallas" class="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors">
-              Dallas
+            <a href="/#cities" class="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors">
+              Browse Cities
             </a>
-            <a href="/tx/houston" class="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors">
-              Houston
+            <a href="/search" class="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors">
+              Search Venues
             </a>
             <a href="/about" class="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors">
               About
@@ -105,11 +137,11 @@ const fullOgImage = new URL(ogImage, Astro.url.origin).href;
       <!-- Mobile menu -->
       <div id="mobile-menu" class="hidden md:hidden border-t border-gray-200">
         <div class="px-4 pt-2 pb-3 space-y-1">
-          <a href="/tx/dallas" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
-            Dallas
+          <a href="/#cities" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
+            Browse Cities
           </a>
-          <a href="/tx/houston" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
-            Houston
+          <a href="/search" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
+            Search Venues
           </a>
           <a href="/about" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
             About
@@ -124,19 +156,33 @@ const fullOgImage = new URL(ogImage, Astro.url.origin).href;
 
     <footer class="border-t border-gray-200 bg-gray-50 mt-16">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <!-- Top Section -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
           <div>
             <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wider">About</h3>
             <p class="mt-4 text-sm text-gray-600">
-              findABA.care helps families find autism-friendly venues and events in their community.
+              findABA.care helps families find autism-friendly venues across 50+ major US cities.
             </p>
           </div>
 
           <div>
-            <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wider">Cities</h3>
+            <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wider">Top Cities</h3>
             <ul class="mt-4 space-y-2">
-              <li><a href="/tx/dallas" class="text-sm text-gray-600 hover:text-gray-900">Dallas, TX</a></li>
-              <li><a href="/tx/houston" class="text-sm text-gray-600 hover:text-gray-900">Houston, TX</a></li>
+              {topCities.slice(0, 6).map(city => (
+                <li>
+                  <a
+                    href={`/${city.state.toLowerCase()}/${city.slug}`}
+                    class="text-sm text-gray-600 hover:text-gray-900"
+                  >
+                    {city.name}, {city.state}
+                  </a>
+                </li>
+              ))}
+              <li>
+                <a href="/cities" class="text-sm text-blue-600 hover:text-blue-700 font-medium">
+                  View all cities →
+                </a>
+              </li>
             </ul>
           </div>
 
@@ -154,6 +200,40 @@ const fullOgImage = new URL(ogImage, Astro.url.origin).href;
             <p class="mt-4 text-sm text-gray-600">
               Email: <a href="mailto:hello@findaba.care" class="hover:text-gray-900">hello@findaba.care</a>
             </p>
+          </div>
+        </div>
+
+        <!-- Cities by State Section -->
+        <div class="border-t border-gray-200 pt-12">
+          <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-6">Browse by State</h3>
+          <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+            {sortedStates.map(state => (
+              <div>
+                <h4 class="text-xs font-semibold text-gray-900 uppercase tracking-wider mb-2">{state}</h4>
+                <ul class="space-y-1">
+                  {citiesByState[state].slice(0, 5).map(city => (
+                    <li>
+                      <a
+                        href={`/${city.state.toLowerCase()}/${city.slug}`}
+                        class="text-xs text-gray-600 hover:text-gray-900"
+                      >
+                        {city.name}
+                      </a>
+                    </li>
+                  ))}
+                  {citiesByState[state].length > 5 && (
+                    <li>
+                      <a
+                        href={`/${state.toLowerCase()}`}
+                        class="text-xs text-blue-600 hover:text-blue-700"
+                      >
+                        +{citiesByState[state].length - 5} more
+                      </a>
+                    </li>
+                  )}
+                </ul>
+              </div>
+            ))}
           </div>
         </div>
 
