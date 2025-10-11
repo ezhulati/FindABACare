@@ -76,6 +76,20 @@ interface GooglePlace {
   place_id: string;
   rating?: number;
   types: string[];
+  user_ratings_total?: number;
+}
+
+interface PlaceDetails {
+  formatted_phone_number?: string;
+  international_phone_number?: string;
+  website?: string;
+  opening_hours?: {
+    periods?: any[];
+    weekday_text?: string[];
+  };
+  price_level?: number;
+  rating?: number;
+  user_ratings_total?: number;
 }
 
 async function searchPlaces(query: string, cityName: string, state: string, pageToken?: string): Promise<{ places: GooglePlace[], nextPageToken?: string }> {
@@ -96,6 +110,22 @@ async function searchPlaces(query: string, cityName: string, state: string, page
   }
 
   return { places: [] };
+}
+
+async function getPlaceDetails(placeId: string): Promise<PlaceDetails | null> {
+  try {
+    const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=formatted_phone_number,international_phone_number,website,opening_hours,price_level,rating,user_ratings_total&key=${googleApiKey}`;
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (data.status === 'OK' && data.result) {
+      return data.result;
+    }
+  } catch (error) {
+    console.error(`Error getting details for ${placeId}:`, error);
+  }
+
+  return null;
 }
 
 async function getPlacePhotos(placeId: string): Promise<string[]> {
@@ -189,6 +219,10 @@ async function seedCityVenues(citySlug: string, cityName: string, state: string,
 
         console.log(`   ✓ Found: ${place.name}`);
 
+        // Get place details (phone, website, hours, price)
+        console.log(`     📋 Fetching details...`);
+        const details = await getPlaceDetails(place.place_id);
+
         // Get photos
         const photoNames = await getPlacePhotos(place.place_id);
         const photoKeys: string[] = [];
@@ -219,6 +253,19 @@ async function seedCityVenues(citySlug: string, cityName: string, state: string,
           status: 'active',
           meter: category.meter,
           photo_keys: photoKeys.length > 0 ? photoKeys : null,
+          google_place_id: place.place_id,
+          data_source: 'google_places',
+          verification_status: 'unverified',
+          google_rating: details?.rating || place.rating || null,
+          google_review_count: details?.user_ratings_total || place.user_ratings_total || null,
+          phone: details?.international_phone_number || null,
+          formatted_phone_number: details?.formatted_phone_number || null,
+          website: details?.website || null,
+          price_level: details?.price_level ?? null,
+          hours: details?.opening_hours ? {
+            periods: details.opening_hours.periods || [],
+            weekday_text: details.opening_hours.weekday_text || []
+          } : null,
         };
 
         // Insert immediately to save progress
