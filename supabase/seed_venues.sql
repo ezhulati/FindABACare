@@ -7,9 +7,9 @@ DECLARE
   dallas_id uuid;
   houston_id uuid;
 BEGIN
-  -- Get city IDs
-  SELECT id INTO dallas_id FROM public.cities WHERE slug = 'dallas';
-  SELECT id INTO houston_id FROM public.cities WHERE slug = 'houston';
+  -- Get city IDs (with state for specificity)
+  SELECT id INTO dallas_id FROM public.cities WHERE slug = 'dallas' AND state = 'TX';
+  SELECT id INTO houston_id FROM public.cities WHERE slug = 'houston' AND state = 'TX';
 
   -- Dallas Venues
   INSERT INTO public.venues (

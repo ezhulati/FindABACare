@@ -104,7 +104,7 @@ const cities = [
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
         {cities.map((city) => (
           <a
-            href={`/${city.slug}`}
+            href={`/${city.state.toLowerCase()}/${city.slug}`}
             class="group relative bg-white border border-gray-200 rounded-xl overflow-hidden hover:border-gray-300 hover:shadow-xl transition-all duration-200"
           >
             <div class="aspect-video bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center">

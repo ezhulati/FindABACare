@@ -1,0 +1,201 @@
+---
+import Base from '../../layouts/Base.astro';
+import VenueCard from '../../components/VenueCard.astro';
+import VenueFiltersIsland from '../../components/VenueFiltersIsland';
+import MapIsland from '../../components/MapIsland';
+import { getServerClient } from '../../lib/supabaseServer';
+
+const { state, city } = Astro.params;
+
+// Validate state
+const validStates = ['tx', 'ca', 'ny', 'fl'];
+if (!validStates.includes(state?.toLowerCase() || '')) {
+  return Astro.redirect('/');
+}
+
+const stateUpper = state!.toUpperCase();
+
+// State names map
+const stateNames: Record<string, string> = {
+  'TX': 'Texas',
+  'CA': 'California',
+  'NY': 'New York',
+  'FL': 'Florida'
+};
+
+const stateName = stateNames[stateUpper];
+
+// Get Supabase client
+const supabase = getServerClient(Astro.request);
+
+// Fetch city data
+const { data: cityData } = await supabase
+  .from('cities')
+  .select('*')
+  .eq('slug', city)
+  .eq('state', stateUpper)
+  .eq('status', 'active')
+  .single();
+
+if (!cityData) {
+  return Astro.redirect(`/${state}`);
+}
+
+// Fetch venues for this city
+const { data: venues = [] } = await supabase
+  .from('venues')
+  .select('*')
+  .eq('city_id', cityData.id)
+  .eq('status', 'active')
+  .order('name');
+
+// Calculate map center
+const validVenues = venues.filter(v => v.lat && v.lng);
+let mapCenter: [number, number] = cityData.center_lat && cityData.center_lng
+  ? [cityData.center_lng, cityData.center_lat]
+  : [-96.7970, 32.7767]; // Dallas fallback
+
+const title = `${cityData.name}, ${stateUpper} Autism-Friendly Venues | findABA.care`;
+const description = `Find sensory-friendly venues, quiet hours, and micro-events in ${cityData.name}, ${stateName}. ${venues.length} parent-verified places that work for your child.`;
+---
+
+<Base title={title} description={description}>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+      <div class="flex items-center gap-2 text-sm text-gray-600 mb-3">
+        <a href="/" class="hover:text-gray-900">Home</a>
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+        <a href={`/${state}`} class="hover:text-gray-900">{stateName}</a>
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+        <span class="text-gray-900">{cityData.name}</span>
+      </div>
+      <h1 class="text-4xl font-bold text-gray-900 mb-3">
+        {cityData.name} Venues
+      </h1>
+      <p class="text-lg text-gray-600">
+        Explore {venues.length} parent-verified autism-friendly {venues.length === 1 ? 'venue' : 'venues'}
+      </p>
+    </div>
+
+    <!-- Quick Links -->
+    <div class="flex gap-4 mb-8 overflow-x-auto pb-2">
+      <a
+        href={`/${state}/${city}/events`}
+        class="px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:border-gray-300 hover:bg-gray-50 whitespace-nowrap transition-colors"
+      >
+        View Events
+      </a>
+      <a
+        href={`/${state}/${city}/calm-windows`}
+        class="px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:border-gray-300 hover:bg-gray-50 whitespace-nowrap transition-colors"
+      >
+        Calm Windows
+      </a>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+      <!-- Filters Sidebar -->
+      <div class="lg:col-span-1">
+        <div class="lg:sticky lg:top-20">
+          <VenueFiltersIsland
+            client:load
+            onFilterChange={(filters) => {
+              // This will be handled by JavaScript on the client
+            }}
+          />
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="lg:col-span-3 space-y-6">
+        <!-- Map -->
+        <div class="bg-white rounded-lg border border-gray-200 p-4">
+          <h2 class="text-lg font-semibold text-gray-900 mb-4">Map View</h2>
+          <MapIsland
+            client:load
+            venues={venues.map(v => ({
+              id: v.id,
+              name: v.name,
+              slug: v.slug,
+              lat: v.lat,
+              lng: v.lng,
+              type: v.type,
+              meter: v.meter
+            }))}
+            initialCenter={mapCenter}
+            initialZoom={11}
+          />
+        </div>
+
+        <!-- Venues List -->
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-semibold text-gray-900">
+              All Venues ({venues.length})
+            </h2>
+            <select
+              class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              id="sort-select"
+            >
+              <option value="name">Sort by name</option>
+              <option value="recent">Recently verified</option>
+              <option value="meter">Go Now meter</option>
+            </select>
+          </div>
+
+          {venues.length === 0 ? (
+            <div class="text-center py-12 bg-gray-50 rounded-lg">
+              <svg class="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
+              <p class="text-gray-600">No venues found. Check back soon!</p>
+            </div>
+          ) : (
+            <div class="grid grid-cols-1 gap-4" id="venues-grid">
+              {venues.map((venue) => (
+                <VenueCard venue={venue} />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Client-side filtering
+    let allVenues: any[] = [];
+    let currentFilters: Record<string, any> = {};
+    let currentSort = 'name';
+
+    // Store initial venues
+    document.addEventListener('DOMContentLoaded', () => {
+      const venuesGrid = document.getElementById('venues-grid');
+      if (venuesGrid) {
+        allVenues = Array.from(venuesGrid.children).map((el) => ({
+          element: el,
+          data: JSON.parse(el.getAttribute('data-venue') || '{}')
+        }));
+      }
+
+      // Handle sort change
+      const sortSelect = document.getElementById('sort-select') as HTMLSelectElement;
+      sortSelect?.addEventListener('change', (e) => {
+        currentSort = (e.target as HTMLSelectElement).value;
+        applyFiltersAndSort();
+      });
+    });
+
+    function applyFiltersAndSort() {
+      // This will be connected to the VenueFiltersIsland component
+      // For now, just a placeholder
+      console.log('Applying filters:', currentFilters);
+    }
+  </script>
+</Base>
