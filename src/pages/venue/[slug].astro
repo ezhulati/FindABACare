@@ -1,5 +1,6 @@
 ---
 import Base from '../../layouts/Base.astro';
+import SEO from '../../components/SEO.astro';
 import MapIsland from '../../components/MapIsland';
 import { getServerClient } from '../../lib/supabaseServer';
 import { goNow } from '../../lib/goNow';
@@ -48,11 +49,66 @@ const meterColors = {
 };
 const meterClass = meterColors[meter as keyof typeof meterColors] || meterColors.Moderate;
 
-const title = `${venue.name} | findABA.care`;
-const description = `${venue.name} - Autism-friendly venue in ${venue.city?.name}. See sensory hours, amenities, and parent reviews.`;
+const title = `${venue.name} - Autism-Friendly in ${venue.city?.name}`;
+const description = `${venue.name} - Autism-friendly venue in ${venue.city?.name}. ${venue.description?.substring(0, 100) || 'See sensory hours, amenities, and parent reviews.'}`;
+
+// Build JSON-LD Place schema
+const placeSchema = {
+  "@context": "https://schema.org",
+  "@type": "Place",
+  "name": venue.name,
+  "description": venue.description || description,
+  "address": venue.address ? {
+    "@type": "PostalAddress",
+    "streetAddress": venue.address,
+    "addressLocality": venue.city?.name,
+    "addressRegion": venue.city?.state || "TX",
+    "addressCountry": "US"
+  } : undefined,
+  "geo": venue.lat && venue.lng ? {
+    "@type": "GeoCoordinates",
+    "latitude": venue.lat,
+    "longitude": venue.lng
+  } : undefined,
+  "amenityFeature": venue.amenities ? Object.keys(venue.amenities)
+    .filter(key => venue.amenities[key] === true)
+    .map(key => ({
+      "@type": "LocationFeatureSpecification",
+      "name": key.replace(/_/g, ' '),
+      "value": true
+    })) : undefined,
+  "aggregateRating": avgRatings ? {
+    "@type": "AggregateRating",
+    "ratingValue": ((parseFloat(avgRatings.predictability) + parseFloat(avgRatings.sensoryLevel) + parseFloat(avgRatings.staffKnowledge)) / 3).toFixed(1),
+    "bestRating": "5",
+    "worstRating": "1",
+    "ratingCount": reviews.length
+  } : undefined,
+  "review": reviews.slice(0, 3).map(review => ({
+    "@type": "Review",
+    "author": {
+      "@type": "Person",
+      "name": review.profile?.display_name || "Anonymous Parent"
+    },
+    "reviewBody": review.content || "",
+    "datePublished": review.created_at,
+    "reviewRating": {
+      "@type": "Rating",
+      "ratingValue": ((review.predictability + review.sensory_level + review.staff_knowledge) / 3).toFixed(1),
+      "bestRating": "5",
+      "worstRating": "1"
+    }
+  }))
+};
 ---
 
 <Base title={title} description={description}>
+  <SEO
+    title={title}
+    description={description}
+    type="place"
+    schema={placeSchema}
+  />
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <!-- Breadcrumbs -->
     <div class="flex items-center gap-2 text-sm text-gray-600 mb-6">

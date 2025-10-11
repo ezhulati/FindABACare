@@ -1,0 +1,13 @@
+# findABA.care - Robots.txt
+# Allow search engines to crawl and index public content
+
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+
+# Sitemap
+Sitemap: https://findabacare.com/sitemap.xml
+
+# Crawl delay (be nice to our servers)
+Crawl-delay: 1

@@ -10,7 +10,52 @@ export interface EmailOptions {
   from?: string;
 }
 
-export async function sendEmail(options: EmailOptions): Promise<boolean> {
+export interface EmailTemplateOptions {
+  to: string;
+  template: 'rsvp_confirmation' | 'rsvp_reminder' | 'review_request';
+  data: any;
+}
+
+export async function sendEmail(options: EmailOptions | EmailTemplateOptions): Promise<boolean> {
+  // Handle template-based emails
+  if ('template' in options) {
+    return sendTemplateEmail(options);
+  }
+
+  // Handle direct HTML emails
+  return sendDirectEmail(options);
+}
+
+async function sendTemplateEmail(options: EmailTemplateOptions): Promise<boolean> {
+  let subject: string;
+  let html: string;
+
+  switch (options.template) {
+    case 'rsvp_confirmation':
+      subject = `You're all set! ${options.data.eventTitle}`;
+      html = rsvpConfirmationEmail(options.data);
+      break;
+    case 'rsvp_reminder':
+      subject = `Reminder: ${options.data.eventTitle} coming up!`;
+      html = rsvpReminderEmail(options.data);
+      break;
+    case 'review_request':
+      subject = 'How was your visit?';
+      html = reviewRequestEmail(options.data);
+      break;
+    default:
+      console.error('Unknown email template:', options.template);
+      return false;
+  }
+
+  return sendDirectEmail({
+    to: options.to,
+    subject,
+    html,
+  });
+}
+
+async function sendDirectEmail(options: EmailOptions): Promise<boolean> {
   const apiKey = import.meta.env.RESEND_API_KEY || process.env.RESEND_API_KEY;
 
   if (!apiKey) {

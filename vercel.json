@@ -1,0 +1,39 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/refresh-go-now",
+      "schedule": "*/15 * * * *"
+    },
+    {
+      "path": "/api/cron/send-rsvp-reminders",
+      "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/cron/send-review-prompts",
+      "schedule": "30 * * * *"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "geolocation=(self)"
+        }
+      ]
+    }
+  ]
+}

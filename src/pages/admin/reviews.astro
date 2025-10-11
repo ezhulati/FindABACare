@@ -1,0 +1,256 @@
+---
+/**
+ * Admin Review Moderation Page
+ * Approve or reject pending reviews
+ */
+
+import { getServerClient } from '../../lib/supabaseServer';
+
+const supabase = getServerClient(Astro.request);
+
+// Get all pending reviews
+const { data: pendingReviews } = await supabase
+  .from('reviews')
+  .select('*, venue:venues(name, slug, city:cities(name)), profile:profiles(display_name, email)')
+  .eq('status', 'pending')
+  .order('created_at', { ascending: false });
+
+// Get recently moderated reviews for reference
+const { data: recentlyModerated } = await supabase
+  .from('reviews')
+  .select('*, venue:venues(name, slug), profile:profiles(display_name)')
+  .in('status', ['published', 'rejected'])
+  .order('updated_at', { ascending: false })
+  .limit(20);
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Review Moderation - Admin - findABA.care</title>
+  <meta name="robots" content="noindex, nofollow" />
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900">Review Moderation</h1>
+          <p class="mt-2 text-sm text-gray-600">
+            Approve or reject community reviews • {pendingReviews?.length || 0} pending
+          </p>
+        </div>
+        <a href="/admin" class="text-sm font-medium text-blue-600 hover:text-blue-500">
+          ← Back to Dashboard
+        </a>
+      </div>
+    </div>
+
+    <!-- Pending Reviews -->
+    <div class="bg-white rounded-lg shadow mb-8">
+      <div class="p-6 border-b border-gray-200">
+        <h2 class="text-lg font-semibold text-gray-900">Pending Reviews</h2>
+      </div>
+      <div class="divide-y divide-gray-200">
+        {pendingReviews && pendingReviews.length > 0 ? (
+          pendingReviews.map((review) => (
+            <div class="p-6" id={`review-${review.id}`}>
+              <div class="flex items-start justify-between">
+                <div class="flex-1">
+                  <!-- Venue Info -->
+                  <div class="mb-4">
+                    <a
+                      href={`/venue/${review.venue?.slug}`}
+                      class="text-lg font-semibold text-blue-600 hover:text-blue-700"
+                      target="_blank"
+                    >
+                      {review.venue?.name}
+                    </a>
+                    <p class="text-sm text-gray-500">{review.venue?.city?.name}</p>
+                  </div>
+
+                  <!-- Reviewer Info -->
+                  <div class="mb-3 text-sm text-gray-600">
+                    <span class="font-medium">{review.profile?.display_name || 'Anonymous'}</span>
+                    {review.profile?.email && (
+                      <span class="text-gray-400"> • {review.profile.email}</span>
+                    )}
+                    <span class="text-gray-400"> • {new Date(review.created_at).toLocaleString()}</span>
+                  </div>
+
+                  <!-- Ratings -->
+                  <div class="grid grid-cols-3 gap-4 mb-4">
+                    <div class="bg-gray-50 rounded-lg p-3">
+                      <div class="text-xs text-gray-500 uppercase">Predictability</div>
+                      <div class="text-2xl font-bold text-gray-900">
+                        {review.predictability}/5
+                      </div>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-3">
+                      <div class="text-xs text-gray-500 uppercase">Sensory Level</div>
+                      <div class="text-2xl font-bold text-gray-900">
+                        {review.sensory_level}/5
+                      </div>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-3">
+                      <div class="text-xs text-gray-500 uppercase">Staff Knowledge</div>
+                      <div class="text-2xl font-bold text-gray-900">
+                        {review.staff_knowledge}/5
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Review Content -->
+                  {review.content && (
+                    <div class="mb-3">
+                      <p class="text-gray-700">{review.content}</p>
+                    </div>
+                  )}
+
+                  <!-- Best Time -->
+                  {review.best_time && (
+                    <div class="mb-3">
+                      <span class="text-sm font-medium text-gray-700">Best time to visit: </span>
+                      <span class="text-sm text-gray-600">{review.best_time}</span>
+                    </div>
+                  )}
+
+                  <!-- Triggers -->
+                  {review.triggers && review.triggers.length > 0 && (
+                    <div class="mb-3">
+                      <span class="text-sm font-medium text-gray-700">Triggers noted: </span>
+                      <div class="mt-1 flex flex-wrap gap-2">
+                        {review.triggers.map((trigger: string) => (
+                          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                            {trigger}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="ml-6 flex flex-col gap-2">
+                  <button
+                    onclick={`approveReview('${review.id}')`}
+                    class="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+                  >
+                    Approve
+                  </button>
+                  <button
+                    onclick={`rejectReview('${review.id}')`}
+                    class="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+                  >
+                    Reject
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))
+        ) : (
+          <div class="p-12 text-center text-gray-500">
+            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p class="mt-2 text-lg font-medium">All caught up!</p>
+            <p class="mt-1">No pending reviews to moderate</p>
+          </div>
+        )}
+      </div>
+    </div>
+
+    <!-- Recently Moderated -->
+    {recentlyModerated && recentlyModerated.length > 0 && (
+      <div class="bg-white rounded-lg shadow">
+        <div class="p-6 border-b border-gray-200">
+          <h2 class="text-lg font-semibold text-gray-900">Recently Moderated</h2>
+        </div>
+        <div class="divide-y divide-gray-200">
+          {recentlyModerated.map((review) => (
+            <div class="p-4 hover:bg-gray-50">
+              <div class="flex items-center justify-between">
+                <div class="flex-1">
+                  <p class="text-sm font-medium text-gray-900">{review.venue?.name}</p>
+                  <p class="text-xs text-gray-500 mt-1">
+                    By {review.profile?.display_name || 'Anonymous'} •
+                    {new Date(review.updated_at).toLocaleDateString()}
+                  </p>
+                </div>
+                <div class="ml-4">
+                  <span class={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    review.status === 'published'
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-red-100 text-red-800'
+                  }`}>
+                    {review.status === 'published' ? 'Approved' : 'Rejected'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )}
+  </div>
+
+  <script is:inline>
+    async function approveReview(reviewId) {
+      if (!confirm('Approve this review and publish it?')) return;
+
+      try {
+        const response = await fetch(`/api/admin/reviews/${reviewId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'published' })
+        });
+
+        if (response.ok) {
+          document.getElementById(`review-${reviewId}`)?.remove();
+          alert('Review approved successfully!');
+
+          // Reload if no more pending reviews
+          const remaining = document.querySelectorAll('[id^="review-"]').length;
+          if (remaining === 0) {
+            window.location.reload();
+          }
+        } else {
+          alert('Error approving review');
+        }
+      } catch (error) {
+        alert('Error: ' + error.message);
+      }
+    }
+
+    async function rejectReview(reviewId) {
+      if (!confirm('Reject this review? This action cannot be undone.')) return;
+
+      try {
+        const response = await fetch(`/api/admin/reviews/${reviewId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'rejected' })
+        });
+
+        if (response.ok) {
+          document.getElementById(`review-${reviewId}`)?.remove();
+          alert('Review rejected');
+
+          // Reload if no more pending reviews
+          const remaining = document.querySelectorAll('[id^="review-"]').length;
+          if (remaining === 0) {
+            window.location.reload();
+          }
+        } else {
+          alert('Error rejecting review');
+        }
+      } catch (error) {
+        alert('Error: ' + error.message);
+      }
+    }
+  </script>
+</body>
+</html>

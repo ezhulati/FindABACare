@@ -1,0 +1,303 @@
+---
+/**
+ * Admin Dashboard
+ * Protected by middleware - only accessible to users with admin role
+ */
+
+import { getServerClient } from '../../lib/supabaseServer';
+
+const supabase = getServerClient(Astro.request);
+
+// Get pending reviews
+const { data: pendingReviews, count: reviewCount } = await supabase
+  .from('reviews')
+  .select('*, venue:venues(name, slug), profile:profiles(display_name)', { count: 'exact' })
+  .eq('status', 'pending')
+  .order('created_at', { ascending: false })
+  .limit(10);
+
+// Get pending verifications
+const { data: pendingVerifications, count: verificationCount } = await supabase
+  .from('verifications')
+  .select('*, venue:venues(name, slug)', { count: 'exact' })
+  .eq('status', 'open')
+  .order('created_at', { ascending: false })
+  .limit(10);
+
+// Get incidents that need attention
+const { data: openIncidents, count: incidentCount } = await supabase
+  .from('incidents')
+  .select('*, venue:venues(name, slug), profile:profiles(display_name)', { count: 'exact' })
+  .in('status', ['open', 'investigating'])
+  .order('created_at', { ascending: false })
+  .limit(10);
+
+// Get venues needing verification (last verified > 30 days ago or never)
+const thirtyDaysAgo = new Date();
+thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+const { data: staleVenues, count: staleVenueCount } = await supabase
+  .from('venues')
+  .select('*, city:cities(name)', { count: 'exact' })
+  .eq('status', 'active')
+  .or(`last_verified.is.null,last_verified.lt.${thirtyDaysAgo.toISOString()}`)
+  .order('last_verified', { ascending: true, nullsFirst: true })
+  .limit(10);
+
+// Get stats
+const { count: totalVenues } = await supabase
+  .from('venues')
+  .select('*', { count: 'exact', head: true })
+  .eq('status', 'active');
+
+const { count: totalEvents } = await supabase
+  .from('events')
+  .select('*', { count: 'exact', head: true })
+  .eq('status', 'published');
+
+const { count: totalUsers } = await supabase
+  .from('profiles')
+  .select('*', { count: 'exact', head: true });
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard - findABA.care</title>
+  <meta name="robots" content="noindex, nofollow" />
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+      <p class="mt-2 text-sm text-gray-600">Manage content, verify venues, and moderate community submissions</p>
+    </div>
+
+    <!-- Stats Overview -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div class="bg-white rounded-lg shadow p-6">
+        <div class="text-sm font-medium text-gray-500">Total Venues</div>
+        <div class="mt-2 text-3xl font-bold text-gray-900">{totalVenues || 0}</div>
+      </div>
+      <div class="bg-white rounded-lg shadow p-6">
+        <div class="text-sm font-medium text-gray-500">Published Events</div>
+        <div class="mt-2 text-3xl font-bold text-gray-900">{totalEvents || 0}</div>
+      </div>
+      <div class="bg-white rounded-lg shadow p-6">
+        <div class="text-sm font-medium text-gray-500">Total Users</div>
+        <div class="mt-2 text-3xl font-bold text-gray-900">{totalUsers || 0}</div>
+      </div>
+      <div class="bg-white rounded-lg shadow p-6">
+        <div class="text-sm font-medium text-gray-500">Pending Tasks</div>
+        <div class="mt-2 text-3xl font-bold text-red-600">
+          {(reviewCount || 0) + (verificationCount || 0) + (incidentCount || 0)}
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Sections -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Pending Reviews -->
+      <div class="bg-white rounded-lg shadow">
+        <div class="p-6 border-b border-gray-200">
+          <div class="flex items-center justify-between">
+            <h2 class="text-lg font-semibold text-gray-900">
+              Pending Reviews
+              {reviewCount && reviewCount > 0 && (
+                <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                  {reviewCount}
+                </span>
+              )}
+            </h2>
+            <a href="/admin/reviews" class="text-sm font-medium text-blue-600 hover:text-blue-500">
+              View all →
+            </a>
+          </div>
+        </div>
+        <div class="divide-y divide-gray-200">
+          {pendingReviews && pendingReviews.length > 0 ? (
+            pendingReviews.slice(0, 5).map((review) => (
+              <div class="p-4 hover:bg-gray-50">
+                <div class="flex items-start justify-between">
+                  <div class="flex-1">
+                    <p class="text-sm font-medium text-gray-900">{review.venue?.name}</p>
+                    <p class="mt-1 text-sm text-gray-500 line-clamp-2">{review.content}</p>
+                    <p class="mt-1 text-xs text-gray-400">
+                      By {review.profile?.display_name || 'Anonymous'} • {new Date(review.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div class="ml-4 flex-shrink-0 flex gap-2">
+                    <button class="text-green-600 hover:text-green-700 text-sm font-medium">Approve</button>
+                    <button class="text-red-600 hover:text-red-700 text-sm font-medium">Reject</button>
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div class="p-8 text-center text-gray-500">
+              <p>No pending reviews</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <!-- Verification Queue -->
+      <div class="bg-white rounded-lg shadow">
+        <div class="p-6 border-b border-gray-200">
+          <div class="flex items-center justify-between">
+            <h2 class="text-lg font-semibold text-gray-900">
+              Verification Queue
+              {verificationCount && verificationCount > 0 && (
+                <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  {verificationCount}
+                </span>
+              )}
+            </h2>
+            <a href="/admin/verifications" class="text-sm font-medium text-blue-600 hover:text-blue-500">
+              View all →
+            </a>
+          </div>
+        </div>
+        <div class="divide-y divide-gray-200">
+          {pendingVerifications && pendingVerifications.length > 0 ? (
+            pendingVerifications.slice(0, 5).map((verification) => (
+              <div class="p-4 hover:bg-gray-50">
+                <div class="flex items-start justify-between">
+                  <div class="flex-1">
+                    <p class="text-sm font-medium text-gray-900">{verification.venue?.name}</p>
+                    <p class="mt-1 text-xs text-gray-400">
+                      Created {new Date(verification.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div class="ml-4 flex-shrink-0">
+                    <button class="text-blue-600 hover:text-blue-700 text-sm font-medium">Verify</button>
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div class="p-8 text-center text-gray-500">
+              <p>No pending verifications</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <!-- Stale Venues -->
+      <div class="bg-white rounded-lg shadow">
+        <div class="p-6 border-b border-gray-200">
+          <div class="flex items-center justify-between">
+            <h2 class="text-lg font-semibold text-gray-900">
+              Venues Need Verification
+              {staleVenueCount && staleVenueCount > 0 && (
+                <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                  {staleVenueCount}
+                </span>
+              )}
+            </h2>
+            <a href="/admin/venues" class="text-sm font-medium text-blue-600 hover:text-blue-500">
+              View all →
+            </a>
+          </div>
+        </div>
+        <div class="divide-y divide-gray-200">
+          {staleVenues && staleVenues.length > 0 ? (
+            staleVenues.slice(0, 5).map((venue) => (
+              <div class="p-4 hover:bg-gray-50">
+                <div class="flex items-start justify-between">
+                  <div class="flex-1">
+                    <p class="text-sm font-medium text-gray-900">{venue.name}</p>
+                    <p class="mt-1 text-xs text-gray-400">
+                      {venue.city?.name} • Last verified: {venue.last_verified ? new Date(venue.last_verified).toLocaleDateString() : 'Never'}
+                    </p>
+                  </div>
+                  <div class="ml-4 flex-shrink-0">
+                    <a href={`/venue/${venue.slug}`} class="text-blue-600 hover:text-blue-700 text-sm font-medium">
+                      View →
+                    </a>
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div class="p-8 text-center text-gray-500">
+              <p>All venues up to date!</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <!-- Open Incidents -->
+      <div class="bg-white rounded-lg shadow">
+        <div class="p-6 border-b border-gray-200">
+          <div class="flex items-center justify-between">
+            <h2 class="text-lg font-semibold text-gray-900">
+              Open Incidents
+              {incidentCount && incidentCount > 0 && (
+                <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                  {incidentCount}
+                </span>
+              )}
+            </h2>
+            <a href="/admin/incidents" class="text-sm font-medium text-blue-600 hover:text-blue-500">
+              View all →
+            </a>
+          </div>
+        </div>
+        <div class="divide-y divide-gray-200">
+          {openIncidents && openIncidents.length > 0 ? (
+            openIncidents.slice(0, 5).map((incident) => (
+              <div class="p-4 hover:bg-gray-50">
+                <div class="flex items-start justify-between">
+                  <div class="flex-1">
+                    <div class="flex items-center gap-2">
+                      <span class={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                        incident.severity === 'high' ? 'bg-red-100 text-red-800' :
+                        incident.severity === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {incident.severity}
+                      </span>
+                      <p class="text-sm font-medium text-gray-900">{incident.venue?.name}</p>
+                    </div>
+                    <p class="mt-1 text-sm text-gray-500 line-clamp-2">{incident.description}</p>
+                    <p class="mt-1 text-xs text-gray-400">
+                      {new Date(incident.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div class="ml-4 flex-shrink-0">
+                    <button class="text-blue-600 hover:text-blue-700 text-sm font-medium">Review</button>
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div class="p-8 text-center text-gray-500">
+              <p>No open incidents</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+      <a href="/admin/venues" class="block p-6 bg-white rounded-lg shadow hover:shadow-md transition">
+        <h3 class="text-lg font-semibold text-gray-900">Manage Venues</h3>
+        <p class="mt-2 text-sm text-gray-600">Add, edit, and verify venue information</p>
+      </a>
+      <a href="/admin/reviews" class="block p-6 bg-white rounded-lg shadow hover:shadow-md transition">
+        <h3 class="text-lg font-semibold text-gray-900">Review Moderation</h3>
+        <p class="mt-2 text-sm text-gray-600">Approve or reject community reviews</p>
+      </a>
+      <a href="/admin/incidents" class="block p-6 bg-white rounded-lg shadow hover:shadow-md transition">
+        <h3 class="text-lg font-semibold text-gray-900">Incident Reports</h3>
+        <p class="mt-2 text-sm text-gray-600">Handle safety concerns and reports</p>
+      </a>
+    </div>
+  </div>
+</body>
+</html>
