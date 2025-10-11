@@ -5,7 +5,6 @@ interface AddressSearchIslandProps {
 }
 
 export default function AddressSearchIsland({ apiKey }: AddressSearchIslandProps) {
-  const [address, setAddress] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
@@ -25,7 +24,7 @@ export default function AddressSearchIsland({ apiKey }: AddressSearchIslandProps
           const lng = place.geometry.location.lng();
 
           // Redirect to search results
-          window.location.href = `/search?lat=${lat}&lng=${lng}&address=${encodeURIComponent(place.formatted_address || address)}`;
+          window.location.href = `/search?lat=${lat}&lng=${lng}&address=${encodeURIComponent(place.formatted_address || '')}`;
         }
       });
     }
@@ -68,6 +67,7 @@ export default function AddressSearchIsland({ apiKey }: AddressSearchIslandProps
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    const address = inputRef.current?.value || '';
     if (!address.trim()) {
       return;
     }
@@ -92,8 +92,6 @@ export default function AddressSearchIsland({ apiKey }: AddressSearchIslandProps
           <input
             ref={inputRef}
             type="text"
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
             placeholder="Enter city, ZIP code, or address"
             className="w-full px-6 py-4 text-lg border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none pr-32"
             disabled={isLoading}
@@ -101,7 +99,7 @@ export default function AddressSearchIsland({ apiKey }: AddressSearchIslandProps
           <button
             type="submit"
             className="absolute right-2 top-1/2 -translate-y-1/2 px-6 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={isLoading || !address.trim()}
+            disabled={isLoading}
           >
             Search
           </button>
