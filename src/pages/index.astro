@@ -1,5 +1,10 @@
 ---
 import Base from '../layouts/Base.astro';
+import { SEO_TEMPLATES, checkSEOInDev } from '../lib/seo';
+
+// SEO metadata for homepage
+const { title, description } = SEO_TEMPLATES.home;
+checkSEOInDev({ title, description }, '/');
 
 const cities = [
   {
@@ -19,7 +24,7 @@ const cities = [
 ];
 ---
 
-<Base>
+<Base title={title} description={description}>
   <div class="bg-gradient-to-b from-gray-50 to-white">
     <!-- Hero Section -->
     <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
