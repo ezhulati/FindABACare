@@ -5,7 +5,7 @@ export const GET: APIRoute = async () => {
     JSON.stringify({
       status: 'ok',
       timestamp: new Date().toISOString(),
-      service: 'FindABACare API',
+      service: 'findABA.care API',
       version: '1.0.0',
     }),
     {

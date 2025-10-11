@@ -117,7 +117,7 @@ export function generateICS(data: {
   return [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//FindABACare//Event Calendar//EN',
+    'PRODID:-//findABA.care//Event Calendar//EN',
     'BEGIN:VEVENT',
     `UID:${Date.now()}@findabacare.com`,
     `DTSTAMP:${dayjs().format('YYYYMMDDTHHmmss')}`,

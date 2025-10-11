@@ -55,7 +55,7 @@ export function rsvpConfirmationSMS(data: {
   date: string;
   time: string;
 }): string {
-  return `FindABACare: You're confirmed for "${data.eventTitle}" at ${data.venueName} on ${data.date} at ${data.time}. See you there!`;
+  return `findABA.care: You're confirmed for "${data.eventTitle}" at ${data.venueName} on ${data.date} at ${data.time}. See you there!`;
 }
 
 export function rsvpReminderSMS(data: {
@@ -65,7 +65,7 @@ export function rsvpReminderSMS(data: {
   hoursUntil: number;
 }): string {
   const timing = data.hoursUntil === 24 ? 'tomorrow' : `in ${data.hoursUntil} hours`;
-  return `FindABACare Reminder: "${data.eventTitle}" at ${data.venueName} is ${timing} (${data.time}). Looking forward to seeing you!`;
+  return `findABA.care Reminder: "${data.eventTitle}" at ${data.venueName} is ${timing} (${data.time}). Looking forward to seeing you!`;
 }
 
 export function eventCancellationSMS(data: {
@@ -73,5 +73,5 @@ export function eventCancellationSMS(data: {
   reason?: string;
 }): string {
   const reasonText = data.reason ? ` Reason: ${data.reason}` : '';
-  return `FindABACare: Unfortunately, "${data.eventTitle}" has been cancelled.${reasonText} We apologize for any inconvenience.`;
+  return `findABA.care: Unfortunately, "${data.eventTitle}" has been cancelled.${reasonText} We apologize for any inconvenience.`;
 }
