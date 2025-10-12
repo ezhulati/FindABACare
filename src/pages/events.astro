@@ -150,12 +150,26 @@ const description = `Find autism-friendly micro-events happening nationwide. ${t
               </div>
 
               <!-- CTA Button -->
-              <a
-                href={`/${event.stateCode.toLowerCase()}/${event.citySlug}/events#${event.id}`}
-                class="block w-full text-center px-4 py-2 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 transition-colors"
-              >
-                View Details & RSVP
-              </a>
+              {event.event_type === 'partner' && event.source_url ? (
+                <a
+                  href={event.source_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="block w-full text-center px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+                >
+                  <span>RSVP on {event.source_name || 'Partner Site'}</span>
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </a>
+              ) : (
+                <a
+                  href={`/${event.stateCode.toLowerCase()}/${event.citySlug}/events#${event.id}`}
+                  class="block w-full text-center px-4 py-2 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 transition-colors"
+                >
+                  View Details & RSVP
+                </a>
+              )}
             </article>
           ))}
         </div>
@@ -275,12 +289,26 @@ const description = `Find autism-friendly micro-events happening nationwide. ${t
 
             <!-- Actions -->
             <div class="flex items-center gap-3">
-              <a
-                href={`/${event.stateCode.toLowerCase()}/${event.citySlug}/events#${event.id}`}
-                class="flex-1 text-center px-4 py-2 bg-black text-white font-medium rounded-lg hover:bg-gray-800 transition-colors"
-              >
-                View Details
-              </a>
+              {event.event_type === 'partner' && event.source_url ? (
+                <a
+                  href={event.source_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="flex-1 text-center px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+                >
+                  <span>RSVP on {event.source_name || 'Partner Site'}</span>
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </a>
+              ) : (
+                <a
+                  href={`/${event.stateCode.toLowerCase()}/${event.citySlug}/events#${event.id}`}
+                  class="flex-1 text-center px-4 py-2 bg-black text-white font-medium rounded-lg hover:bg-gray-800 transition-colors"
+                >
+                  View Details & RSVP
+                </a>
+              )}
             </div>
           </article>
         ))}
@@ -294,12 +322,20 @@ const description = `Find autism-friendly micro-events happening nationwide. ${t
         We partner with venues and parents to create more sensory-friendly events nationwide.
         Get in touch to learn more about hosting events on autism.place.
       </p>
-      <a
-        href="/contact"
-        class="inline-block px-6 py-3 bg-white text-purple-600 font-medium rounded-lg hover:bg-gray-50 transition-colors"
-      >
-        Contact us
-      </a>
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <a
+          href="/submit-event"
+          class="inline-block px-6 py-3 bg-white text-purple-600 font-medium rounded-lg hover:bg-gray-50 transition-colors"
+        >
+          Submit an Event
+        </a>
+        <a
+          href="/contact"
+          class="inline-block px-6 py-3 bg-purple-700 text-white font-medium rounded-lg hover:bg-purple-800 transition-colors border-2 border-white"
+        >
+          Contact us
+        </a>
+      </div>
     </div>
   </div>
 

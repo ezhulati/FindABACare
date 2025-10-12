@@ -1,0 +1,349 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getServerClient } from '../../lib/supabaseServer';
+import { formatTime } from '../../lib/utils';
+import dayjs from 'dayjs';
+
+// Simple auth check (you'll want to replace this with proper auth)
+const authHeader = Astro.request.headers.get('authorization');
+const isAuthorized = authHeader === 'Bearer your-admin-token-here'; // TODO: Replace with real auth
+
+if (!isAuthorized) {
+  // For now, just show a warning - you can add Supabase auth later
+  console.warn('Admin access - add proper authentication!');
+}
+
+const supabase = getServerClient(Astro.request);
+
+// Get filter from URL
+const url = new URL(Astro.request.url);
+const statusFilter = url.searchParams.get('status') || 'pending';
+
+// Fetch events based on filter
+let query = supabase
+  .from('events')
+  .select(`
+    *,
+    venue:venues(*),
+    city:cities(*)
+  `)
+  .order('created_at', { ascending: false });
+
+if (statusFilter === 'pending') {
+  query = query.eq('approval_status', 'pending');
+} else if (statusFilter === 'approved') {
+  query = query.eq('approval_status', 'approved');
+} else if (statusFilter === 'rejected') {
+  query = query.eq('approval_status', 'rejected');
+}
+
+const { data: events, error } = await query.limit(100);
+
+const processedEvents = (events || []).map(event => ({
+  ...event,
+  cityName: event.city?.name || 'Unknown',
+  stateName: event.city?.state || '',
+}));
+
+// Count by status
+const { data: statusCounts } = await supabase
+  .from('events')
+  .select('approval_status')
+  .in('approval_status', ['pending', 'approved', 'rejected']);
+
+const counts = {
+  pending: statusCounts?.filter(e => e.approval_status === 'pending').length || 0,
+  approved: statusCounts?.filter(e => e.approval_status === 'approved').length || 0,
+  rejected: statusCounts?.filter(e => e.approval_status === 'rejected').length || 0,
+};
+---
+
+<Base title="Admin - Event Moderation | autism.place" description="Moderate community-submitted events">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">Event Moderation</h1>
+      <p class="text-gray-600">Review and approve community-submitted events</p>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+      <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-yellow-800">Pending Review</p>
+            <p class="text-3xl font-bold text-yellow-900">{counts.pending}</p>
+          </div>
+          <svg class="w-10 h-10 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-green-800">Approved</p>
+            <p class="text-3xl font-bold text-green-900">{counts.approved}</p>
+          </div>
+          <svg class="w-10 h-10 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-red-800">Rejected</p>
+            <p class="text-3xl font-bold text-red-900">{counts.rejected}</p>
+          </div>
+          <svg class="w-10 h-10 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="mb-6 border-b border-gray-200">
+      <nav class="flex space-x-8">
+        <a
+          href="/admin/events?status=pending"
+          class={`pb-4 px-1 border-b-2 font-medium text-sm ${
+            statusFilter === 'pending'
+              ? 'border-blue-500 text-blue-600'
+              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+          }`}
+        >
+          Pending ({counts.pending})
+        </a>
+        <a
+          href="/admin/events?status=approved"
+          class={`pb-4 px-1 border-b-2 font-medium text-sm ${
+            statusFilter === 'approved'
+              ? 'border-blue-500 text-blue-600'
+              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+          }`}
+        >
+          Approved ({counts.approved})
+        </a>
+        <a
+          href="/admin/events?status=rejected"
+          class={`pb-4 px-1 border-b-2 font-medium text-sm ${
+            statusFilter === 'rejected'
+              ? 'border-blue-500 text-blue-600'
+              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+          }`}
+        >
+          Rejected ({counts.rejected})
+        </a>
+      </nav>
+    </div>
+
+    <!-- Events List -->
+    {processedEvents.length === 0 ? (
+      <div class="text-center py-12 bg-gray-50 rounded-lg">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+        </svg>
+        <h3 class="mt-2 text-sm font-medium text-gray-900">No {statusFilter} events</h3>
+        <p class="mt-1 text-sm text-gray-500">
+          {statusFilter === 'pending' ? 'All caught up! No events awaiting review.' : `No ${statusFilter} events found.`}
+        </p>
+      </div>
+    ) : (
+      <div class="space-y-4">
+        {processedEvents.map((event) => (
+          <div class="bg-white border border-gray-200 rounded-lg p-6 hover:border-gray-300 transition-colors">
+            <div class="flex items-start justify-between gap-4">
+              <!-- Event Info -->
+              <div class="flex-1">
+                <div class="flex items-center gap-3 mb-2">
+                  <h3 class="text-lg font-semibold text-gray-900">{event.title}</h3>
+                  {event.event_type === 'community' && (
+                    <span class="inline-block px-2 py-1 bg-green-100 text-green-700 text-xs font-medium rounded">
+                      Community
+                    </span>
+                  )}
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3 text-sm text-gray-600">
+                  <div class="flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span>{dayjs(event.date).format('MMM D, YYYY')} at {formatTime(event.start_time)}</span>
+                  </div>
+
+                  <div class="flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    </svg>
+                    <span>{event.cityName}, {event.stateName}</span>
+                  </div>
+
+                  {event.venue && (
+                    <div class="flex items-center gap-2">
+                      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                      </svg>
+                      <span>{event.venue.name}</span>
+                    </div>
+                  )}
+
+                  <div class="flex items-center gap-2 text-xs text-gray-500">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>Submitted {dayjs(event.created_at).fromNow()}</span>
+                  </div>
+                </div>
+
+                {event.description && (
+                  <p class="text-sm text-gray-700 mb-3 line-clamp-2">{event.description}</p>
+                )}
+
+                {event.admin_notes && (
+                  <div class="bg-blue-50 border border-blue-200 rounded p-3 text-sm">
+                    <p class="font-medium text-blue-900 mb-1">Submitter Info:</p>
+                    <p class="text-blue-800 whitespace-pre-line">{event.admin_notes}</p>
+                  </div>
+                )}
+              </div>
+
+              <!-- Actions -->
+              <div class="flex flex-col gap-2 min-w-[120px]">
+                {event.approval_status === 'pending' && (
+                  <>
+                    <button
+                      class="approve-btn px-4 py-2 bg-green-600 text-white text-sm font-medium rounded hover:bg-green-700 transition-colors"
+                      data-event-id={event.id}
+                    >
+                      Approve
+                    </button>
+                    <button
+                      class="reject-btn px-4 py-2 bg-red-600 text-white text-sm font-medium rounded hover:bg-red-700 transition-colors"
+                      data-event-id={event.id}
+                    >
+                      Reject
+                    </button>
+                  </>
+                )}
+                {event.approval_status === 'approved' && (
+                  <span class="inline-flex items-center px-3 py-2 bg-green-100 text-green-800 text-sm font-medium rounded">
+                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                    </svg>
+                    Approved
+                  </span>
+                )}
+                {event.approval_status === 'rejected' && (
+                  <span class="inline-flex items-center px-3 py-2 bg-red-100 text-red-800 text-sm font-medium rounded">
+                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                    </svg>
+                    Rejected
+                  </span>
+                )}
+                {event.source_url && (
+                  <a
+                    href={event.source_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded hover:bg-gray-200 transition-colors text-center"
+                  >
+                    View Source
+                  </a>
+                )}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+
+  <script>
+    // Handle approve/reject actions
+    const approveButtons = document.querySelectorAll('.approve-btn');
+    const rejectButtons = document.querySelectorAll('.reject-btn');
+
+    approveButtons.forEach(button => {
+      button.addEventListener('click', async () => {
+        const eventId = button.getAttribute('data-event-id');
+        if (!confirm('Approve this event and publish it to the site?')) return;
+
+        button.disabled = true;
+        button.textContent = 'Approving...';
+
+        try {
+          const response = await fetch('/api/admin/moderate-event', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              eventId,
+              action: 'approve'
+            })
+          });
+
+          if (response.ok) {
+            window.location.reload();
+          } else {
+            const error = await response.json();
+            alert(`Error: ${error.message || 'Failed to approve event'}`);
+            button.disabled = false;
+            button.textContent = 'Approve';
+          }
+        } catch (err) {
+          alert('Network error. Please try again.');
+          button.disabled = false;
+          button.textContent = 'Approve';
+        }
+      });
+    });
+
+    rejectButtons.forEach(button => {
+      button.addEventListener('click', async () => {
+        const eventId = button.getAttribute('data-event-id');
+        const reason = prompt('Rejection reason (optional, will be sent to submitter):');
+        if (reason === null) return; // User cancelled
+
+        button.disabled = true;
+        button.textContent = 'Rejecting...';
+
+        try {
+          const response = await fetch('/api/admin/moderate-event', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              eventId,
+              action: 'reject',
+              reason
+            })
+          });
+
+          if (response.ok) {
+            window.location.reload();
+          } else {
+            const error = await response.json();
+            alert(`Error: ${error.message || 'Failed to reject event'}`);
+            button.disabled = false;
+            button.textContent = 'Reject';
+          }
+        } catch (err) {
+          alert('Network error. Please try again.');
+          button.disabled = false;
+          button.textContent = 'Reject';
+        }
+      });
+    });
+  </script>
+
+  <script is:inline>
+    // Import dayjs for relative time
+    import dayjs from 'dayjs';
+    import relativeTime from 'dayjs/plugin/relativeTime';
+    dayjs.extend(relativeTime);
+  </script>
+</Base>
