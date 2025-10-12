@@ -25,10 +25,10 @@ const { data: cities, error: citiesError } = await supabase
 
 console.log(`[state]/index.astro: Query result:`, { citiesCount: cities?.length, error: citiesError });
 
-// If no cities found, return 404
+// If no cities found, redirect to cities page
 if (!cities || cities.length === 0) {
-  console.log(`[state]/index.astro: No cities found, redirecting to /404`);
-  return Astro.redirect('/404');
+  console.log(`[state]/index.astro: No cities found for "${state}", redirecting to /cities`);
+  return Astro.redirect('/cities');
 }
 
 // Get venue counts for each city
