@@ -85,17 +85,25 @@ const description = 'Sign in to leave reviews and access personalized features.'
     </div>
   </div>
 
-  <script define:vars={{ redirect }}>
+  <script define:vars={{ redirect }} type="module">
     import { createClient } from '@supabase/supabase-js';
 
+    const supabaseUrl = document.querySelector('meta[name="supabase-url"]')?.getAttribute('content');
+    const supabaseKey = document.querySelector('meta[name="supabase-key"]')?.getAttribute('content');
+
     console.log('Initializing Supabase client...');
-    console.log('Supabase URL:', import.meta.env.PUBLIC_SUPABASE_URL);
+    console.log('Supabase URL:', supabaseUrl);
     console.log('Redirect after login:', redirect);
 
-    const supabase = createClient(
-      import.meta.env.PUBLIC_SUPABASE_URL,
-      import.meta.env.PUBLIC_SUPABASE_ANON_KEY
-    );
+    if (!supabaseUrl || !supabaseKey) {
+      console.error('Missing Supabase credentials');
+      const messageDiv = document.getElementById('message');
+      messageDiv.className = 'block p-4 rounded-lg bg-red-50 border border-red-200 text-red-800';
+      messageDiv.textContent = '❌ Configuration error. Please contact support.';
+      throw new Error('Missing Supabase credentials');
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
     const form = document.getElementById('login-form');
     const emailInput = document.getElementById('email');

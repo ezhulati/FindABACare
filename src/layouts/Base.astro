@@ -76,6 +76,10 @@ const sortedStates = Object.keys(citiesByState).sort();
     <meta name="description" content={description} />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
+    <!-- Supabase Configuration -->
+    <meta name="supabase-url" content={import.meta.env.PUBLIC_SUPABASE_URL} />
+    <meta name="supabase-key" content={import.meta.env.PUBLIC_SUPABASE_ANON_KEY} />
+
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
