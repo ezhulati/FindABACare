@@ -181,29 +181,54 @@ export default function MapIsland({
     return () => window.removeEventListener('keydown', handleEscape);
   }, [isFullscreen]);
 
-  // Handle moving map container when fullscreen toggles
+  // Handle map container movement for fullscreen
+  const originalParentRef = useRef<HTMLElement | null>(null);
+
   useEffect(() => {
     if (!mapContainer.current) return;
 
     if (isFullscreen) {
-      // Move map to fullscreen container
+      // Save original parent
+      originalParentRef.current = mapContainer.current.parentElement;
+
+      // HIDE the venues grid and main content to prevent z-index issues
+      const venuesGrid = document.getElementById('venues-grid');
+      if (venuesGrid) {
+        venuesGrid.style.display = 'none';
+      }
+
+      // Also hide the parent grid container
+      const mainContent = document.querySelector('.lg\\:col-span-3');
+      if (mainContent) {
+        (mainContent as HTMLElement).style.visibility = 'hidden';
+      }
+
+      // Move to fullscreen container
       const fullscreenContainer = document.getElementById('fullscreen-map-container');
-      if (fullscreenContainer && mapContainer.current.parentNode) {
+      if (fullscreenContainer) {
         fullscreenContainer.appendChild(mapContainer.current);
-        // Remove aspect-square and add full height
         mapContainer.current.classList.remove('aspect-square');
         mapContainer.current.classList.add('h-full');
-        map.current?.resize();
+        setTimeout(() => map.current?.resize(), 100);
       }
     } else {
-      // Move map back to original container
-      const originalParent = document.querySelector('.relative.w-full');
-      if (originalParent && mapContainer.current.parentNode) {
-        originalParent.appendChild(mapContainer.current);
-        // Restore aspect-square
-        mapContainer.current.classList.remove('h-full');
+      // SHOW the venues grid and main content again
+      const venuesGrid = document.getElementById('venues-grid');
+      if (venuesGrid) {
+        venuesGrid.style.display = '';
+      }
+
+      const mainContent = document.querySelector('.lg\\:col-span-3');
+      if (mainContent) {
+        (mainContent as HTMLElement).style.visibility = '';
+      }
+
+      // Move back to original parent
+      if (originalParentRef.current && mapContainer.current) {
+        originalParentRef.current.appendChild(mapContainer.current);
         mapContainer.current.classList.add('aspect-square');
-        map.current?.resize();
+        mapContainer.current.classList.remove('h-full');
+        setTimeout(() => map.current?.resize(), 100);
       }
     }
   }, [isFullscreen]);
@@ -214,7 +239,7 @@ export default function MapIsland({
         {/* Expand button */}
         <button
           onClick={toggleFullscreen}
-          className="absolute top-2 right-2 z-[100] bg-white rounded-lg p-2 shadow-md hover:bg-gray-50 transition-colors"
+          className="absolute top-2 left-2 z-[100] bg-white rounded-lg p-2 shadow-md hover:bg-gray-50 transition-colors"
           aria-label="Expand map"
           title="Expand map"
         >
@@ -239,12 +264,12 @@ export default function MapIsland({
 
       {/* Fullscreen Modal */}
       {isFullscreen && (
-        <div className="fixed inset-0 z-[9999] bg-black bg-opacity-75 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[9999] bg-black bg-opacity-75 flex items-center justify-center p-4 pt-24">
           <div className="relative w-full h-full max-w-7xl bg-white rounded-lg overflow-hidden">
             {/* Close button */}
             <button
               onClick={toggleFullscreen}
-              className="absolute top-4 right-4 z-10 bg-white rounded-lg p-2 shadow-lg hover:bg-gray-50 transition-colors"
+              className="absolute top-4 left-4 z-[10000] bg-white rounded-lg p-2 shadow-lg hover:bg-gray-50 transition-colors"
               aria-label="Close fullscreen"
               title="Close (Esc)"
             >
@@ -254,10 +279,7 @@ export default function MapIsland({
             </button>
 
             {/* Fullscreen map container */}
-            <div className="w-full h-full">
-              {/* We'll create a portal to move the map here */}
-              <div id="fullscreen-map-container" className="w-full h-full" />
-            </div>
+            <div id="fullscreen-map-container" className="w-full h-full" />
           </div>
         </div>
       )}

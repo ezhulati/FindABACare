@@ -8,7 +8,7 @@ import dayjs from 'dayjs';
 const { state, city } = Astro.params;
 
 // Validate state
-const validStates = ['tx', 'ca', 'ny', 'fl'];
+const validStates = ['tx', 'ca', 'ny', 'fl', 'az', 'pa', 'ga', 'nc', 'mi', 'oh', 'tn', 'in', 'md', 'wi', 'co', 'va', 'wa', 'ma', 'or', 'il'];
 if (!validStates.includes(state?.toLowerCase() || '')) {
   return Astro.redirect('/');
 }
@@ -20,7 +20,23 @@ const stateNames: Record<string, string> = {
   'TX': 'Texas',
   'CA': 'California',
   'NY': 'New York',
-  'FL': 'Florida'
+  'FL': 'Florida',
+  'AZ': 'Arizona',
+  'PA': 'Pennsylvania',
+  'GA': 'Georgia',
+  'NC': 'North Carolina',
+  'MI': 'Michigan',
+  'OH': 'Ohio',
+  'TN': 'Tennessee',
+  'IN': 'Indiana',
+  'MD': 'Maryland',
+  'WI': 'Wisconsin',
+  'CO': 'Colorado',
+  'VA': 'Virginia',
+  'WA': 'Washington',
+  'MA': 'Massachusetts',
+  'OR': 'Oregon',
+  'IL': 'Illinois'
 };
 
 const stateName = stateNames[stateUpper];
