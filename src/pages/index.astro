@@ -2,6 +2,7 @@
 import Base from '../layouts/Base.astro';
 import { SEO_TEMPLATES, STOCK_IMAGES, checkSEOInDev } from '../lib/seo';
 import AddressSearchIsland from '../components/AddressSearchIsland';
+import { createClient } from '@supabase/supabase-js';
 
 // SEO metadata for homepage
 const { title, description, ogImage, ogImageAlt} = SEO_TEMPLATES.home;
@@ -9,50 +10,59 @@ checkSEOInDev({ title, description, ogImage, ogImageAlt }, '/');
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY || import.meta.env.GOOGLE_MAPS_API_KEY;
 
-const cities = [
-  {
-    name: 'New York',
-    slug: 'new-york',
-    state: 'NY',
-    image: STOCK_IMAGES.cityKids,
-    description: 'Autism-friendly venues across NYC boroughs - from museums to parks',
-  },
-  {
-    name: 'Los Angeles',
-    slug: 'los-angeles',
-    state: 'CA',
-    image: STOCK_IMAGES.sensoryVenue,
-    description: 'Sensory-friendly places throughout LA and Orange County',
-  },
-  {
-    name: 'Chicago',
-    slug: 'chicago',
-    state: 'IL',
-    image: STOCK_IMAGES.group,
-    description: 'Find quiet hours and accommodations across Chicagoland',
-  },
-  {
-    name: 'Houston',
-    slug: 'houston',
-    state: 'TX',
-    image: STOCK_IMAGES.houstonOutdoor,
-    description: 'Parent-verified venues across Greater Houston',
-  },
-  {
-    name: 'Phoenix',
-    slug: 'phoenix',
-    state: 'AZ',
-    image: STOCK_IMAGES.dallasOutdoor,
-    description: 'Autism-friendly activities in the Valley of the Sun',
-  },
-  {
-    name: 'Philadelphia',
-    slug: 'philadelphia',
-    state: 'PA',
-    image: STOCK_IMAGES.peacefulRoom,
-    description: 'Sensory-friendly spots in Philly and surrounding areas',
-  },
+// Initialize Supabase
+const supabase = createClient(
+  import.meta.env.PUBLIC_SUPABASE_URL!,
+  import.meta.env.PUBLIC_SUPABASE_ANON_KEY!
+);
+
+// Fetch top 6 cities by venue count dynamically
+const { data: citiesData } = await supabase
+  .from('cities')
+  .select('id, name, slug, state')
+  .eq('status', 'active')
+  .order('priority_tier', { ascending: true })
+  .order('population', { ascending: false })
+  .limit(20); // Get top 20 to calculate venue counts
+
+// Get venue counts for each city
+const citiesWithCounts = await Promise.all(
+  (citiesData || []).map(async (city) => {
+    const { count } = await supabase
+      .from('venues')
+      .select('id', { count: 'exact', head: true })
+      .eq('city_id', city.id)
+      .eq('status', 'active');
+
+    return {
+      ...city,
+      venueCount: count || 0
+    };
+  })
+);
+
+// Sort by venue count and take top 6
+const topCitiesByVenues = citiesWithCounts
+  .sort((a, b) => b.venueCount - a.venueCount)
+  .slice(0, 6);
+
+// Map to display format with stock images
+const imageMap = [
+  STOCK_IMAGES.cityKids,
+  STOCK_IMAGES.sensoryVenue,
+  STOCK_IMAGES.group,
+  STOCK_IMAGES.houstonOutdoor,
+  STOCK_IMAGES.dallasOutdoor,
+  STOCK_IMAGES.peacefulRoom,
 ];
+
+const cities = topCitiesByVenues.map((city, index) => ({
+  name: city.name,
+  slug: city.slug,
+  state: city.state,
+  image: imageMap[index % imageMap.length],
+  description: `Discover ${city.venueCount}+ autism-friendly venues in ${city.name}`,
+}));
 ---
 
 <Base title={title} description={description} ogImage={ogImage} ogImageAlt={ogImageAlt}>
