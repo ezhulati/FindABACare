@@ -113,13 +113,16 @@ const description = 'Sign in to leave reviews and access personalized features.'
       messageDiv.classList.add('hidden');
 
       try {
-        const redirectUrl = `${window.location.origin}${redirect}`;
-        console.log('Email redirect URL:', redirectUrl);
+        const callbackUrl = new URL('/auth/callback', window.location.origin);
+        if (redirect && redirect !== '/') {
+          callbackUrl.searchParams.set('redirect', redirect);
+        }
+        console.log('Email redirect URL:', callbackUrl.toString());
 
         const { data, error } = await supabase.auth.signInWithOtp({
           email,
           options: {
-            emailRedirectTo: `${window.location.origin}/auth/callback`,
+            emailRedirectTo: callbackUrl.toString(),
           },
         });
 

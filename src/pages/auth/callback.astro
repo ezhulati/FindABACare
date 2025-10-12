@@ -5,6 +5,10 @@
  */
 import { getAuthUser, getServerClient } from '../../lib/supabaseServer';
 
+// Get redirect parameter if provided
+const url = new URL(Astro.request.url);
+const redirect = url.searchParams.get('redirect') || '/';
+
 const user = await getAuthUser(Astro.request);
 
 if (!user) {
@@ -25,6 +29,6 @@ if (!profile) {
   return Astro.redirect('/onboarding');
 }
 
-// Existing user - send to home
-return Astro.redirect('/');
+// Existing user - redirect to original destination or home
+return Astro.redirect(redirect);
 ---
