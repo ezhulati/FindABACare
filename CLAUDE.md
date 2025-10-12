@@ -84,7 +84,7 @@ const supabase = getServerClient(request);
 Key tables (see `supabase/schema.sql`):
 - **cities** - Dallas, Houston (expandable)
 - **venues** - Sensory-friendly locations with amenities (JSONB), triggers (JSONB), sensory_hours (JSONB)
-- **events** - Micro-events with capacity enforcement
+- **events** - Autism-friendly events with event_type, approval workflow, and external source tracking
 - **profiles** - User profiles linked to auth.users with roles (parent/venue/admin)
 - **rsvps** - Event registrations (unique constraint on event_id + profile_id)
 - **reviews** - Venue feedback (pending/published/rejected status)
@@ -95,6 +95,16 @@ Key tables (see `supabase/schema.sql`):
 - `venues.amenities`: `{quiet_room: boolean, hand_dryer: boolean, visual_supports: boolean, ...}`
 - `venues.triggers`: `{strong_scents: boolean, loud_music: boolean, open_water: boolean}`
 - `venues.sensory_hours`: Array of `{day, start_time, end_time, description}`
+
+**Events Table (Extended):**
+- `event_type`: `'partner' | 'official' | 'community'` - Determines RSVP flow and moderation requirements
+- `approval_status`: `'pending' | 'approved' | 'rejected' | 'flagged'` - Moderation state for community events
+- `status`: `'draft' | 'published'` - Publication state
+- `source_url`: External link for partner event RSVPs
+- `source_name`: Attribution (e.g., "Meetup - Dallas Autism Parents", "Autism Speaks")
+- `external_id`: Unique identifier for deduplication (e.g., "meetup-12345", "eventbrite-67890")
+- `admin_notes`: Submitter info and moderation notes
+- `scraped_at` / `last_synced_at`: Tracking for automated imports
 
 ### 5. Go Now Meter Logic
 
@@ -287,6 +297,215 @@ query = query.not('sensory_hours', 'is', null);
 
 Use Supabase email OTP in development. Check the Supabase dashboard Auth logs to get the OTP code if emails aren't being delivered locally.
 
+## Event System (Comprehensive)
+
+The platform features a complete event aggregation and moderation system for autism-friendly events. See `docs/EVENT_SYSTEM.md` for full documentation.
+
+### Event Types and RSVP Flow
+
+**Three event types with different workflows:**
+
+1. **Partner Events** (`event_type: 'partner'`)
+   - Events from external sources (Meetup, Eventbrite, Autism Speaks, Finding Y'all)
+   - RSVP links directly to partner website
+   - Blue "RSVP on {Partner}" button with external link icon
+   - Automatically approved during scraping
+
+2. **Official Events** (`event_type: 'official'`)
+   - Events organized by autism.place
+   - Internal RSVP handled via platform
+   - Black/purple "View Details & RSVP" button
+   - Created by admins
+
+3. **Community Events** (`event_type: 'community'`)
+   - User-submitted events
+   - Require admin approval before publishing
+   - Status: `draft` with `approval_status: 'pending'`
+   - Submitter info stored in `admin_notes`
+
+### Pages and Components
+
+**Public-Facing:**
+- `/events` - Main events listing with featured carousel and state filtering
+- `/submit-event` - Community event submission form
+- `/[state]/[city]/events` - City-specific events page
+
+**Admin:**
+- `/admin/events` - Moderation dashboard with approve/reject workflow
+  - Stats cards (pending/approved/rejected counts)
+  - Filter tabs for each status
+  - Event cards with submitter information
+  - One-click approve/reject buttons
+
+**API Endpoints:**
+- `POST /api/submit-event` - Handles community submissions
+- `POST /api/admin/moderate-event` - Approve or reject events
+
+### Event Scrapers (Automated Import)
+
+**Location:** `scripts/scrape-*.ts`
+
+Four automated scrapers built with Playwright for headless browsing:
+
+1. **Finding Y'all** (`scripts/import-findingyall-events.ts`)
+   - Direct API integration ✅ Working
+   - High-quality curated events
+   - Reliable event source
+
+2. **Meetup.com** (`scripts/scrape-meetup.ts`)
+   - Searches: "autism support", "autism parents", "special needs", "neurodivergent", "ASD support"
+   - Covers 8 major cities
+   - Extracts group names for attribution
+   - 3-second delay between requests
+   - ⚠️ May timeout due to bot detection
+
+3. **Autism Speaks** (`scripts/scrape-autism-speaks.ts`)
+   - Scrapes autismspeaks.org/events
+   - National events including walks and fundraisers
+   - Multiple date format parsing
+   - Filters past events automatically
+   - ⚠️ May timeout due to bot detection
+
+4. **Eventbrite** (`scripts/scrape-eventbrite.ts`)
+   - Searches autism-related events in 8 cities
+   - AI-powered event categorization
+   - Filters by autism relevance (medium/high confidence)
+   - Creates placeholder venues
+   - ⚠️ May find 0 events or timeout
+
+**Deduplication Strategy:**
+- Each scraper uses unique `external_id` format
+- Before insert: Check if `external_id` exists
+- If exists: Update `last_synced_at` timestamp only
+- Prevents duplicate events from same source
+
+**Example external_id formats:**
+- `meetup-12345`
+- `eventbrite-67890`
+- `autism-speaks-annual-walk-2025`
+- `findingyall-event-id`
+
+### Manual Event Seeding
+
+**For Development/Testing:**
+```bash
+# Add 8 curated sample events
+npx tsx scripts/seed-sample-events.ts
+```
+
+Sample events include:
+- Sensory-friendly movie screenings
+- Parent support groups
+- Social skills playgroups
+- Autism acceptance walks
+- Quiet hour shopping events
+- Employment fairs
+
+### Community Submission Workflow
+
+**Step 1: User Submission**
+- User fills out `/submit-event` form
+- Required: title, description, date/time, city, venue, contact info
+- Validation: email format, future dates, all required fields
+
+**Step 2: API Processing** (`/api/submit-event`)
+- Validate all inputs
+- Find or create venue in database
+- Create event with:
+  - `event_type: 'community'`
+  - `status: 'draft'`
+  - `approval_status: 'pending'`
+  - `admin_notes: "Submitted by: {name} ({email})"`
+
+**Step 3: Admin Moderation**
+- Event appears in `/admin/events` dashboard under "Pending" tab
+- Admin can:
+  - **Approve**: Sets `approval_status: 'approved'`, `status: 'published'`, `approved_at: timestamp`
+  - **Reject**: Sets `approval_status: 'rejected'`, adds reason to `admin_notes`
+
+**Step 4: Publication**
+- Approved events immediately visible on `/events` page
+- Rejected events remain hidden, stored for audit trail
+
+### Conditional RSVP Button Logic
+
+Events page displays different RSVP buttons based on event type:
+
+```astro
+{event.event_type === 'partner' && event.source_url ? (
+  <a href={event.source_url} target="_blank" class="bg-blue-600">
+    RSVP on {event.source_name}
+    <ExternalLinkIcon />
+  </a>
+) : (
+  <a href={`/${state}/${city}/events#${event.id}`} class="bg-purple-600">
+    View Details & RSVP
+  </a>
+)}
+```
+
+### Testing the Event System
+
+**End-to-End Workflow Test:**
+```bash
+npx tsx scripts/test-event-workflow.ts
+```
+
+Tests:
+- ✅ Community event submission
+- ✅ Pending status verification
+- ✅ Admin approval flow
+- ✅ Published event verification
+- ✅ Rejection workflow
+
+**Check Current Events:**
+```bash
+npx tsx scripts/check-events.ts
+```
+
+Displays:
+- Total upcoming events
+- Events by type (partner/official/community)
+- Events by source
+- List of all events with dates
+
+### Running Scrapers
+
+**Important:** Scrapers may timeout due to anti-bot protections. Manual seeding is more reliable for development.
+
+```bash
+# Finding Y'all (most reliable)
+env SUPABASE_SERVICE_ROLE_KEY="..." \
+    PUBLIC_SUPABASE_URL="..." \
+    npx tsx scripts/import-findingyall-events.ts
+
+# Meetup.com (may timeout)
+env SUPABASE_SERVICE_ROLE_KEY="..." \
+    PUBLIC_SUPABASE_URL="..." \
+    npx tsx scripts/scrape-meetup.ts
+
+# Autism Speaks (may timeout)
+env SUPABASE_SERVICE_ROLE_KEY="..." \
+    PUBLIC_SUPABASE_URL="..." \
+    npx tsx scripts/scrape-autism-speaks.ts
+```
+
+### Automation Recommendations
+
+**Cron Jobs (Production):**
+```bash
+# Daily at 6 AM - Finding Y'all import
+0 6 * * * npx tsx scripts/import-findingyall-events.ts
+
+# Weekly on Mondays - Meetup scraper
+0 6 * * 1 npx tsx scripts/scrape-meetup.ts
+
+# Weekly on Sundays - Autism Speaks
+0 6 * * 0 npx tsx scripts/scrape-autism-speaks.ts
+```
+
+**Note:** Implement robust error handling and logging before automating scrapers.
+
 ## Documentation References
 
 - **DEVELOPMENT_PLAN.md** - Complete 15-phase implementation roadmap
@@ -294,6 +513,7 @@ Use Supabase email OTP in development. Check the Supabase dashboard Auth logs to
 - **QUICK_START.md** - Getting started guide
 - **README.md** - Project overview and quick start
 - **findABA.care.com Product Vision.md** - Product requirements and user stories
+- **docs/EVENT_SYSTEM.md** - Complete event system documentation
 
 ## Project Status
 
@@ -301,6 +521,7 @@ Currently in Phase 2-3 of development (see DEVELOPMENT_PLAN.md):
 - ✅ Foundation complete (database schema, utilities)
 - ✅ Core components implemented
 - ✅ Basic API routes functional
+- ✅ Event system with community submissions and admin moderation
 - 🚧 UI/UX refinement in progress
-- ⏳ Admin portal pending
-- ⏳ Automation/cron jobs pending
+- ⏳ Additional admin portal features pending
+- ⏳ Production automation/cron jobs pending
