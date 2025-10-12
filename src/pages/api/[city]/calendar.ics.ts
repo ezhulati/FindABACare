@@ -81,10 +81,10 @@ END:VEVENT`;
 
     const icalContent = `BEGIN:VCALENDAR
 VERSION:2.0
-PRODID:-//findABA.care//Events Calendar//EN
+PRODID:-//autism.place//Events Calendar//EN
 CALSCALE:GREGORIAN
 METHOD:PUBLISH
-X-WR-CALNAME:findABA.care - ${cityData.name} Events
+X-WR-CALNAME:autism.place - ${cityData.name} Events
 X-WR-TIMEZONE:America/Chicago
 X-WR-CALDESC:Autism-friendly events and meetups in ${cityData.name}
 ${icalEvents}

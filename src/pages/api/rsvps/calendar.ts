@@ -22,7 +22,7 @@ export const POST: APIRoute = async ({ request }) => {
     const endDateTime = `${year}${month}${day}T${endHour}${endMinute}00`;
 
     // Generate a unique ID for this event
-    const uid = `${eventDate}-${eventStartTime}-${eventTitle.replace(/\s+/g, '-')}@findaba.care`;
+    const uid = `${eventDate}-${eventStartTime}-${eventTitle.replace(/\s+/g, '-')}@autism.place`;
 
     // Current timestamp in iCalendar format
     const now = new Date();
@@ -35,7 +35,7 @@ export const POST: APIRoute = async ({ request }) => {
     const icsContent = [
       'BEGIN:VCALENDAR',
       'VERSION:2.0',
-      'PRODID:-//findABA.care//Event Calendar//EN',
+      'PRODID:-//autism.place//Event Calendar//EN',
       'CALSCALE:GREGORIAN',
       'METHOD:PUBLISH',
       'BEGIN:VEVENT',

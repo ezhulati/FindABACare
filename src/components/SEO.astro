@@ -22,7 +22,7 @@ const {
   schema
 } = Astro.props;
 
-const fullTitle = title.includes('findABA.care') ? title : `${title} | findABA.care`;
+const fullTitle = title.includes('autism.place') ? title : `${title} | autism.place`;
 const canonicalURL = canonical || new URL(Astro.url.pathname, Astro.site || 'https://findabacare.com').href;
 ---
 
@@ -38,7 +38,7 @@ const canonicalURL = canonical || new URL(Astro.url.pathname, Astro.site || 'htt
 <meta property="og:title" content={fullTitle} />
 <meta property="og:description" content={description} />
 <meta property="og:image" content={ogImage} />
-<meta property="og:site_name" content="findABA.care" />
+<meta property="og:site_name" content="autism.place" />
 
 <!-- Twitter -->
 <meta property="twitter:card" content="summary_large_image" />
@@ -57,7 +57,7 @@ const canonicalURL = canonical || new URL(Astro.url.pathname, Astro.site || 'htt
 {
   "@context": "https://schema.org",
   "@type": "Organization",
-  "name": "findABA.care",
+  "name": "autism.place",
   "url": "https://findabacare.com",
   "logo": "https://findabacare.com/logo.png",
   "description": "Discover autism-friendly venues and events in your community",

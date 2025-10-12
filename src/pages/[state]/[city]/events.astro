@@ -61,7 +61,7 @@ const processedEvents = events.map(event => ({
   rsvpCount: event.rsvp_count?.[0]?.count || 0
 }));
 
-const title = `${cityData.name}, ${stateUpper} Events | findABA.care`;
+const title = `${cityData.name}, ${stateUpper} Events | autism.place`;
 const description = `Autism-friendly micro-events in ${cityData.name}, ${stateName}. Small group meetups (max 12 kids) at sensory-friendly venues.`;
 ---
 
@@ -206,7 +206,7 @@ const description = `Autism-friendly micro-events in ${cityData.name}, ${stateNa
                     startTime: event.start_time,
                     endDate: event.date,
                     endTime: event.end_time,
-                    url: `https://findaba.care/${state}/${city}/events#${event.id}`
+                    url: `https://autism.place/${state}/${city}/events#${event.id}`
                   })
                 )}`}
                 download={`${event.title.replace(/\s+/g, '-')}.ics`}

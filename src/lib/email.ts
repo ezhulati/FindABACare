@@ -1,6 +1,6 @@
 /**
  * Email service using Resend
- * Handles all transactional emails for findABA.care
+ * Handles all transactional emails for autism.place
  */
 
 export interface EmailOptions {
@@ -122,7 +122,7 @@ export function rsvpConfirmationEmail(data: {
       <body>
         <div class="container">
           <div class="header">
-            <h1>findABA.care</h1>
+            <h1>autism.place</h1>
           </div>
           <div class="content">
             <h2>You're all set!</h2>
@@ -157,7 +157,7 @@ export function rsvpConfirmationEmail(data: {
             <p>See you there! 👋</p>
           </div>
           <div class="footer">
-            <p>findABA.care - Supporting families, one outing at a time</p>
+            <p>autism.place - Supporting families, one outing at a time</p>
           </div>
         </div>
       </body>

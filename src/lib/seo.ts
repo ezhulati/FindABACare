@@ -100,7 +100,7 @@ export function validateSEOMetadata(metadata: SEOMetadata): SEOValidationResult 
 
   // Content quality checks
   if (metadata.title && !metadata.title.includes('findABA')) {
-    warnings.push('Title should include brand name "findABA" or "findABA.care"');
+    warnings.push('Title should include brand name "findABA" or "autism.place"');
   }
 
   if (metadata.description && metadata.description.split(' ').length < 15) {
@@ -134,7 +134,7 @@ export function truncateAtWord(text: string, maxLength: number): string {
  * Generates SEO-optimized title for city pages
  */
 export function generateCityTitle(cityName: string, state: string): string {
-  return `${cityName}, ${state} Autism-Friendly Venues | findABA.care`;
+  return `${cityName}, ${state} Autism-Friendly Venues | autism.place`;
 }
 
 /**
@@ -174,7 +174,7 @@ export function generateCityOGImage(cityName: string): { ogImage: string; ogImag
  * Generates SEO-optimized title for venue pages
  */
 export function generateVenueTitle(venueName: string, cityName: string, state: string): string {
-  return truncateAtWord(`${venueName} - ${cityName}, ${state} | findABA.care`, 60);
+  return truncateAtWord(`${venueName} - ${cityName}, ${state} | autism.place`, 60);
 }
 
 /**
@@ -253,29 +253,29 @@ export function checkSEOInDev(metadata: SEOMetadata, pagePath: string): void {
  */
 export const SEO_TEMPLATES = {
   home: {
-    title: 'findABA.care - Find Autism-Friendly Places for Your Child',
+    title: 'autism.place - Find Autism-Friendly Places for Your Child',
     description:
       'Discover sensory-friendly venues, quiet hours, and parent-verified places for children with autism in Dallas and Houston. Real experiences from real families.',
     ogImage: STOCK_IMAGES.cityKids,
     ogImageAlt: 'Children enjoying autism-friendly activities in the city',
   },
   about: {
-    title: 'About findABA.care - Our Mission for Autism Families',
+    title: 'About autism.place - Our Mission for Autism Families',
     description:
-      'findABA.care helps families find autism-friendly venues through parent verification and community reviews. Safe, sensory-friendly places that work for your child.',
+      'autism.place helps families find autism-friendly venues through parent verification and community reviews. Safe, sensory-friendly places that work for your child.',
     ogImage: STOCK_IMAGES.parentConnect,
     ogImageAlt: 'Parents connecting and sharing autism-friendly venue experiences',
   },
   stateDirectory: (stateName: string) => ({
-    title: `${stateName} Autism-Friendly Venues & Events | findABA.care`,
+    title: `${stateName} Autism-Friendly Venues & Events | autism.place`,
     description: `Browse autism-friendly venues and sensory-friendly events across ${stateName}. Parent-verified places with quiet hours, visual supports, and accommodations.`,
   }),
   events: (cityName: string, state: string) => ({
-    title: `${cityName}, ${state} Autism-Friendly Events | findABA.care`,
+    title: `${cityName}, ${state} Autism-Friendly Events | autism.place`,
     description: `Find micro-events, sensory-friendly activities, and autism-friendly gatherings in ${cityName}. Small groups, predictable schedules, parent-verified experiences.`,
   }),
   calmWindows: (cityName: string, state: string) => ({
-    title: `${cityName}, ${state} Calm Windows - Quiet Hours | findABA.care`,
+    title: `${cityName}, ${state} Calm Windows - Quiet Hours | autism.place`,
     description: `Discover quiet hours and calm windows at ${cityName} venues. Reduced sensory input, lower crowds, and autism-friendly shopping times. Parent-verified schedules.`,
   }),
 };

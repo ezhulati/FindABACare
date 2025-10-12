@@ -51,7 +51,7 @@ const totalVenues = citiesWithCounts.reduce((sum, city) => sum + city.venueCount
 const stateName = cities[0].state;
 const stateNameFull = stateName; // Could map to full names if needed
 
-const title = `${stateNameFull} Autism-Friendly Venues | findABA.care`;
+const title = `${stateNameFull} Autism-Friendly Venues | autism.place`;
 const description = `Discover ${totalVenues.toLocaleString()}+ autism-friendly venues across ${cities.length} cities in ${stateNameFull}. Find sensory-friendly museums, parks, libraries, and more.`;
 
 // Note: getStaticPaths() is not needed in SSR mode (output: 'server')

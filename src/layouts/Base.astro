@@ -11,15 +11,15 @@ interface Props {
 }
 
 const {
-  title = 'findABA.care - Find places that work for your child',
-  description = 'Quiet hours, visual guides, and small-group meetups verified by local parents. Autism-friendly venues in Dallas and Houston.',
+  title = 'autism.place - Find autism-friendly places near you',
+  description = 'Discover autism-friendly venues with quiet hours, visual guides, and sensory accommodations. Parent-verified places across 40+ major US cities.',
   ogImage = '/Stock Images/AutismVenue.jpg',
   ogImageAlt = 'Autism-friendly venue with sensory accommodations',
   canonical
 } = Astro.props;
 
 const url = canonical || Astro.url.pathname;
-const fullUrl = `https://findaba.care${url}`;
+const fullUrl = `https://autism.place${url}`;
 const fullOgImage = new URL(ogImage, Astro.url.origin).href;
 
 // Fetch cities dynamically for navigation
@@ -76,7 +76,7 @@ const sortedStates = Object.keys(citiesByState).sort();
     <meta property="og:description" content={description} />
     <meta property="og:image" content={fullOgImage} />
     <meta property="og:image:alt" content={ogImageAlt} />
-    <meta property="og:site_name" content="findABA.care" />
+    <meta property="og:site_name" content="autism.place" />
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
@@ -98,8 +98,8 @@ const sortedStates = Object.keys(citiesByState).sort();
           <!-- Logo -->
           <div class="flex items-center">
             <a href="/" class="flex items-center gap-2 text-xl font-bold text-gray-900 hover:text-gray-700 transition-colors group">
-              <img src="/logo-infinity-clean.svg" alt="findABA.care Logo" class="w-10 h-10 transition-transform group-hover:scale-110" />
-              <span>findABA.care</span>
+              <img src="/logo-infinity-clean.svg" alt="autism.place Logo" class="w-10 h-10 transition-transform group-hover:scale-110" />
+              <span>autism.place</span>
             </a>
           </div>
 
@@ -113,8 +113,8 @@ const sortedStates = Object.keys(citiesByState).sort();
             </a>
           </nav>
 
-          <!-- Auth -->
-          <div class="flex items-center space-x-4">
+          <!-- Auth (desktop only) -->
+          <div class="hidden md:flex items-center space-x-4">
             <div id="auth-container">
               <AuthButton client:load />
             </div>
@@ -140,6 +140,11 @@ const sortedStates = Object.keys(citiesByState).sort();
           <a href="/about" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
             About
           </a>
+          <div class="px-3 py-2">
+            <div id="auth-container-mobile">
+              <AuthButton client:load />
+            </div>
+          </div>
         </div>
       </div>
     </header>
@@ -155,7 +160,7 @@ const sortedStates = Object.keys(citiesByState).sort();
           <div>
             <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wider">About</h3>
             <p class="mt-4 text-sm text-gray-600">
-              findABA.care helps families find autism-friendly venues across 50+ major US cities.
+              autism.place helps families find autism-friendly venues across 40+ major US cities.
             </p>
           </div>
 
@@ -192,7 +197,7 @@ const sortedStates = Object.keys(citiesByState).sort();
           <div>
             <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wider">Contact</h3>
             <p class="mt-4 text-sm text-gray-600">
-              Email: <a href="mailto:hello@findaba.care" class="hover:text-gray-900">hello@findaba.care</a>
+              Email: <a href="mailto:hello@autism.place" class="hover:text-gray-900">hello@autism.place</a>
             </p>
           </div>
         </div>
@@ -233,7 +238,7 @@ const sortedStates = Object.keys(citiesByState).sort();
 
         <div class="mt-8 pt-8 border-t border-gray-200">
           <p class="text-sm text-gray-500 text-center">
-            © 2025 findABA.care. All rights reserved. <a href="https://enrizhulati.com" target="_blank" rel="noopener noreferrer" class="hover:text-gray-700 transition-colors">Made in Texas</a>
+            © 2025 autism.place. All rights reserved. <a href="https://enrizhulati.com" target="_blank" rel="noopener noreferrer" class="hover:text-gray-700 transition-colors">Made in Texas</a>
           </p>
         </div>
       </div>
