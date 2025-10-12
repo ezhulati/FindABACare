@@ -140,9 +140,9 @@ checkSEOInDev({ title, description, ogImage, ogImageAlt }, `/${state}/${city}`);
     </div>
 
     <!-- Main Grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-8 relative">
       <!-- Left Sidebar -->
-      <div class="lg:col-span-1">
+      <div class="lg:col-span-1 relative z-10">
         <div class="lg:sticky lg:top-20">
           <!-- Map (moved to sidebar) -->
           <div class="bg-white rounded-lg border border-gray-200 p-4 mb-6">
@@ -169,7 +169,7 @@ checkSEOInDev({ title, description, ogImage, ogImageAlt }, `/${state}/${city}`);
       </div>
 
       <!-- Main Content (Venues List) -->
-      <div class="lg:col-span-3">
+      <div class="lg:col-span-3 relative z-10">
         <!-- Venues List -->
         <div>
           <div class="flex items-center justify-between mb-4">
