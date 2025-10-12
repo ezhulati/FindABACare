@@ -15,15 +15,19 @@ const supabase = createClient(
 );
 
 // Fetch all cities in this state
-const { data: cities } = await supabase
+console.log(`[state]/index.astro: Fetching cities for state="${state}"`);
+const { data: cities, error: citiesError } = await supabase
   .from('cities')
   .select('id, name, slug, state, center_lat, center_lng, population, priority_tier')
   .eq('status', 'active')
   .ilike('state', state!)
   .order('population', { ascending: false });
 
+console.log(`[state]/index.astro: Query result:`, { citiesCount: cities?.length, error: citiesError });
+
 // If no cities found, return 404
 if (!cities || cities.length === 0) {
+  console.log(`[state]/index.astro: No cities found, redirecting to /404`);
   return Astro.redirect('/404');
 }
 
@@ -50,23 +54,7 @@ const stateNameFull = stateName; // Could map to full names if needed
 const title = `${stateNameFull} Autism-Friendly Venues | findABA.care`;
 const description = `Discover ${totalVenues.toLocaleString()}+ autism-friendly venues across ${cities.length} cities in ${stateNameFull}. Find sensory-friendly museums, parks, libraries, and more.`;
 
-export async function getStaticPaths() {
-  const supabase = createClient(
-    import.meta.env.PUBLIC_SUPABASE_URL!,
-    import.meta.env.PUBLIC_SUPABASE_ANON_KEY!
-  );
-
-  const { data: cities } = await supabase
-    .from('cities')
-    .select('state')
-    .eq('status', 'active');
-
-  const uniqueStates = [...new Set(cities?.map(c => c.state.toLowerCase()) || [])];
-
-  return uniqueStates.map(state => ({
-    params: { state }
-  }));
-}
+// Note: getStaticPaths() is not needed in SSR mode (output: 'server')
 ---
 
 <Base title={title} description={description}>

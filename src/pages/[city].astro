@@ -7,6 +7,11 @@ import { getServerClient } from '../lib/supabaseServer';
 
 const { city } = Astro.params;
 
+// Redirect state codes (2 letters) to state pages - they should use [state]/index.astro instead
+if (city && city.length === 2) {
+  return Astro.redirect(`/${city}/`);
+}
+
 // Validate city
 if (!['dallas', 'houston'].includes(city || '')) {
   return Astro.redirect('/');
