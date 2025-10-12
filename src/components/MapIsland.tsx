@@ -28,6 +28,7 @@ export default function MapIsland({
   const markers = useRef<mapboxgl.Marker[]>([]);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [error, setError] = useState('');
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   // Initialize map
   useEffect(() => {
@@ -145,7 +146,7 @@ export default function MapIsland({
 
   if (error) {
     return (
-      <div className="w-full h-[500px] flex items-center justify-center bg-gray-100 rounded-lg">
+      <div className="w-full aspect-square flex items-center justify-center bg-gray-100 rounded-lg">
         <div className="text-center">
           <svg className="w-12 h-12 text-gray-400 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
@@ -156,21 +157,105 @@ export default function MapIsland({
     );
   }
 
+  const toggleFullscreen = () => {
+    setIsFullscreen(!isFullscreen);
+    // Trigger map resize after state change
+    setTimeout(() => {
+      map.current?.resize();
+    }, 100);
+  };
+
+  // Handle escape key to close fullscreen
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isFullscreen) {
+        setIsFullscreen(false);
+      }
+    };
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [isFullscreen]);
+
+  // Handle moving map container when fullscreen toggles
+  useEffect(() => {
+    if (!mapContainer.current) return;
+
+    if (isFullscreen) {
+      // Move map to fullscreen container
+      const fullscreenContainer = document.getElementById('fullscreen-map-container');
+      if (fullscreenContainer && mapContainer.current.parentNode) {
+        fullscreenContainer.appendChild(mapContainer.current);
+        // Remove aspect-square and add full height
+        mapContainer.current.classList.remove('aspect-square');
+        mapContainer.current.classList.add('h-full');
+        map.current?.resize();
+      }
+    } else {
+      // Move map back to original container
+      const originalParent = document.querySelector('.relative.w-full');
+      if (originalParent && mapContainer.current.parentNode) {
+        originalParent.appendChild(mapContainer.current);
+        // Restore aspect-square
+        mapContainer.current.classList.remove('h-full');
+        mapContainer.current.classList.add('aspect-square');
+        map.current?.resize();
+      }
+    }
+  }, [isFullscreen]);
+
   return (
-    <div className="w-full">
-      <div
-        ref={mapContainer}
-        className="w-full h-[500px] rounded-lg overflow-hidden border border-gray-200"
-        style={{ minHeight: '400px' }}
-      />
-      {!mapLoaded && (
-        <div className="absolute inset-0 flex items-center justify-center bg-gray-100 rounded-lg">
-          <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mb-2"></div>
-            <p className="text-sm text-gray-600">Loading map...</p>
+    <>
+      <div className="relative w-full">
+        {/* Expand button */}
+        <button
+          onClick={toggleFullscreen}
+          className="absolute top-2 right-2 z-[100] bg-white rounded-lg p-2 shadow-md hover:bg-gray-50 transition-colors"
+          aria-label="Expand map"
+          title="Expand map"
+        >
+          <svg className="w-5 h-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+          </svg>
+        </button>
+
+        <div
+          ref={mapContainer}
+          className="w-full aspect-square rounded-lg overflow-hidden border border-gray-200 relative z-0"
+        />
+        {!mapLoaded && (
+          <div className="absolute inset-0 flex items-center justify-center bg-gray-100 rounded-lg">
+            <div className="text-center">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mb-2"></div>
+              <p className="text-sm text-gray-600">Loading map...</p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Fullscreen Modal */}
+      {isFullscreen && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-75 flex items-center justify-center p-4">
+          <div className="relative w-full h-full max-w-7xl bg-white rounded-lg overflow-hidden">
+            {/* Close button */}
+            <button
+              onClick={toggleFullscreen}
+              className="absolute top-4 right-4 z-10 bg-white rounded-lg p-2 shadow-lg hover:bg-gray-50 transition-colors"
+              aria-label="Close fullscreen"
+              title="Close (Esc)"
+            >
+              <svg className="w-6 h-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            {/* Fullscreen map container */}
+            <div className="w-full h-full">
+              {/* We'll create a portal to move the map here */}
+              <div id="fullscreen-map-container" className="w-full h-full" />
+            </div>
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

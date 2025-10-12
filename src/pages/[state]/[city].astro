@@ -141,34 +141,35 @@ checkSEOInDev({ title, description, ogImage, ogImageAlt }, `/${state}/${city}`);
 
     <!-- Main Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
-      <!-- Filters Sidebar -->
+      <!-- Left Sidebar -->
       <div class="lg:col-span-1">
         <div class="lg:sticky lg:top-20">
+          <!-- Map (moved to sidebar) -->
+          <div class="bg-white rounded-lg border border-gray-200 p-4 mb-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Map View</h2>
+            <MapIsland
+              client:load
+              venues={venues.map(v => ({
+                id: v.id,
+                name: v.name,
+                slug: v.slug,
+                lat: v.lat,
+                lng: v.lng,
+                type: v.type,
+                meter: v.meter
+              }))}
+              initialCenter={mapCenter}
+              initialZoom={11}
+            />
+          </div>
+
+          <!-- Filters (below map) -->
           <VenueFiltersIsland client:load />
         </div>
       </div>
 
-      <!-- Main Content -->
-      <div class="lg:col-span-3 space-y-6">
-        <!-- Map -->
-        <div class="bg-white rounded-lg border border-gray-200 p-4">
-          <h2 class="text-lg font-semibold text-gray-900 mb-4">Map View</h2>
-          <MapIsland
-            client:load
-            venues={venues.map(v => ({
-              id: v.id,
-              name: v.name,
-              slug: v.slug,
-              lat: v.lat,
-              lng: v.lng,
-              type: v.type,
-              meter: v.meter
-            }))}
-            initialCenter={mapCenter}
-            initialZoom={11}
-          />
-        </div>
-
+      <!-- Main Content (Venues List) -->
+      <div class="lg:col-span-3">
         <!-- Venues List -->
         <div>
           <div class="flex items-center justify-between mb-4">
