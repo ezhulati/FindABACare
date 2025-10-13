@@ -16,6 +16,8 @@ interface Props {
     last_verified?: string;
     meter?: string;
     photo_keys?: string[];
+    google_rating?: number;
+    verification_status?: string;
   };
 }
 
@@ -38,11 +40,14 @@ const featuredImage = venue.photo_keys && venue.photo_keys.length > 0 ? venue.ph
   data-venue={JSON.stringify({
     id: venue.id,
     name: venue.name,
+    type: venue.type,
     amenities: venue.amenities || {},
     sensory_hours: venue.sensory_hours,
     meter: meter,
     last_verified: venue.last_verified,
-    photo_keys: venue.photo_keys
+    photo_keys: venue.photo_keys,
+    google_rating: venue.google_rating,
+    verification_status: venue.verification_status
   })}
 >
   <!-- Featured Image -->
