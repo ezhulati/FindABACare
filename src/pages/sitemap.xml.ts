@@ -7,7 +7,7 @@ import { getServerClient } from '../lib/supabaseServer';
  */
 export const GET: APIRoute = async ({ request }) => {
   const supabase = getServerClient(request);
-  const baseUrl = 'https://findabacare.com'; // Update with your production URL
+  const baseUrl = 'https://autism.place';
 
   // Fetch all active cities
   const { data: cities } = await supabase
