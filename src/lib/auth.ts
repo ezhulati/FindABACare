@@ -76,3 +76,18 @@ export function onAuthStateChange(callback: (session: any) => void) {
     callback(session);
   });
 }
+
+/**
+ * Server-side auth helper - requires user to be authenticated
+ * Redirects to login if not authenticated
+ */
+export async function requireAuth(Astro: any) {
+  const supabase = (await import('./supabaseServer')).getServerClient(Astro.request);
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return Astro.redirect('/auth/login');
+  }
+
+  return user;
+}

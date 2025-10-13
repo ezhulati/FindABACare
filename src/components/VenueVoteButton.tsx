@@ -7,7 +7,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/db';
+import { getSupabaseBrowserClient } from '@/lib/supabaseClient';
 
 interface VenueVoteButtonProps {
   venueId: string;
@@ -31,6 +31,8 @@ export default function VenueVoteButton({
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+
+  const supabase = getSupabaseBrowserClient();
 
   // Check auth status and load user's vote
   useEffect(() => {

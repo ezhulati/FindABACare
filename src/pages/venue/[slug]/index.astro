@@ -171,19 +171,14 @@ const placeSchema = {
                 <p class="text-sm text-gray-500 mt-1">{venue.type}</p>
               )}
             </div>
-            <div class="flex items-center gap-3">
-              <FavoriteButton
-                venueId={venue.id}
-                venueName={venue.name}
-                initialFavoriteCount={venue.favorite_count || 0}
-                size="lg"
-                showCount={true}
-                client:load
-              />
-              <span class={`px-4 py-2 text-sm font-medium rounded-full border ${meterClass}`}>
-                {meter}
-              </span>
-            </div>
+            <FavoriteButton
+              venueId={venue.id}
+              venueName={venue.name}
+              initialFavoriteCount={venue.favorite_count || 0}
+              size="lg"
+              showCount={true}
+              client:load
+            />
           </div>
 
           {venue.description && (
@@ -435,10 +430,14 @@ const placeSchema = {
               </div>
             )}
 
-            <dl class="space-y-3 text-sm">
+            <dl class="space-y-4 text-sm">
               <div>
-                <dt class="text-gray-600">Go Now meter</dt>
-                <dd class="font-medium text-gray-900">{meter}</dd>
+                <dt class="text-gray-600 mb-2">Current Sensory Level</dt>
+                <dd>
+                  <span class={`inline-flex items-center px-4 py-2 text-sm font-semibold rounded-full border ${meterClass}`}>
+                    {meter}
+                  </span>
+                </dd>
               </div>
               {venue.city && (
                 <div>

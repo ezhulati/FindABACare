@@ -10,7 +10,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/db';
+import { getSupabaseBrowserClient } from '@/lib/supabaseClient';
 
 interface VenueReviewFormProps {
   venueId: string;
@@ -47,6 +47,8 @@ export default function VenueReviewForm({
     'open_water',
     'long_wait_times',
   ];
+
+  const supabase = getSupabaseBrowserClient();
 
   useEffect(() => {
     checkAuthAndExistingReview();
@@ -173,18 +175,55 @@ export default function VenueReviewForm({
 
   if (!isAuthenticated) {
     return (
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-          Sign in to leave a review
+      <div className="bg-white border-2 border-purple-200 rounded-xl p-8 text-center">
+        {/* Review Icon */}
+        <div className="flex justify-center mb-4">
+          <div className="w-16 h-16 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full flex items-center justify-center">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
+              <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+              <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+            </svg>
+          </div>
+        </div>
+
+        {/* Heading */}
+        <h3 className="text-2xl font-bold text-gray-900 mb-2">
+          Share Your Experience
         </h3>
-        <p className="text-sm text-gray-600 mb-4">
-          Share your experience to help other families
+
+        {/* Description */}
+        <p className="text-gray-600 mb-6 leading-relaxed">
+          Your review helps other families discover autism-friendly venues and plan successful outings
         </p>
+
+        {/* Benefits */}
+        <div className="space-y-3 mb-6 bg-purple-50 rounded-xl p-4 text-left max-w-md mx-auto">
+          <div className="flex items-start gap-3">
+            <svg className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+            <span className="text-sm text-gray-700">Write unlimited reviews</span>
+          </div>
+          <div className="flex items-start gap-3">
+            <svg className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+            <span className="text-sm text-gray-700">Help the autism community</span>
+          </div>
+          <div className="flex items-start gap-3">
+            <svg className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+            <span className="text-sm text-gray-700">Save favorites & upvote venues</span>
+          </div>
+        </div>
+
+        {/* CTA Button */}
         <a
-          href="/login"
-          className="inline-block bg-purple-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-purple-700 transition-colors"
+          href="/auth/login"
+          className="inline-block bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
         >
-          Sign in
+          Create Free Account
         </a>
       </div>
     );

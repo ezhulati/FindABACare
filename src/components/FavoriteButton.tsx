@@ -10,7 +10,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { createBrowserClient } from '@supabase/ssr';
+import { getSupabaseBrowserClient } from '@/lib/supabaseClient';
 
 interface FavoriteButtonProps {
   venueId: string;
@@ -33,12 +33,7 @@ export default function FavoriteButton({
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [supabase] = useState(() =>
-    createBrowserClient(
-      import.meta.env.PUBLIC_SUPABASE_URL,
-      import.meta.env.PUBLIC_SUPABASE_ANON_KEY
-    )
-  );
+  const supabase = getSupabaseBrowserClient();
 
   useEffect(() => {
     checkAuthAndLoadFavorite();
@@ -61,7 +56,11 @@ export default function FavoriteButton({
     }
   };
 
-  const handleClick = async () => {
+  const handleClick = async (e: React.MouseEvent) => {
+    // Prevent click from bubbling to parent elements (like <a> tags)
+    e.stopPropagation();
+    e.preventDefault();
+
     if (!isAuthenticated) {
       setShowLoginModal(true);
       return;
