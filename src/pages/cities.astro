@@ -1,10 +1,10 @@
 ---
 import Base from '../layouts/Base.astro';
 import { createClient } from '@supabase/supabase-js';
-import AddressSearchIsland from '../components/AddressSearchIsland';
+import MapboxAddressSearch from '../components/MapboxAddressSearch';
 
-// Google Maps API Key
-const GOOGLE_MAPS_API_KEY = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY || import.meta.env.GOOGLE_MAPS_API_KEY;
+// Mapbox Token
+const MAPBOX_TOKEN = import.meta.env.PUBLIC_MAPBOX_TOKEN;
 
 // Initialize Supabase
 const supabase = createClient(
@@ -70,7 +70,7 @@ const description = `Browse ${totalVenues.toLocaleString()}+ autism-friendly ven
 
           <!-- Address Search -->
           <div class="flex justify-center">
-            <AddressSearchIsland client:load apiKey={GOOGLE_MAPS_API_KEY} />
+            <MapboxAddressSearch client:load mapboxToken={MAPBOX_TOKEN} />
           </div>
         </div>
       </div>

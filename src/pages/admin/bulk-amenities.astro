@@ -1,0 +1,441 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getAuthUser, requireAdmin } from '../../lib/supabaseServer';
+
+// Require admin authentication
+await requireAdmin(Astro.request);
+
+const user = await getAuthUser(Astro.request);
+---
+
+<Base title="Bulk Amenities Editor - Admin" description="Add sensory-friendly amenities to multiple venues">
+  <div class="min-h-screen bg-gray-50 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <!-- Header -->
+      <div class="mb-8">
+        <div class="flex items-center justify-between">
+          <div>
+            <h1 class="text-3xl font-bold text-gray-900">Bulk Amenities Editor</h1>
+            <p class="mt-2 text-gray-600">Add sensory-friendly information to venues quickly</p>
+          </div>
+          <a href="/admin" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">
+            ← Back to Admin
+          </a>
+        </div>
+      </div>
+
+      <!-- Stats Card -->
+      <div id="stats-card" class="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div>
+            <div class="text-sm text-gray-600">Total Venues</div>
+            <div id="stat-total" class="text-2xl font-bold text-gray-900">-</div>
+          </div>
+          <div>
+            <div class="text-sm text-gray-600">With Amenities</div>
+            <div id="stat-with" class="text-2xl font-bold text-green-600">-</div>
+          </div>
+          <div>
+            <div class="text-sm text-gray-600">Missing Amenities</div>
+            <div id="stat-missing" class="text-2xl font-bold text-red-600">-</div>
+          </div>
+          <div>
+            <div class="text-sm text-gray-600">Completion</div>
+            <div id="stat-percent" class="text-2xl font-bold text-purple-600">-</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filter Controls -->
+      <div class="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">Filter Venues</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">City</label>
+            <select id="filter-city" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+              <option value="">All Cities</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Venue Type</label>
+            <select id="filter-type" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+              <option value="">All Types</option>
+              <option value="museum">Museum</option>
+              <option value="park">Park</option>
+              <option value="library">Library</option>
+              <option value="recreation">Recreation</option>
+              <option value="restaurant">Restaurant</option>
+              <option value="theater">Theater</option>
+              <option value="zoo">Zoo</option>
+              <option value="aquarium">Aquarium</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Has Amenities</label>
+            <select id="filter-amenities" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+              <option value="">All</option>
+              <option value="missing">Missing Amenities</option>
+              <option value="has">Has Amenities</option>
+            </select>
+          </div>
+        </div>
+        <div class="mt-4">
+          <button id="btn-apply-filters" class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+            Apply Filters
+          </button>
+          <button id="btn-reset-filters" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 ml-2">
+            Reset
+          </button>
+        </div>
+      </div>
+
+      <!-- Venue List -->
+      <div class="bg-white rounded-lg border border-gray-200 p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-semibold text-gray-900">Venues</h2>
+          <div class="text-sm text-gray-600">
+            Showing <span id="venue-count">0</span> venues
+          </div>
+        </div>
+
+        <div id="venue-list" class="space-y-4">
+          <!-- Venues will be loaded here -->
+          <div class="text-center py-12 text-gray-500">
+            Loading venues...
+          </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="mt-6 flex items-center justify-between">
+          <button id="btn-prev" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed">
+            ← Previous
+          </button>
+          <div class="text-sm text-gray-600">
+            Page <span id="current-page">1</span>
+          </div>
+          <button id="btn-next" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed">
+            Next →
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Amenities Modal -->
+  <div id="amenities-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+    <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+      <div class="p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h3 id="modal-venue-name" class="text-xl font-bold text-gray-900">Edit Amenities</h3>
+          <button id="btn-close-modal" class="text-gray-400 hover:text-gray-600">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+
+        <form id="amenities-form">
+          <input type="hidden" id="modal-venue-id" />
+
+          <!-- Positive Amenities -->
+          <div class="mb-6">
+            <h4 class="text-lg font-semibold text-gray-900 mb-3">✅ Sensory-Friendly Features</h4>
+            <div class="space-y-3">
+              <label class="flex items-start">
+                <input type="checkbox" name="amenities.quiet_room" class="mt-1 h-4 w-4 text-purple-600 rounded" />
+                <div class="ml-3">
+                  <div class="font-medium text-gray-900">Quiet Room</div>
+                  <div class="text-sm text-gray-600">Dedicated quiet space available</div>
+                </div>
+              </label>
+              <label class="flex items-start">
+                <input type="checkbox" name="amenities.visual_supports" class="mt-1 h-4 w-4 text-purple-600 rounded" />
+                <div class="ml-3">
+                  <div class="font-medium text-gray-900">Visual Supports</div>
+                  <div class="text-sm text-gray-600">Picture schedules and visual aids</div>
+                </div>
+              </label>
+              <label class="flex items-start">
+                <input type="checkbox" name="amenities.wheelchair_accessible" class="mt-1 h-4 w-4 text-purple-600 rounded" />
+                <div class="ml-3">
+                  <div class="font-medium text-gray-900">Wheelchair Accessible</div>
+                  <div class="text-sm text-gray-600">Fully wheelchair accessible</div>
+                </div>
+              </label>
+              <label class="flex items-start">
+                <input type="checkbox" name="amenities.changing_table" class="mt-1 h-4 w-4 text-purple-600 rounded" />
+                <div class="ml-3">
+                  <div class="font-medium text-gray-900">Changing Table</div>
+                  <div class="text-sm text-gray-600">Adult-sized changing table available</div>
+                </div>
+              </label>
+              <label class="flex items-start">
+                <input type="checkbox" name="amenities.noise_cancelling" class="mt-1 h-4 w-4 text-purple-600 rounded" />
+                <div class="ml-3">
+                  <div class="font-medium text-gray-900">Noise-Cancelling Options</div>
+                  <div class="text-sm text-gray-600">Headphones or quiet zones available</div>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <!-- Trigger Warnings -->
+          <div class="mb-6">
+            <h4 class="text-lg font-semibold text-gray-900 mb-3">⚠️ Potential Sensory Triggers</h4>
+            <div class="space-y-3">
+              <label class="flex items-start">
+                <input type="checkbox" name="triggers.hand_dryer" class="mt-1 h-4 w-4 text-amber-600 rounded" />
+                <div class="ml-3">
+                  <div class="font-medium text-gray-900">Loud Hand Dryers</div>
+                  <div class="text-sm text-gray-600">High-powered hand dryers present</div>
+                </div>
+              </label>
+              <label class="flex items-start">
+                <input type="checkbox" name="triggers.strong_scents" class="mt-1 h-4 w-4 text-amber-600 rounded" />
+                <div class="ml-3">
+                  <div class="font-medium text-gray-900">Strong Scents</div>
+                  <div class="text-sm text-gray-600">May have strong fragrances or smells</div>
+                </div>
+              </label>
+              <label class="flex items-start">
+                <input type="checkbox" name="triggers.loud_music" class="mt-1 h-4 w-4 text-amber-600 rounded" />
+                <div class="ml-3">
+                  <div class="font-medium text-gray-900">Loud Music</div>
+                  <div class="text-sm text-gray-600">Background music can be loud</div>
+                </div>
+              </label>
+              <label class="flex items-start">
+                <input type="checkbox" name="triggers.open_water" class="mt-1 h-4 w-4 text-amber-600 rounded" />
+                <div class="ml-3">
+                  <div class="font-medium text-gray-900">Open Water</div>
+                  <div class="text-sm text-gray-600">Unguarded water features present</div>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex items-center justify-end space-x-3 pt-6 border-t">
+            <button type="button" id="btn-cancel" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">
+              Cancel
+            </button>
+            <button type="submit" class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+              Save Amenities
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    import { supabase } from '@/lib/db';
+
+    let currentPage = 1;
+    let totalPages = 1;
+    const pageSize = 20;
+    let currentFilters = {
+      city: '',
+      type: '',
+      amenities: ''
+    };
+
+    // Load initial data
+    loadStats();
+    loadCities();
+    loadVenues();
+
+    // Event listeners
+    document.getElementById('btn-apply-filters')?.addEventListener('click', applyFilters);
+    document.getElementById('btn-reset-filters')?.addEventListener('click', resetFilters);
+    document.getElementById('btn-prev')?.addEventListener('click', () => changePage(-1));
+    document.getElementById('btn-next')?.addEventListener('click', () => changePage(1));
+    document.getElementById('btn-close-modal')?.addEventListener('click', closeModal);
+    document.getElementById('btn-cancel')?.addEventListener('click', closeModal);
+    document.getElementById('amenities-form')?.addEventListener('submit', saveAmenities);
+
+    async function loadStats() {
+      const { count: total } = await supabase
+        .from('venues')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'active');
+
+      const { count: withAmenities } = await supabase
+        .from('venues')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'active')
+        .not('amenities', 'is', null);
+
+      const missing = (total || 0) - (withAmenities || 0);
+      const percent = total ? Math.round((withAmenities || 0) / total * 100) : 0;
+
+      document.getElementById('stat-total')!.textContent = total?.toString() || '0';
+      document.getElementById('stat-with')!.textContent = withAmenities?.toString() || '0';
+      document.getElementById('stat-missing')!.textContent = missing.toString();
+      document.getElementById('stat-percent')!.textContent = percent + '%';
+    }
+
+    async function loadCities() {
+      const { data: cities } = await supabase
+        .from('cities')
+        .select('id, name, state')
+        .eq('status', 'active')
+        .order('name');
+
+      const select = document.getElementById('filter-city') as HTMLSelectElement;
+      cities?.forEach(city => {
+        const option = document.createElement('option');
+        option.value = city.id;
+        option.textContent = `${city.name}, ${city.state}`;
+        select.appendChild(option);
+      });
+    }
+
+    async function loadVenues() {
+      const offset = (currentPage - 1) * pageSize;
+      let query = supabase
+        .from('venues')
+        .select('id, name, slug, type, amenities, triggers, cities(name, state)', { count: 'exact' })
+        .eq('status', 'active')
+        .order('name')
+        .range(offset, offset + pageSize - 1);
+
+      // Apply filters
+      if (currentFilters.city) {
+        query = query.eq('city_id', currentFilters.city);
+      }
+      if (currentFilters.type) {
+        query = query.ilike('type', currentFilters.type);
+      }
+      if (currentFilters.amenities === 'missing') {
+        query = query.or('amenities.is.null,amenities.eq.{}');
+      } else if (currentFilters.amenities === 'has') {
+        query = query.not('amenities', 'is', null);
+      }
+
+      const { data: venues, count } = await query;
+
+      if (!venues) return;
+
+      totalPages = Math.ceil((count || 0) / pageSize);
+      document.getElementById('venue-count')!.textContent = count?.toString() || '0';
+      document.getElementById('current-page')!.textContent = currentPage.toString();
+
+      const list = document.getElementById('venue-list')!;
+      list.innerHTML = venues.map(venue => {
+        const hasAmenities = venue.amenities && Object.keys(venue.amenities).length > 0;
+        const cityName = venue.cities?.name || 'Unknown';
+        const state = venue.cities?.state || '??';
+
+        return `
+          <div class="border border-gray-200 rounded-lg p-4 hover:border-purple-300 transition-colors">
+            <div class="flex items-center justify-between">
+              <div class="flex-1">
+                <h3 class="font-semibold text-gray-900">${venue.name}</h3>
+                <div class="text-sm text-gray-600 mt-1">
+                  ${venue.type || 'Unknown'} • ${cityName}, ${state}
+                </div>
+                <div class="mt-2">
+                  ${hasAmenities
+                    ? '<span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800">✓ Has Amenities</span>'
+                    : '<span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800">⚠ Missing Amenities</span>'
+                  }
+                </div>
+              </div>
+              <button
+                onclick="openModal('${venue.id}', '${venue.name.replace(/'/g, "\\'")}', ${JSON.stringify(venue.amenities || {}).replace(/"/g, '&quot;')}, ${JSON.stringify(venue.triggers || {}).replace(/"/g, '&quot;')})"
+                class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+              >
+                ${hasAmenities ? 'Edit' : 'Add'} Amenities
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Update pagination buttons
+      (document.getElementById('btn-prev') as HTMLButtonElement).disabled = currentPage === 1;
+      (document.getElementById('btn-next') as HTMLButtonElement).disabled = currentPage === totalPages;
+    }
+
+    function applyFilters() {
+      currentFilters = {
+        city: (document.getElementById('filter-city') as HTMLSelectElement).value,
+        type: (document.getElementById('filter-type') as HTMLSelectElement).value,
+        amenities: (document.getElementById('filter-amenities') as HTMLSelectElement).value
+      };
+      currentPage = 1;
+      loadVenues();
+    }
+
+    function resetFilters() {
+      (document.getElementById('filter-city') as HTMLSelectElement).value = '';
+      (document.getElementById('filter-type') as HTMLSelectElement).value = '';
+      (document.getElementById('filter-amenities') as HTMLSelectElement).value = '';
+      currentFilters = { city: '', type: '', amenities: '' };
+      currentPage = 1;
+      loadVenues();
+    }
+
+    function changePage(delta: number) {
+      currentPage += delta;
+      loadVenues();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    (window as any).openModal = function(venueId: string, venueName: string, amenities: any, triggers: any) {
+      document.getElementById('modal-venue-id')!.setAttribute('value', venueId);
+      document.getElementById('modal-venue-name')!.textContent = venueName;
+
+      // Set checkbox states
+      const form = document.getElementById('amenities-form') as HTMLFormElement;
+      const checkboxes = form.querySelectorAll('input[type="checkbox"]');
+      checkboxes.forEach((checkbox: any) => {
+        const name = checkbox.getAttribute('name');
+        const [type, key] = name.split('.');
+        const value = type === 'amenities' ? amenities[key] : triggers[key];
+        checkbox.checked = value === true;
+      });
+
+      document.getElementById('amenities-modal')!.classList.remove('hidden');
+    };
+
+    function closeModal() {
+      document.getElementById('amenities-modal')!.classList.add('hidden');
+    }
+
+    async function saveAmenities(e: Event) {
+      e.preventDefault();
+      const form = e.target as HTMLFormElement;
+      const venueId = document.getElementById('modal-venue-id')!.getAttribute('value');
+
+      const amenities: any = {};
+      const triggers: any = {};
+
+      const checkboxes = form.querySelectorAll('input[type="checkbox"]');
+      checkboxes.forEach((checkbox: any) => {
+        const name = checkbox.getAttribute('name');
+        const [type, key] = name.split('.');
+        if (type === 'amenities') {
+          amenities[key] = checkbox.checked;
+        } else {
+          triggers[key] = checkbox.checked;
+        }
+      });
+
+      const { error } = await supabase
+        .from('venues')
+        .update({ amenities, triggers })
+        .eq('id', venueId);
+
+      if (error) {
+        alert('Failed to save amenities: ' + error.message);
+        return;
+      }
+
+      closeModal();
+      loadVenues();
+      loadStats();
+    }
+  </script>
+</Base>

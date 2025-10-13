@@ -1,0 +1,41 @@
+city,state,total,active,with_photos,photo_percentage,with_amenities,amenities_percentage
+"Los Angeles","CA",1049,1049,1035,99,0,0
+"Houston","TX",1011,1010,989,98,5,0
+"New York","NY",1001,1000,991,99,0,0
+"Chicago","IL",974,974,954,98,0,0
+"Philadelphia","PA",956,956,921,96,0,0
+"Dallas","TX",948,947,929,98,5,1
+"Phoenix","AZ",930,930,894,96,0,0
+"San Antonio","TX",874,874,843,96,0,0
+"San Diego","CA",759,759,747,98,0,0
+"Austin","TX",460,460,443,96,0,0
+"Denver","CO",355,355,346,97,0,0
+"Fort Worth","TX",354,354,337,95,0,0
+"Seattle","WA",349,349,335,96,0,0
+"Boston","MA",348,348,329,95,0,0
+"Indianapolis","IN",347,347,333,96,0,0
+"El Paso","TX",342,342,321,94,0,0
+"San Francisco","CA",340,340,334,98,0,0
+"San Jose","CA",339,339,326,96,0,0
+"Columbus","OH",338,338,327,97,0,0
+"Charlotte","NC",332,332,322,97,0,0
+"Nashville","TN",322,322,308,96,0,0
+"Jacksonville","FL",312,312,290,93,0,0
+"Portland","OR",264,264,246,93,0,0
+"Tampa","FL",155,155,144,93,0,0
+"Detroit","MI",154,154,145,94,0,0
+"Baltimore","MD",149,149,131,88,0,0
+"Milwaukee","WI",148,148,135,91,0,0
+"Miami","FL",147,147,136,93,0,0
+"Atlanta","GA",146,146,139,95,0,0
+"Long Beach","CA",146,146,140,96,0,0
+"Raleigh","NC",130,130,122,94,0,0
+"Memphis","TN",128,128,113,88,0,0
+"Tucson","AZ",124,124,122,98,0,0
+"Colorado Springs","CO",122,122,112,92,0,0
+"Sacramento","CA",121,121,114,94,0,0
+"Virginia Beach","VA",113,113,105,93,0,0
+"Fresno","CA",108,108,95,88,0,0
+"Mesa","AZ",47,47,44,94,0,0
+"Arlington","TX",44,44,42,95,0,0
+"Oakland","CA",25,25,21,84,0,0

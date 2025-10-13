@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { createBrowserClient } from '@supabase/ssr';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 export default function AuthButton() {
   const supabaseRef = useRef<SupabaseClient | null>(null);
@@ -22,7 +23,12 @@ export default function AuthButton() {
         return;
       }
 
-      supabaseRef.current = createClient(supabaseUrl, supabaseAnonKey);
+      // Use createBrowserClient from @supabase/ssr which handles cookies properly
+      // This automatically splits large sessions across multiple cookies
+      supabaseRef.current = createBrowserClient(
+        supabaseUrl,
+        supabaseAnonKey
+      );
     }
 
     const supabase = supabaseRef.current;
@@ -89,6 +95,12 @@ export default function AuthButton() {
         <span className="text-sm text-gray-600 hidden sm:inline">
           {user.email}
         </span>
+        <a
+          href="/profile"
+          className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+        >
+          Profile
+        </a>
         <button
           onClick={handleSignOut}
           className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"

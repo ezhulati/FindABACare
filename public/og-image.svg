@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" fill="none">
+  <!-- Open Graph social media image -->
+  <rect width="1200" height="630" fill="#F8F9FA"/>
+
+  <!-- Logo -->
+  <path d="M250 180C210.177 180 178 212.177 178 252C178 271.5 186 291 197 313C208 335 223 360 227 372C228.5 375.5 229.5 378 232 378C234.5 378 235.5 375.5 237 372C241 360 256 335 267 313C278 291 286 271.5 286 252C286 212.177 253.823 180 250 180Z" fill="#2563EB"/>
+  <circle cx="232" cy="252" r="28" fill="white"/>
+  <path d="M232 270C232 270 218 259 218 249C218 243 221.5 240 225.5 240C228.5 240 231 242 232 243C233 242 235.5 240 238.5 240C242.5 240 246 243 246 249C246 259 232 270 232 270Z" fill="#E17B65"/>
+
+  <!-- Text -->
+  <text x="320" y="275" font-family="system-ui, -apple-system, sans-serif" font-size="72" font-weight="700" fill="#1E293B">autism.place</text>
+  <text x="320" y="330" font-family="system-ui, -apple-system, sans-serif" font-size="32" fill="#64748B">Trusted roadmap to sensory-friendly experiences</text>
+</svg>

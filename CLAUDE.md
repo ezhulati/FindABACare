@@ -506,6 +506,273 @@ env SUPABASE_SERVICE_ROLE_KEY="..." \
 
 **Note:** Implement robust error handling and logging before automating scrapers.
 
+## Icon System (Visual Information Architecture)
+
+The platform uses a comprehensive icon system to help parents quickly assess venue suitability at a glance. The system prioritizes **data integrity** - icons ONLY display when information is explicitly confirmed in the database.
+
+### Core Principle: No Fake Data
+
+**CRITICAL:** The icon system must NEVER display fabricated information. Icons only render when database values are explicitly `true`:
+
+```typescript
+// ✅ CORRECT - Strict equality check
+const hasQuietRoom = amenities.quiet_room === true;
+
+// ❌ WRONG - Would show icon for undefined/null values
+const hasQuietRoom = amenities.quiet_room;
+```
+
+If no sensory information exists for a venue, display: "No sensory information available for this venue yet."
+
+### Icon Component Architecture
+
+**Files:**
+- `src/components/Icons.tsx` - Complete icon library (20+ SVG components)
+- `src/components/VenueIconBadges.tsx` - Data-driven badge components
+
+**Icon Categories:**
+
+1. **Venue Type Icons** (8 types)
+   - Museum, Park, Library, Restaurant, Theater, Gym, Zoo, Outdoor
+   - Used to quickly identify venue category
+
+2. **Go Now Meter Icons** (3 states)
+   - `QuietIcon` (green) - Best time to visit
+   - `ModerateIcon` (yellow) - Moderate crowd expected
+   - `BusyIcon` (red) - Crowded, may be challenging
+
+3. **Amenity Icons** (5 positive features, green badges)
+   - `QuietRoomIcon` - Dedicated quiet space available
+   - `VisualSupportsIcon` - Picture schedules and visual aids
+   - `WheelchairAccessibleIcon` - Fully wheelchair accessible
+   - `ChangingTableIcon` - Adult-sized changing table
+   - `SensoryHoursIcon` - Special sensory-friendly hours
+
+4. **Trigger Warning Icons** (4 potential challenges, amber badges)
+   - `HandDryerWarningIcon` - Loud hand dryers present
+   - `StrongScentsIcon` - May have strong fragrances
+   - `LoudMusicIcon` - Background music can be loud
+   - `OpenWaterIcon` - Unguarded water features present
+
+### Three-Tier Badge System
+
+Icons are grouped into three visual tiers with distinct color coding:
+
+```tsx
+// Tier 1: Type & Meter (gray background)
+<div className="bg-gray-100 rounded-full">
+  <VenueTypeIcon /> <MeterIcon />
+</div>
+
+// Tier 2: Positive Amenities (green background)
+{(hasQuietRoom || hasVisualSupports || ...) && (
+  <div className="bg-green-50 rounded-full">
+    {hasQuietRoom && <QuietRoomIcon className="text-green-600" />}
+  </div>
+)}
+
+// Tier 3: Trigger Warnings (amber background)
+{(hasHandDryer || hasStrongScents || ...) && (
+  <div className="bg-amber-50 rounded-full">
+    {hasHandDryer && <HandDryerWarningIcon className="text-amber-600" />}
+  </div>
+)}
+```
+
+### Component Usage Patterns
+
+**Compact Badges (Listing Cards):**
+
+```astro
+---
+import VenueIconBadges from './VenueIconBadges';
+---
+
+<VenueIconBadges
+  venue={{
+    type: venue.type || 'other',
+    meter: meter,
+    amenities: venue.amenities || {},
+    triggers: venue.triggers || {},
+    sensory_hours: venue.sensory_hours || []
+  }}
+  size="sm"
+  client:load
+/>
+```
+
+**Detailed Breakdown (Venue Detail Pages):**
+
+```astro
+---
+import { VenueIconDetails } from '../components/VenueIconBadges';
+---
+
+<VenueIconDetails
+  venue={{
+    type: venue.type || 'other',
+    meter: meter,
+    amenities: venue.amenities || {},
+    triggers: venue.triggers || {},
+    sensory_hours: venue.sensory_hours || []
+  }}
+  client:load
+/>
+```
+
+### Icon Metadata for Filters and Legends
+
+The `Icons.tsx` file exports metadata objects that can be used to build filter interfaces and legend components:
+
+```typescript
+import {
+  VENUE_TYPE_METADATA,
+  AMENITY_METADATA,
+  TRIGGER_METADATA
+} from '@/components/Icons';
+
+// Example: Build a filter checkbox
+Object.entries(AMENITY_METADATA).map(([key, metadata]) => (
+  <label>
+    <metadata.icon size={20} />
+    {metadata.label}
+    <span className="text-gray-500">{metadata.description}</span>
+  </label>
+));
+```
+
+**Available Metadata:**
+- `VENUE_TYPE_METADATA` - 8 venue types with labels, icons, and colors
+- `AMENITY_METADATA` - 5 amenities with labels, icons, and descriptions
+- `TRIGGER_METADATA` - 4 triggers with labels, icons, and descriptions
+
+### Data Validation Pattern
+
+Always validate database values before rendering icons:
+
+```typescript
+export default function VenueIconBadges({ venue }: Props) {
+  // Step 1: Parse JSONB fields with fallbacks
+  const amenities = venue.amenities || {};
+  const triggers = venue.triggers || {};
+  const hasSensoryHours = venue.sensory_hours && venue.sensory_hours.length > 0;
+
+  // Step 2: Check each field with strict equality
+  const hasQuietRoom = amenities.quiet_room === true;
+  const hasVisualSupports = amenities.visual_supports === true;
+  const hasHandDryer = triggers.hand_dryer === true;
+  // ... etc
+
+  // Step 3: Conditionally render groups
+  {(hasQuietRoom || hasVisualSupports || ...) && (
+    <div>{/* Render amenity icons */}</div>
+  )}
+}
+```
+
+### VenueIconDetails Component
+
+For venue detail pages, use the `VenueIconDetails` component which provides a comprehensive breakdown:
+
+```typescript
+export function VenueIconDetails({ venue }: Props) {
+  // Filter metadata to only show features with true values
+  const activeAmenities = Object.entries(AMENITY_METADATA).filter(([key]) =>
+    venue.amenities?.[key] === true
+  );
+
+  const activeTriggers = Object.entries(TRIGGER_METADATA).filter(([key]) =>
+    venue.triggers?.[key] === true
+  );
+
+  // Show message if no data available
+  if (activeAmenities.length === 0 && activeTriggers.length === 0) {
+    return <div>No sensory information available for this venue yet.</div>;
+  }
+
+  // Render detailed cards with icons, labels, and descriptions
+  // Green section: Sensory-Friendly Features
+  // Amber section: Potential Sensory Triggers
+}
+```
+
+This component automatically:
+- Shows only confirmed features
+- Displays icons with labels and descriptions
+- Groups features into sensory-friendly (green) and triggers (amber)
+- Hides entire section if no data exists
+
+### Integration with Existing Code
+
+**VenueCard.astro** (line 78-90):
+```astro
+<div class="mb-3">
+  <VenueIconBadges
+    venue={{
+      type: venue.type || 'other',
+      meter: meter,
+      amenities: venue.amenities || {},
+      triggers: venue.triggers || {},
+      sensory_hours: venue.sensory_hours || []
+    }}
+    size="sm"
+    client:load
+  />
+</div>
+```
+
+**Venue Detail Page** (src/pages/venue/[slug]/index.astro line 180-193):
+```astro
+<div class="bg-white rounded-lg border border-gray-200 p-6">
+  <h2 class="text-xl font-semibold text-gray-900 mb-4">Sensory-Friendly Information</h2>
+  <VenueIconDetails
+    venue={{
+      type: venue.type || 'other',
+      meter: meter,
+      amenities: venue.amenities || {},
+      triggers: venue.triggers || {},
+      sensory_hours: venue.sensory_hours || []
+    }}
+    client:load
+  />
+</div>
+```
+
+### Common Pitfalls
+
+**❌ DO NOT:**
+```typescript
+// Don't assume default values
+const hasQuietRoom = amenities.quiet_room ?? true; // WRONG
+
+// Don't use truthy checks (undefined/null would fail silently)
+if (amenities.quiet_room) { // WRONG
+
+// Don't render icons without data validation
+<QuietRoomIcon /> // WRONG - always renders
+```
+
+**✅ DO:**
+```typescript
+// Always check for explicit true value
+const hasQuietRoom = amenities.quiet_room === true;
+
+// Always provide fallbacks for JSONB fields
+const amenities = venue.amenities || {};
+
+// Always conditionally render icon groups
+{hasQuietRoom && <QuietRoomIcon />}
+```
+
+### Future Extensions
+
+The icon system is designed for expansion:
+
+1. **Filter System** - Use `AMENITY_METADATA` to build filterable search
+2. **Icon Legend** - Use metadata to create a reference guide
+3. **Map Markers** - Use venue type icons in Mapbox markers
+4. **Admin Dashboard** - Use icons in venue moderation interface
+
 ## Documentation References
 
 - **DEVELOPMENT_PLAN.md** - Complete 15-phase implementation roadmap

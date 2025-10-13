@@ -29,6 +29,8 @@ export function getServerClient(request: Request) {
     });
   }
 
+  // createServerClient from @supabase/ssr knows how to read cookies created by createBrowserClient
+  // It automatically handles chunked cookies (sessions split across multiple cookies)
   const supabase = createServerClient<Database>(
     supabaseUrl,
     supabaseAnonKey,

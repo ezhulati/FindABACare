@@ -61,9 +61,13 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
 
 const title = `Autism-Friendly Venues near ${address || 'you'}`;
 const description = `Found ${venuesWithDistance.length} autism-friendly venues within ${radius} miles. Museums, parks, libraries, and more with sensory accommodations.`;
+const MAPBOX_TOKEN = import.meta.env.PUBLIC_MAPBOX_TOKEN;
 ---
 
 <Base title={title} description={description}>
+  <!-- Mapbox GL JS -->
+  <link href="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css" rel="stylesheet" />
+  <script src="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js"></script>
   <div class="min-h-screen bg-gray-50">
     <!-- Search Header -->
     <div class="bg-white border-b border-gray-200 sticky top-16 z-40">
@@ -90,9 +94,9 @@ const description = `Found ${venuesWithDistance.length} autism-friendly venues w
 
     <!-- Results Container -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <!-- Filters Column -->
-        <div class="lg:col-span-3">
+      <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <!-- Filters Column (Left) -->
+        <div class="lg:col-span-1">
           <div class="sticky top-32">
             <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
               <!-- Filter Header -->
@@ -165,15 +169,14 @@ const description = `Found ${venuesWithDistance.length} autism-friendly venues w
           </div>
         </div>
 
-        <!-- Map Column -->
-        <div class="lg:col-span-5">
-          <div class="sticky top-32 h-[600px] bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <!-- Map and Results Column (Right) -->
+        <div class="lg:col-span-3">
+          <!-- Map -->
+          <div class="h-[500px] bg-white rounded-xl border border-gray-200 overflow-hidden mb-6">
             <div id="map" class="w-full h-full"></div>
           </div>
-        </div>
 
-        <!-- Results Column -->
-        <div class="lg:col-span-4">
+          <!-- Results List Below Map -->
           <div class="mb-4">
             <div class="text-sm font-medium text-gray-900">
               <span id="results-count">{venuesWithDistance.length}</span> venues found
@@ -185,7 +188,7 @@ const description = `Found ${venuesWithDistance.length} autism-friendly venues w
     </div>
   </div>
 
-  <script define:vars={{ venues: venuesWithDistance, centerLat: lat, centerLng: lng }}>
+  <script define:vars={{ venues: venuesWithDistance, centerLat: lat, centerLng: lng, mapboxToken: MAPBOX_TOKEN }}>
     // State
     let allVenues = venues;
     let filteredVenues = venues;
@@ -206,19 +209,44 @@ const description = `Found ${venuesWithDistance.length} autism-friendly venues w
       renderVenues();
     }
 
-    // Init Map
+    // Init Mapbox Map
     function initMap() {
-      map = new google.maps.Map(document.getElementById('map'), {
-        center: { lat: centerLat, lng: centerLng },
-        zoom: 12,
-        styles: [{ featureType: 'poi', elementType: 'labels', stylers: [{ visibility: 'off' }] }]
+      if (typeof mapboxgl === 'undefined' || !mapboxToken) {
+        document.getElementById('map').innerHTML = '<div class="flex items-center justify-center h-full bg-gray-100 text-gray-600 text-center p-4"><div><svg class="mx-auto h-12 w-12 text-gray-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" /></svg><p class="text-sm">Map loading...</p></div></div>';
+        return;
+      }
+
+      mapboxgl.accessToken = mapboxToken;
+
+      map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/streets-v12',
+        center: [centerLng, centerLat],
+        zoom: 12
       });
 
-      new google.maps.Marker({
-        position: { lat: centerLat, lng: centerLng },
-        map,
-        icon: { path: google.maps.SymbolPath.CIRCLE, scale: 8, fillColor: '#3B82F6', fillOpacity: 1, strokeColor: '#FFF', strokeWeight: 2 },
-        title: 'Your Location'
+      // Add navigation controls
+      map.addControl(new mapboxgl.NavigationControl(), 'top-right');
+
+      // Wait for map to load before adding markers
+      map.on('load', () => {
+        // Add user location marker
+        const userLocationEl = document.createElement('div');
+        userLocationEl.className = 'user-location-marker';
+        userLocationEl.style.width = '16px';
+        userLocationEl.style.height = '16px';
+        userLocationEl.style.borderRadius = '50%';
+        userLocationEl.style.backgroundColor = '#3B82F6';
+        userLocationEl.style.border = '2px solid white';
+        userLocationEl.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
+
+        new mapboxgl.Marker({ element: userLocationEl })
+          .setLngLat([centerLng, centerLat])
+          .setPopup(new mapboxgl.Popup({ offset: 15 }).setText('Your Location'))
+          .addTo(map);
+
+        // Now add venue markers
+        updateMarkers();
       });
     }
 
@@ -388,43 +416,82 @@ const description = `Found ${venuesWithDistance.length} autism-friendly venues w
       });
     }
 
-    // Update markers
+    // Update markers with Mapbox
     function updateMarkers() {
-      markers.forEach(m => m.setMap(null));
-      markers = filteredVenues.map((v, i) => {
-        const marker = new google.maps.Marker({
-          position: { lat: v.lat, lng: v.lng },
-          map,
-          label: { text: String(i + 1), color: 'white', fontSize: '12px', fontWeight: 'bold' },
-          icon: { path: google.maps.SymbolPath.CIRCLE, scale: 20, fillColor: '#10B981', fillOpacity: 1, strokeColor: '#FFF', strokeWeight: 2 },
-          title: v.name
-        });
+      if (!map || typeof mapboxgl === 'undefined') return;
 
-        const infoWindow = new google.maps.InfoWindow({
-          content: `<div class="p-2"><h3 class="font-semibold">${v.name}</h3><p class="text-sm">${v.type} · ${v.distance.toFixed(1)} mi</p>${v.google_rating ? `<p class="text-sm">⭐ ${v.google_rating.toFixed(1)}</p>` : ''}<a href="/venue/${v.slug}" class="text-sm text-blue-600 font-medium">View Details →</a></div>`
-        });
+      // Remove old markers
+      markers.forEach(m => m.remove());
+      markers = [];
 
-        marker.addListener('click', () => infoWindow.open(map, marker));
-        return marker;
+      // Create new markers for filtered venues
+      filteredVenues.forEach((v, i) => {
+        // Create custom marker element
+        const el = document.createElement('div');
+        el.className = 'venue-marker';
+        el.style.width = '40px';
+        el.style.height = '40px';
+        el.style.borderRadius = '50%';
+        el.style.backgroundColor = '#10B981';
+        el.style.border = '2px solid white';
+        el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
+        el.style.display = 'flex';
+        el.style.alignItems = 'center';
+        el.style.justifyContent = 'center';
+        el.style.color = 'white';
+        el.style.fontWeight = 'bold';
+        el.style.fontSize = '12px';
+        el.style.cursor = 'pointer';
+        el.style.transition = 'all 0.2s';
+        el.textContent = String(i + 1);
+        el.dataset.index = i;
+
+        // Create popup content
+        const popupContent = `
+          <div class="p-2">
+            <h3 class="font-semibold text-gray-900">${v.name}</h3>
+            <p class="text-sm text-gray-600">${v.type} · ${v.distance.toFixed(1)} mi</p>
+            ${v.google_rating ? `<p class="text-sm text-gray-600">⭐ ${v.google_rating.toFixed(1)}</p>` : ''}
+            <a href="/venue/${v.slug}" class="text-sm text-blue-600 hover:text-blue-700 font-medium">View Details →</a>
+          </div>
+        `;
+
+        // Create marker
+        const marker = new mapboxgl.Marker({ element: el })
+          .setLngLat([v.lng, v.lat])
+          .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(popupContent))
+          .addTo(map);
+
+        markers.push(marker);
       });
     }
 
-    // Highlight marker
+    // Highlight marker with Mapbox
     function highlightMarker(index, highlight) {
-      if (markers[index]) {
-        markers[index].setIcon({
-          path: google.maps.SymbolPath.CIRCLE,
-          scale: highlight ? 25 : 20,
-          fillColor: highlight ? '#3B82F6' : '#10B981',
-          fillOpacity: 1,
-          strokeColor: '#FFF',
-          strokeWeight: highlight ? 3 : 2
-        });
+      if (!markers[index]) return;
+
+      const el = markers[index].getElement();
+      if (highlight) {
+        el.style.width = '50px';
+        el.style.height = '50px';
+        el.style.backgroundColor = '#3B82F6';
+        el.style.transform = 'scale(1.2)';
+        el.style.zIndex = '1000';
+      } else {
+        el.style.width = '40px';
+        el.style.height = '40px';
+        el.style.backgroundColor = '#10B981';
+        el.style.transform = 'scale(1)';
+        el.style.zIndex = 'auto';
       }
     }
 
-    // Start
-    if (typeof google !== 'undefined') init();
-    else window.addEventListener('load', init);
+    // Start - Always initialize, even without Google Maps
+    // This ensures venues are displayed regardless of map status
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
   </script>
 </Base>

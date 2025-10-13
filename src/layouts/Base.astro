@@ -13,8 +13,8 @@ interface Props {
 const {
   title = 'autism.place - Find autism-friendly places near you',
   description = 'Discover autism-friendly venues with quiet hours, visual guides, and sensory accommodations. Parent-verified places across 40+ major US cities.',
-  ogImage = '/Stock Images/AutismVenue.jpg',
-  ogImageAlt = 'Autism-friendly venue with sensory accommodations',
+  ogImage = '/og-image.svg',
+  ogImageAlt = 'autism.place - Trusted roadmap to sensory-friendly experiences',
   canonical
 } = Astro.props;
 
@@ -81,12 +81,9 @@ const sortedStates = Object.keys(citiesByState).sort();
     <meta name="supabase-key" content={import.meta.env.PUBLIC_SUPABASE_ANON_KEY} />
 
     <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <link rel="manifest" href="/site.webmanifest" />
-    <meta name="theme-color" content="#3B82F6" />
+    <link rel="icon" type="image/png" href="/Icon/ap_marker.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/Icon/ap_marker.png" />
+    <meta name="theme-color" content="#2563EB" />
 
     <!-- Canonical URL -->
     <link rel="canonical" href={fullUrl} />
@@ -108,9 +105,6 @@ const sortedStates = Object.keys(citiesByState).sort();
     <meta property="twitter:image" content={fullOgImage} />
     <meta property="twitter:image:alt" content={ogImageAlt} />
 
-    <!-- Google Maps API -->
-    <script src={`https://maps.googleapis.com/maps/api/js?key=${import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY || import.meta.env.GOOGLE_MAPS_API_KEY}&libraries=places`}></script>
-
     <title>{title}</title>
   </head>
   <body class="min-h-screen bg-white text-gray-900">
@@ -119,8 +113,9 @@ const sortedStates = Object.keys(citiesByState).sort();
         <div class="flex items-center justify-between h-16">
           <!-- Logo -->
           <div class="flex items-center">
-            <a href="/" class="flex items-center transition-opacity hover:opacity-80 group">
-              <img src="/images/autism_place.png" alt="autism.place - Find autism-friendly places" class="h-6 w-auto transition-transform group-hover:scale-105" />
+            <a href="/" class="flex items-center gap-2 transition-opacity hover:opacity-80 group">
+              <img src="/Icon/ap_marker.png" alt="autism.place logo" class="h-10 w-auto transition-transform group-hover:scale-105" />
+              <span class="text-xl font-bold leading-none"><span class="text-gray-900">autism</span><span class="text-blue-600">.place</span></span>
             </a>
           </div>
 

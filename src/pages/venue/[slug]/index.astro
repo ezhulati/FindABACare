@@ -3,6 +3,10 @@ import Base from '../../../layouts/Base.astro';
 import SEO from '../../../components/SEO.astro';
 import MapIsland from '../../../components/MapIsland';
 import PhotoGallery from '../../../components/PhotoGallery';
+import { VenueIconDetails } from '../../../components/VenueIconBadges';
+import VenueVoteButton from '../../../components/VenueVoteButton';
+import VenueReviewsList from '../../../components/VenueReviewsList';
+import VenueReviewForm from '../../../components/VenueReviewForm';
 import { getServerClient } from '../../../lib/supabaseServer';
 import { goNow } from '../../../lib/goNow';
 import { timeAgo, formatTime } from '../../../lib/utils';
@@ -12,7 +16,7 @@ const { slug } = Astro.params;
 
 const supabase = getServerClient(Astro.request);
 
-// Fetch venue
+// Fetch venue (vote counts will be available after running migration)
 const { data: venue } = await supabase
   .from('venues')
   .select(`
@@ -176,55 +180,20 @@ const placeSchema = {
           )}
         </div>
 
-        <!-- Amenities -->
-        {venue.amenities && (
-          <div class="bg-white rounded-lg border border-gray-200 p-6">
-            <h2 class="text-xl font-semibold text-gray-900 mb-4">Amenities</h2>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {venue.amenities.quiet_room && (
-                <div class="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
-                  <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M10 2a8 8 0 100 16 8 8 0 000-16zM8 11a1 1 0 112 0v2a1 1 0 11-2 0v-2zm1-5a1 1 0 011 1v1a1 1 0 11-2 0V7a1 1 0 011-1z"/>
-                  </svg>
-                  <span class="text-sm font-medium text-gray-900">Quiet room available</span>
-                </div>
-              )}
-              {venue.amenities.visual_supports && (
-                <div class="flex items-center gap-3 p-3 bg-purple-50 rounded-lg">
-                  <svg class="w-5 h-5 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
-                    <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
-                  </svg>
-                  <span class="text-sm font-medium text-gray-900">Visual supports</span>
-                </div>
-              )}
-              {venue.amenities.hand_dryer === false && (
-                <div class="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
-                  <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM18 10a8 8 0 11-16 0 8 8 0 0116 0z" clip-rule="evenodd"/>
-                  </svg>
-                  <span class="text-sm font-medium text-gray-900">No hand dryers</span>
-                </div>
-              )}
-              {venue.amenities.changing_table && (
-                <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <svg class="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
-                  </svg>
-                  <span class="text-sm font-medium text-gray-900">Changing table</span>
-                </div>
-              )}
-              {venue.amenities.wheelchair_accessible && (
-                <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <svg class="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"/>
-                  </svg>
-                  <span class="text-sm font-medium text-gray-900">Wheelchair accessible</span>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
+        <!-- Sensory Information (Icons display ONLY actual database data) -->
+        <div class="bg-white rounded-lg border border-gray-200 p-6">
+          <h2 class="text-xl font-semibold text-gray-900 mb-4">Sensory-Friendly Information</h2>
+          <VenueIconDetails
+            venue={{
+              type: venue.type || 'other',
+              meter: meter,
+              amenities: venue.amenities || {},
+              triggers: venue.triggers || {},
+              sensory_hours: venue.sensory_hours || []
+            }}
+            client:load
+          />
+        </div>
 
         <!-- Sensory Hours -->
         {venue.sensory_hours && Array.isArray(venue.sensory_hours) && venue.sensory_hours.length > 0 && (
@@ -303,90 +272,40 @@ const placeSchema = {
           </div>
         )}
 
-        <!-- Reviews -->
+        <!-- Community Feedback: Voting + Reviews -->
         <div class="bg-white rounded-lg border border-gray-200 p-6">
-          <h2 class="text-xl font-semibold text-gray-900 mb-4">Parent Reviews</h2>
+          <h2 class="text-xl font-semibold text-gray-900 mb-6">Community Feedback</h2>
 
-          {avgRatings && (
-            <div class="mb-6">
-              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg">
-                <div class="text-center">
-                  <div class="text-2xl font-bold text-gray-900">{avgRatings.predictability}</div>
-                  <div class="text-sm text-gray-600">Predictability</div>
-                </div>
-                <div class="text-center">
-                  <div class="text-2xl font-bold text-gray-900">{avgRatings.sensoryLevel}</div>
-                  <div class="text-sm text-gray-600">Sensory Level</div>
-                </div>
-                <div class="text-center">
-                  <div class="text-2xl font-bold text-gray-900">{avgRatings.staffKnowledge}</div>
-                  <div class="text-sm text-gray-600">Staff Knowledge</div>
-                </div>
-              </div>
-              <!-- Sensory Scale Legend -->
-              <div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <h4 class="text-sm font-semibold text-blue-900 mb-2">Understanding Sensory Level Ratings</h4>
-                <div class="grid grid-cols-1 sm:grid-cols-5 gap-2 text-xs text-blue-800">
-                  <div><strong>1:</strong> Very calm, minimal stimulation</div>
-                  <div><strong>2:</strong> Quiet with some activity</div>
-                  <div><strong>3:</strong> Moderate noise & crowds</div>
-                  <div><strong>4:</strong> Busy with frequent stimulation</div>
-                  <div><strong>5:</strong> High energy, intense sensory</div>
-                </div>
-              </div>
-            </div>
-          )}
+          <!-- Quick Vote Section -->
+          <div class="mb-6 pb-6 border-b border-gray-200">
+            <h3 class="text-sm font-medium text-gray-700 mb-3">How would you rate this venue?</h3>
+            <VenueVoteButton
+              venueId={venue.id}
+              initialUpvotes={venue.upvotes || 0}
+              initialDownvotes={venue.downvotes || 0}
+              initialVoteScore={venue.vote_score || 0}
+              size="md"
+              client:load
+            />
+          </div>
 
-          {reviews.length === 0 ? (
-            <p class="text-gray-600 text-center py-8">No reviews yet. Be the first to review!</p>
-          ) : (
-            <div class="space-y-4">
-              {reviews.map((review) => (
-                <div class="border border-gray-200 rounded-lg p-4">
-                  <div class="flex items-start justify-between mb-2">
-                    <div class="flex-1">
-                      <p class="font-medium text-gray-900">
-                        {review.profile?.display_name || 'Anonymous Parent'}
-                      </p>
-                      <p class="text-sm text-gray-500">{timeAgo(review.created_at)}</p>
-                    </div>
-                    <div class="flex gap-2 text-sm">
-                      <span class="px-2 py-1 bg-blue-100 text-blue-700 rounded">
-                        P: {review.predictability}/5
-                      </span>
-                      <span class="px-2 py-1 bg-purple-100 text-purple-700 rounded">
-                        S: {review.sensory_level}/5
-                      </span>
-                    </div>
-                  </div>
-                  {review.content && (
-                    <p class="text-gray-700 leading-relaxed">{review.content}</p>
-                  )}
-                  {review.best_time && (
-                    <p class="text-sm text-gray-600 mt-2">
-                      <strong>Best time:</strong> {review.best_time}
-                    </p>
-                  )}
-                  {review.triggers && review.triggers.length > 0 && (
-                    <div class="flex flex-wrap gap-2 mt-2">
-                      {review.triggers.map((trigger: string) => (
-                        <span class="px-2 py-1 bg-red-50 text-red-700 text-xs rounded">
-                          {trigger}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
+          <!-- Reviews List with Aggregate Stats -->
+          <VenueReviewsList
+            venueId={venue.id}
+            upvotes={venue.upvotes || 0}
+            downvotes={venue.downvotes || 0}
+            voteScore={venue.vote_score || 0}
+            client:load
+          />
 
-          <a
-            href={`/venue/${venue.slug}/review`}
-            class="mt-6 block w-full px-4 py-3 bg-black text-white text-center font-medium rounded-lg hover:bg-gray-800 transition-colors"
-          >
-            Write a review
-          </a>
+          <!-- Write Review Form -->
+          <div class="mt-6">
+            <VenueReviewForm
+              venueId={venue.id}
+              venueName={venue.name}
+              client:load
+            />
+          </div>
         </div>
       </div>
 

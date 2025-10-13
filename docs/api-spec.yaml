@@ -1,0 +1,451 @@
+openapi: 3.0.3
+info:
+  title: autism.place API
+  description: |
+    API for autism.place - Find autism-friendly places near you.
+
+    ## Authentication
+    All authenticated endpoints require a valid Supabase session cookie.
+    Authentication is handled via Supabase Auth using email OTP (magic links).
+  version: 1.0.0
+  contact:
+    email: hello@autism.place
+  license:
+    name: Proprietary
+
+servers:
+  - url: https://autism.place/api
+    description: Production server
+  - url: http://localhost:4322/api
+    description: Local development server
+
+tags:
+  - name: Profile
+    description: User profile management
+  - name: Venues
+    description: Venue information and voting
+  - name: Reviews
+    description: Venue reviews
+  - name: Events
+    description: Community events and RSVPs
+
+paths:
+  /profile:
+    get:
+      tags:
+        - Profile
+      summary: Get authenticated user's profile
+      description: |
+        Retrieves the complete profile of the currently authenticated user,
+        including their city information.
+      operationId: getProfile
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  profile:
+                    $ref: '#/components/schemas/Profile'
+              example:
+                profile:
+                  id: "550e8400-e29b-41d4-a716-446655440000"
+                  email: "parent@example.com"
+                  first_name: "Jane"
+                  last_name: "Doe"
+                  display_name: "Jane D."
+                  avatar_url: "https://gvfkyfzukwnjomksuvaq.supabase.co/storage/v1/object/public/avatars/550e8400-e29b-41d4-a716-446655440000/1234567890.jpg"
+                  role: "parent"
+                  city_id: "039daded-5bb7-4684-9005-687e6f246c40"
+                  city:
+                    id: "039daded-5bb7-4684-9005-687e6f246c40"
+                    name: "Dallas"
+                    state: "TX"
+                  child_age_band: "5-7"
+                  interests: ["animals", "art", "music"]
+                  sensory_flags:
+                    loud_noise: true
+                    bright_lights: true
+                    hand_dryer: false
+                    crowds: true
+                  profile_completed: true
+                  created_at: "2024-01-15T10:30:00Z"
+                  updated_at: "2024-01-20T14:22:00Z"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    put:
+      tags:
+        - Profile
+      summary: Update authenticated user's profile
+      description: |
+        Updates the profile of the currently authenticated user.
+        Display name is automatically generated from first and last name.
+      operationId: updateProfile
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProfileUpdate'
+            example:
+              first_name: "Jane"
+              last_name: "Doe"
+              avatar_url: "https://gvfkyfzukwnjomksuvaq.supabase.co/storage/v1/object/public/avatars/550e8400-e29b-41d4-a716-446655440000/1234567890.jpg"
+              city_id: "039daded-5bb7-4684-9005-687e6f246c40"
+              child_age_band: "5-7"
+              interests: ["animals", "art", "music"]
+              sensory_flags:
+                loud_noise: true
+                bright_lights: true
+                hand_dryer: false
+                crowds: true
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  profile:
+                    $ref: '#/components/schemas/Profile'
+              example:
+                profile:
+                  id: "550e8400-e29b-41d4-a716-446655440000"
+                  email: "parent@example.com"
+                  first_name: "Jane"
+                  last_name: "Doe"
+                  display_name: "Jane D."
+                  avatar_url: "https://gvfkyfzukwnjomksuvaq.supabase.co/storage/v1/object/public/avatars/550e8400-e29b-41d4-a716-446655440000/1234567890.jpg"
+                  role: "parent"
+                  city_id: "039daded-5bb7-4684-9005-687e6f246c40"
+                  child_age_band: "5-7"
+                  interests: ["animals", "art", "music"]
+                  sensory_flags:
+                    loud_noise: true
+                    bright_lights: true
+                    hand_dryer: false
+                    crowds: true
+                  profile_completed: true
+                  updated_at: "2024-01-20T14:22:00Z"
+        '400':
+          description: Bad request - Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                missingFields:
+                  value:
+                    error: "First name and last name are required"
+                invalidJSON:
+                  value:
+                    error: "Invalid JSON"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /venue-vote:
+    post:
+      tags:
+        - Venues
+      summary: Vote on a venue
+      description: |
+        Submit an upvote or downvote for a venue.
+        - Voting the same type again removes the vote
+        - Voting a different type switches the vote
+        - Only one vote per user per venue allowed
+      operationId: voteVenue
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - venue_id
+                - vote_type
+              properties:
+                venue_id:
+                  type: string
+                  format: uuid
+                  description: UUID of the venue to vote on
+                vote_type:
+                  type: string
+                  enum: [up, down]
+                  description: Type of vote (upvote or downvote)
+            example:
+              venue_id: "123e4567-e89b-12d3-a456-426614174000"
+              vote_type: "up"
+      responses:
+        '200':
+          description: Vote submitted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  action:
+                    type: string
+                    enum: [created, removed, updated]
+                    description: Action performed (created new vote, removed existing vote, or updated vote type)
+                  vote:
+                    type: object
+                    nullable: true
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      venue_id:
+                        type: string
+                        format: uuid
+                      profile_id:
+                        type: string
+                        format: uuid
+                      vote_type:
+                        type: string
+                        enum: [up, down]
+                      created_at:
+                        type: string
+                        format: date-time
+                      updated_at:
+                        type: string
+                        format: date-time
+              examples:
+                voteCreated:
+                  value:
+                    success: true
+                    action: "created"
+                    vote:
+                      id: "789e0123-e89b-12d3-a456-426614174999"
+                      venue_id: "123e4567-e89b-12d3-a456-426614174000"
+                      profile_id: "550e8400-e29b-41d4-a716-446655440000"
+                      vote_type: "up"
+                      created_at: "2024-01-20T15:30:00Z"
+                      updated_at: "2024-01-20T15:30:00Z"
+                voteRemoved:
+                  value:
+                    success: true
+                    action: "removed"
+                    vote: null
+        '400':
+          description: Bad request - Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  schemas:
+    Profile:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: User ID (matches auth.users.id)
+        email:
+          type: string
+          format: email
+          description: User's email address
+        first_name:
+          type: string
+          nullable: true
+          description: User's first name
+        last_name:
+          type: string
+          nullable: true
+          description: User's last name
+        display_name:
+          type: string
+          nullable: true
+          description: Auto-generated display name (FirstName L.) for privacy
+        avatar_url:
+          type: string
+          format: uri
+          nullable: true
+          description: URL to user's avatar image in Supabase Storage
+        role:
+          type: string
+          enum: [parent, venue, admin]
+          description: User's role in the system
+        city_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: ID of the user's city
+        city:
+          type: object
+          nullable: true
+          description: City details (only in GET response)
+          properties:
+            id:
+              type: string
+              format: uuid
+            name:
+              type: string
+            state:
+              type: string
+              minLength: 2
+              maxLength: 2
+        child_age_band:
+          type: string
+          nullable: true
+          enum: ['2-4', '5-7', '8-10', '11-13', '14+']
+          description: Age range of user's child
+        interests:
+          type: array
+          items:
+            type: string
+          nullable: true
+          description: List of child's interests
+          example: ["animals", "art", "music", "nature"]
+        communication:
+          type: array
+          items:
+            type: string
+          nullable: true
+          description: Communication preferences
+        sensory_flags:
+          type: object
+          nullable: true
+          description: Sensory sensitivities
+          properties:
+            loud_noise:
+              type: boolean
+            bright_lights:
+              type: boolean
+            hand_dryer:
+              type: boolean
+            crowds:
+              type: boolean
+        privacy:
+          type: object
+          nullable: true
+          description: Privacy settings
+          properties:
+            show_to_event_peers_only:
+              type: boolean
+        profile_completed:
+          type: boolean
+          description: Whether user has completed profile onboarding
+        created_at:
+          type: string
+          format: date-time
+          description: Profile creation timestamp
+        updated_at:
+          type: string
+          format: date-time
+          description: Profile last update timestamp
+
+    ProfileUpdate:
+      type: object
+      required:
+        - first_name
+        - last_name
+      properties:
+        first_name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: User's first name
+        last_name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: User's last name
+        avatar_url:
+          type: string
+          format: uri
+          nullable: true
+          description: URL to user's avatar image
+        city_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: ID of the user's city
+        child_age_band:
+          type: string
+          nullable: true
+          enum: ['2-4', '5-7', '8-10', '11-13', '14+']
+          description: Age range of user's child
+        interests:
+          type: array
+          items:
+            type: string
+          nullable: true
+          description: List of child's interests
+        sensory_flags:
+          type: object
+          nullable: true
+          description: Sensory sensitivities
+          properties:
+            loud_noise:
+              type: boolean
+            bright_lights:
+              type: boolean
+            hand_dryer:
+              type: boolean
+            crowds:
+              type: boolean
+
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: Error message describing what went wrong
+      example:
+        error: "First name and last name are required"
+
+  responses:
+    UnauthorizedError:
+      description: Authentication required - User not logged in or session expired
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Unauthorized"
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "An unexpected error occurred"
+
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sb-access-token
+      description: |
+        Supabase session cookie. Automatically set by Supabase Auth after login.
+
+        To authenticate:
+        1. Sign in via email OTP at /auth/signin
+        2. Session cookie is automatically set
+        3. All subsequent API requests include the cookie

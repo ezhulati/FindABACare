@@ -1,14 +1,14 @@
 ---
 import Base from '../layouts/Base.astro';
 import { SEO_TEMPLATES, STOCK_IMAGES, checkSEOInDev } from '../lib/seo';
-import AddressSearchIsland from '../components/AddressSearchIsland';
+import MapboxAddressSearch from '../components/MapboxAddressSearch';
 import { createClient } from '@supabase/supabase-js';
 
 // SEO metadata for homepage
 const { title, description, ogImage, ogImageAlt} = SEO_TEMPLATES.home;
 checkSEOInDev({ title, description, ogImage, ogImageAlt }, '/');
 
-const GOOGLE_MAPS_API_KEY = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY || import.meta.env.GOOGLE_MAPS_API_KEY;
+const MAPBOX_TOKEN = import.meta.env.PUBLIC_MAPBOX_TOKEN;
 
 // Initialize Supabase
 const supabase = createClient(
@@ -82,7 +82,7 @@ const cities = topCitiesByVenues.map((city, index) => ({
 
             <!-- Address Search -->
             <div class="mb-8">
-              <AddressSearchIsland client:load apiKey={GOOGLE_MAPS_API_KEY} />
+              <MapboxAddressSearch client:load mapboxToken={MAPBOX_TOKEN} />
             </div>
 
             <div class="flex flex-col sm:flex-row gap-4">

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Auth Cookie Verification</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .card {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .success {
+      color: #16a34a;
+      font-weight: bold;
+    }
+    .error {
+      color: #dc2626;
+      font-weight: bold;
+    }
+    .cookie-item {
+      padding: 8px;
+      margin: 4px 0;
+      background: #f9fafb;
+      border-left: 3px solid #3b82f6;
+      font-family: monospace;
+      font-size: 12px;
+      word-break: break-all;
+    }
+    button {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background: #2563eb;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>🔐 Auth Cookie Verification</h1>
+    <p>This page checks if your Supabase authentication cookies are properly set.</p>
+    <button onclick="checkCookies()">Check Cookies</button>
+  </div>
+
+  <div class="card" id="results" style="display: none;">
+    <h2>Results:</h2>
+    <div id="status"></div>
+    <h3>All Cookies:</h3>
+    <div id="cookie-list"></div>
+  </div>
+
+  <script>
+    function checkCookies() {
+      const resultsDiv = document.getElementById('results');
+      const statusDiv = document.getElementById('status');
+      const cookieListDiv = document.getElementById('cookie-list');
+
+      resultsDiv.style.display = 'block';
+
+      // Get all cookies
+      const allCookies = document.cookie.split(';').map(c => c.trim());
+
+      // Check for Supabase auth cookie
+      const hasSupabaseCookie = allCookies.some(cookie =>
+        cookie.startsWith('sb-auth-token=') ||
+        cookie.startsWith('sb-access-token=') ||
+        cookie.startsWith('sb-refresh-token=')
+      );
+
+      // Display status
+      if (hasSupabaseCookie) {
+        statusDiv.innerHTML = '<p class="success">✅ SUCCESS: Supabase auth cookie found!</p><p>Your authentication is properly configured to use cookies.</p>';
+      } else {
+        statusDiv.innerHTML = '<p class="error">❌ NO SUPABASE COOKIES FOUND</p><p>This means you are either:</p><ul><li>Not logged in</li><li>Still using the old localStorage-based session</li></ul><p><strong>Solution:</strong> Sign out completely and sign back in to create a new cookie-based session.</p>';
+      }
+
+      // Display all cookies
+      cookieListDiv.innerHTML = '';
+      if (allCookies.length === 0 || (allCookies.length === 1 && allCookies[0] === '')) {
+        cookieListDiv.innerHTML = '<p>No cookies found.</p>';
+      } else {
+        allCookies.forEach(cookie => {
+          const div = document.createElement('div');
+          div.className = 'cookie-item';
+
+          // Highlight Supabase cookies
+          if (cookie.startsWith('sb-')) {
+            div.style.borderLeftColor = '#16a34a';
+            div.style.background = '#f0fdf4';
+          }
+
+          div.textContent = cookie;
+          cookieListDiv.appendChild(div);
+        });
+      }
+    }
+
+    // Auto-run on page load
+    window.addEventListener('load', () => {
+      checkCookies();
+    });
+  </script>
+</body>
+</html>

@@ -3,16 +3,39 @@ import Base from '../layouts/Base.astro';
 import { getServerClient, requireAuth } from '../lib/supabaseServer';
 
 // Require authentication
-const user = await requireAuth(Astro.request);
+let user;
+try {
+  user = await requireAuth(Astro.request);
+} catch (error) {
+  // If authentication failed, redirect to home page
+  return Astro.redirect('/?error=auth-required');
+}
 
 const supabase = getServerClient(Astro.request);
 
 // Get user profile
-const { data: profile } = await supabase
+const { data: profile, error: profileError } = await supabase
   .from('profiles')
-  .select('*, city:cities(name, state)')
-  .eq('auth_user', user.id)
+  .select('*, city:cities(id, name, state)')
+  .eq('id', user.id)
   .single();
+
+// Handle profile query errors
+if (profileError) {
+  console.error('Profile query error - Full error object:', profileError);
+  console.error('Profile query error - Stringified:', JSON.stringify(profileError));
+  console.error('Profile query error - Details:', {
+    message: profileError.message,
+    details: profileError.details,
+    hint: profileError.hint,
+    code: profileError.code,
+    type: typeof profileError,
+    keys: Object.keys(profileError)
+  });
+
+  const errorMessage = profileError.message || profileError.details || profileError.hint || 'Unknown database error';
+  throw new Error(`Failed to load profile: ${errorMessage}`);
+}
 
 // If no profile, redirect to onboarding
 if (!profile) {
@@ -40,19 +63,83 @@ const description = 'Manage your profile and preferences';
     <!-- Profile Form -->
     <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-8">
       <form id="profile-form" class="space-y-6">
-        <!-- Display Name -->
+        <!-- Avatar Upload -->
+        <div>
+          <label class="block text-sm font-medium text-gray-900 mb-3">
+            Profile Photo
+          </label>
+          <div class="flex items-center gap-6">
+            <div class="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+              {profile.avatar_url ? (
+                <img src={profile.avatar_url} alt="Profile" class="w-full h-full object-cover" id="avatar-preview" />
+              ) : (
+                <svg class="w-12 h-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" id="avatar-placeholder">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              )}
+            </div>
+            <div>
+              <input
+                type="file"
+                accept="image/*"
+                id="avatar-input"
+                class="hidden"
+              />
+              <label
+                for="avatar-input"
+                class="cursor-pointer inline-block bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
+              >
+                Choose Photo
+              </label>
+              <p class="text-xs text-gray-500 mt-2">Max 2MB, JPG or PNG</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- First Name -->
+        <div>
+          <label for="first_name" class="block text-sm font-medium text-gray-900 mb-2">
+            First Name *
+          </label>
+          <input
+            type="text"
+            id="first_name"
+            name="first_name"
+            required
+            value={profile.first_name || ''}
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        <!-- Last Name -->
+        <div>
+          <label for="last_name" class="block text-sm font-medium text-gray-900 mb-2">
+            Last Name *
+          </label>
+          <input
+            type="text"
+            id="last_name"
+            name="last_name"
+            required
+            value={profile.last_name || ''}
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <p class="mt-1 text-sm text-gray-500">Your last name will only show as an initial on public reviews</p>
+        </div>
+
+        <!-- Display Name (Auto-generated, read-only) -->
         <div>
           <label for="display_name" class="block text-sm font-medium text-gray-900 mb-2">
-            Display Name *
+            Display Name (Public)
           </label>
           <input
             type="text"
             id="display_name"
-            name="display_name"
-            required
             value={profile.display_name || ''}
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            disabled
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
           />
+          <p class="mt-1 text-sm text-gray-500">Auto-generated from your first and last name</p>
         </div>
 
         <!-- Email (Read-only) -->
@@ -200,6 +287,7 @@ const description = 'Manage your profile and preferences';
   <script>
     import { createClient } from '@supabase/supabase-js';
 
+    // Initialize Supabase client (only needed for avatar upload)
     const supabase = createClient(
       import.meta.env.PUBLIC_SUPABASE_URL,
       import.meta.env.PUBLIC_SUPABASE_ANON_KEY
@@ -209,6 +297,55 @@ const description = 'Manage your profile and preferences';
     const saveBtn = document.getElementById('save-btn') as HTMLButtonElement;
     const successDiv = document.getElementById('success-message') as HTMLDivElement;
     const errorDiv = document.getElementById('error-message') as HTMLDivElement;
+    const avatarInput = document.getElementById('avatar-input') as HTMLInputElement;
+    const avatarPreview = document.getElementById('avatar-preview') as HTMLImageElement;
+    const avatarPlaceholder = document.getElementById('avatar-placeholder') as SVGElement;
+
+    let uploadedAvatarFile: File | null = null;
+
+    // Handle avatar file selection
+    avatarInput?.addEventListener('change', (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        // Validate file type and size
+        if (!file.type.startsWith('image/')) {
+          alert('Please select an image file');
+          return;
+        }
+
+        if (file.size > 2 * 1024 * 1024) { // 2MB limit
+          alert('Image must be less than 2MB');
+          return;
+        }
+
+        uploadedAvatarFile = file;
+
+        // Create preview
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const previewUrl = reader.result as string;
+
+          // Show preview image
+          if (avatarPreview) {
+            avatarPreview.src = previewUrl;
+            avatarPreview.style.display = 'block';
+          } else {
+            // Create new preview image
+            const div = avatarPlaceholder?.parentElement;
+            if (div) {
+              const img = document.createElement('img');
+              img.id = 'avatar-preview';
+              img.src = previewUrl;
+              img.alt = 'Profile';
+              img.className = 'w-full h-full object-cover';
+              div.innerHTML = '';
+              div.appendChild(img);
+            }
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+    });
 
     form?.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -232,27 +369,81 @@ const description = 'Manage your profile and preferences';
           crowds: formData.has('crowds'),
         };
 
-        // Get current user
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) throw new Error('Not authenticated');
+        const firstName = formData.get('first_name') as string;
+        const lastName = formData.get('last_name') as string;
 
-        // Update profile
-        const { error } = await supabase
-          .from('profiles')
-          .update({
-            display_name: formData.get('display_name') as string,
-            city_id: formData.get('city_id') as string || null,
-            child_age_band: formData.get('child_age_band') as string || null,
-            interests: interests.length > 0 ? interests : null,
-            sensory_flags: sensoryFlags,
-          })
-          .eq('auth_user', user.id);
+        let avatarUrl = null;
 
-        if (error) throw error;
+        // Upload avatar if a new one was selected
+        if (uploadedAvatarFile) {
+          // Get current user ID for avatar upload
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) throw new Error('Not authenticated');
+
+          const fileExt = uploadedAvatarFile.name.split('.').pop();
+          const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+
+          const { error: uploadError } = await supabase.storage
+            .from('avatars')
+            .upload(fileName, uploadedAvatarFile, {
+              cacheControl: '3600',
+              upsert: true
+            });
+
+          if (uploadError) throw uploadError;
+
+          // Get public URL
+          const { data } = supabase.storage
+            .from('avatars')
+            .getPublicUrl(fileName);
+
+          avatarUrl = data.publicUrl;
+        }
+
+        // Build update object for API
+        const updateData: any = {
+          first_name: firstName.trim(),
+          last_name: lastName.trim(),
+          city_id: formData.get('city_id') as string || null,
+          child_age_band: formData.get('child_age_band') as string || null,
+          interests: interests.length > 0 ? interests : null,
+          sensory_flags: sensoryFlags,
+        };
+
+        // Only include avatar if new one was uploaded
+        if (avatarUrl) {
+          updateData.avatar_url = avatarUrl;
+        }
+
+        // Call API endpoint to update profile
+        const response = await fetch('/api/profile', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(updateData),
+          credentials: 'include', // Include cookies for authentication
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to update profile');
+        }
+
+        const { profile } = await response.json();
+
+        // Update display name field to show new value
+        const displayNameInput = document.getElementById('display_name') as HTMLInputElement;
+        if (displayNameInput && profile.display_name) {
+          displayNameInput.value = profile.display_name;
+        }
 
         // Show success message
         successDiv.textContent = '✅ Profile updated successfully!';
         successDiv.classList.remove('hidden');
+
+        // Clear uploaded file
+        uploadedAvatarFile = null;
 
         // Auto-hide after 3 seconds
         setTimeout(() => {
