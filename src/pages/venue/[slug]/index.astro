@@ -7,6 +7,7 @@ import { VenueIconDetails } from '../../../components/VenueIconBadges';
 import VenueVoteButton from '../../../components/VenueVoteButton';
 import VenueReviewsList from '../../../components/VenueReviewsList';
 import VenueReviewForm from '../../../components/VenueReviewForm';
+import FavoriteButton from '../../../components/FavoriteButton';
 import { getServerClient } from '../../../lib/supabaseServer';
 import { goNow } from '../../../lib/goNow';
 import { timeAgo, formatTime } from '../../../lib/utils';
@@ -170,9 +171,19 @@ const placeSchema = {
                 <p class="text-sm text-gray-500 mt-1">{venue.type}</p>
               )}
             </div>
-            <span class={`px-4 py-2 text-sm font-medium rounded-full border ${meterClass}`}>
-              {meter}
-            </span>
+            <div class="flex items-center gap-3">
+              <FavoriteButton
+                venueId={venue.id}
+                venueName={venue.name}
+                initialFavoriteCount={venue.favorite_count || 0}
+                size="lg"
+                showCount={true}
+                client:load
+              />
+              <span class={`px-4 py-2 text-sm font-medium rounded-full border ${meterClass}`}>
+                {meter}
+              </span>
+            </div>
           </div>
 
           {venue.description && (
