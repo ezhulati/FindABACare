@@ -264,6 +264,43 @@ const description = 'Manage your profile and preferences';
       </form>
     </div>
 
+    <!-- Quick Links -->
+    <div class="mt-8 bg-white rounded-xl shadow-lg border border-gray-200 p-8">
+      <h2 class="text-lg font-semibold text-gray-900 mb-4">Quick Links</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <a
+          href="/profile/favorites"
+          class="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:border-red-300 hover:bg-red-50 transition-all group"
+        >
+          <svg class="w-6 h-6 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
+          </svg>
+          <div class="flex-1">
+            <p class="font-medium text-gray-900 group-hover:text-red-700">My Favorites</p>
+            <p class="text-sm text-gray-600">View saved venues</p>
+          </div>
+          <svg class="w-5 h-5 text-gray-400 group-hover:text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </a>
+        <a
+          href="/cities"
+          class="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:border-purple-300 hover:bg-purple-50 transition-all group"
+        >
+          <svg class="w-6 h-6 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+          </svg>
+          <div class="flex-1">
+            <p class="font-medium text-gray-900 group-hover:text-purple-700">Explore Venues</p>
+            <p class="text-sm text-gray-600">Find new places</p>
+          </div>
+          <svg class="w-5 h-5 text-gray-400 group-hover:text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </a>
+      </div>
+    </div>
+
     <!-- Account Actions -->
     <div class="mt-8 bg-white rounded-xl shadow-lg border border-gray-200 p-8">
       <h2 class="text-lg font-semibold text-gray-900 mb-4">Account</h2>
