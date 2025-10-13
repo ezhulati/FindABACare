@@ -34,7 +34,29 @@ const meterColors = {
 };
 
 const meterClass = meterColors[meter as keyof typeof meterColors] || meterColors.Moderate;
-const featuredImage = venue.photo_keys && venue.photo_keys.length > 0 ? venue.photo_keys[0] : '/placeholder-venue.svg';
+
+// Convert photo URL to full Supabase Storage URL if it's a relative path
+const getPhotoUrl = (photoKey: string | null | undefined): string => {
+  if (!photoKey) return '/placeholder-venue.svg';
+
+  // If it's already a full URL (starts with http/https), return as-is
+  if (photoKey.startsWith('http://') || photoKey.startsWith('https://')) {
+    return photoKey;
+  }
+
+  // If it's a relative path starting with /venue-photos/, convert to Supabase Storage URL
+  if (photoKey.startsWith('/venue-photos/')) {
+    const filename = photoKey.replace('/venue-photos/', '');
+    return `https://gvfkyfzukwnjomksuvaq.supabase.co/storage/v1/object/public/venue-photos/${filename}`;
+  }
+
+  // Otherwise, assume it's a relative public path
+  return photoKey;
+};
+
+const featuredImage = venue.photo_keys && venue.photo_keys.length > 0
+  ? getPhotoUrl(venue.photo_keys[0])
+  : '/placeholder-venue.svg';
 ---
 
 <article

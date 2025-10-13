@@ -1,13 +1,33 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 
 interface PhotoGalleryProps {
   photos: string[];
   venueName: string;
 }
 
+// Convert photo URL to full Supabase Storage URL if it's a relative path
+const getPhotoUrl = (photoKey: string): string => {
+  // If it's already a full URL (starts with http/https), return as-is
+  if (photoKey.startsWith('http://') || photoKey.startsWith('https://')) {
+    return photoKey;
+  }
+
+  // If it's a relative path starting with /venue-photos/, convert to Supabase Storage URL
+  if (photoKey.startsWith('/venue-photos/')) {
+    const filename = photoKey.replace('/venue-photos/', '');
+    return `https://gvfkyfzukwnjomksuvaq.supabase.co/storage/v1/object/public/venue-photos/${filename}`;
+  }
+
+  // Otherwise, assume it's a relative public path
+  return photoKey;
+};
+
 export default function PhotoGallery({ photos, venueName }: PhotoGalleryProps) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
+
+  // Convert all photo URLs once when component mounts
+  const photoUrls = useMemo(() => photos.map(getPhotoUrl), [photos]);
 
   const openLightbox = (index: number) => {
     setCurrentIndex(index);
@@ -21,18 +41,18 @@ export default function PhotoGallery({ photos, venueName }: PhotoGalleryProps) {
   };
 
   const nextPhoto = () => {
-    setCurrentIndex((prev) => (prev + 1) % photos.length);
+    setCurrentIndex((prev) => (prev + 1) % photoUrls.length);
   };
 
   const prevPhoto = () => {
-    setCurrentIndex((prev) => (prev - 1 + photos.length) % photos.length);
+    setCurrentIndex((prev) => (prev - 1 + photoUrls.length) % photoUrls.length);
   };
 
   return (
     <>
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 p-2">
-          {photos.map((photoUrl, index) => (
+          {photoUrls.map((photoUrl, index) => (
             <div
               key={index}
               className="aspect-video relative overflow-hidden rounded-lg cursor-pointer group"
@@ -85,7 +105,7 @@ export default function PhotoGallery({ photos, venueName }: PhotoGalleryProps) {
             </svg>
           </button>
 
-          {photos.length > 1 && (
+          {photoUrls.length > 1 && (
             <>
               <button
                 className="absolute left-4 text-white hover:text-gray-300 transition-colors"
@@ -130,12 +150,12 @@ export default function PhotoGallery({ photos, venueName }: PhotoGalleryProps) {
             onClick={(e) => e.stopPropagation()}
           >
             <img
-              src={photos[currentIndex]}
+              src={photoUrls[currentIndex]}
               alt={`${venueName} - Photo ${currentIndex + 1}`}
               className="max-w-full max-h-[90vh] object-contain"
             />
             <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-75 text-white px-4 py-2 rounded-full text-sm">
-              {currentIndex + 1} / {photos.length}
+              {currentIndex + 1} / {photoUrls.length}
             </div>
           </div>
         </div>
