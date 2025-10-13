@@ -179,36 +179,73 @@ export default function VenueVoteButton({
         <span className="font-medium">{downvotes}</span>
       </button>
 
-      {/* Login Prompt Modal */}
+      {/* Enticing Login Prompt Modal */}
       {showLoginPrompt && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+          className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 px-4"
           onClick={() => setShowLoginPrompt(false)}
         >
           <div
-            className="bg-white rounded-lg p-6 max-w-sm mx-4 shadow-xl"
+            className="bg-white rounded-2xl p-8 max-w-md mx-4 shadow-2xl transform scale-100"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Sign in to vote
+            {/* Vote Icon */}
+            <div className="flex justify-center mb-4">
+              <div className="w-16 h-16 bg-gradient-to-br from-green-400 to-blue-500 rounded-full flex items-center justify-center">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
+                  <path d="M12 19V6M5 12l7-7 7 7" />
+                </svg>
+              </div>
+            </div>
+
+            {/* Heading */}
+            <h3 className="text-2xl font-bold text-gray-900 mb-2 text-center">
+              Help Our Community
             </h3>
-            <p className="text-sm text-gray-600 mb-4">
-              Create a free account to vote on venues, leave reviews, and help other families find autism-friendly places.
+
+            {/* Description */}
+            <p className="text-gray-600 mb-6 text-center leading-relaxed">
+              Your vote helps other families discover the best autism-friendly venues in your area
             </p>
+
+            {/* Benefits */}
+            <div className="space-y-3 mb-6 bg-purple-50 rounded-xl p-4">
+              <div className="flex items-start gap-3">
+                <svg className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                <span className="text-sm text-gray-700">Vote on unlimited venues</span>
+              </div>
+              <div className="flex items-start gap-3">
+                <svg className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                <span className="text-sm text-gray-700">Save your favorite places</span>
+              </div>
+              <div className="flex items-start gap-3">
+                <svg className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                <span className="text-sm text-gray-700">Leave reviews to help others</span>
+              </div>
+            </div>
+
+            {/* CTA Buttons */}
             <div className="flex gap-3">
               <a
-                href="/login"
-                className="flex-1 bg-purple-600 text-white px-4 py-2 rounded-lg text-center font-medium hover:bg-purple-700 transition-colors"
+                href="/auth/login"
+                className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-3 rounded-xl text-center font-semibold hover:from-purple-700 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
               >
-                Sign in
+                Create Free Account
               </a>
-              <button
-                onClick={() => setShowLoginPrompt(false)}
-                className="flex-1 bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-300 transition-colors"
-              >
-                Cancel
-              </button>
             </div>
+
+            <button
+              onClick={() => setShowLoginPrompt(false)}
+              className="w-full mt-3 text-gray-500 hover:text-gray-700 text-sm font-medium transition-colors"
+            >
+              Maybe later
+            </button>
           </div>
         </div>
       )}

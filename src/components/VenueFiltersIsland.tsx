@@ -43,6 +43,9 @@ export default function VenueFiltersIsland({ onFilterChange, venues = [] }: Prop
     if (newFilters.sensoryHours) apiFilters['has_sensory_hours'] = true;
     if (newFilters.visualSupports) apiFilters['amenities.visual_supports'] = true;
 
+    // Debug log
+    console.log('VenueFiltersIsland: Dispatching filter change event', apiFilters);
+
     // Dispatch custom event
     window.dispatchEvent(new CustomEvent('venueFiltersChanged', { detail: apiFilters }));
     onFilterChange?.(apiFilters);
