@@ -1,6 +1,6 @@
 /**
- * Astro middleware for route protection
- * Handles authentication and role-based access control
+ * Astro middleware for route protection and edge caching
+ * Handles authentication, role-based access control, and Cache-Control headers
  */
 
 import { defineMiddleware } from 'astro:middleware';
@@ -37,6 +37,16 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return next();
   }
 
-  // All other routes pass through
-  return next();
+  const response = await next();
+
+  // Add edge caching headers for public pages (not API, not admin)
+  if (!url.pathname.startsWith('/api/')) {
+    // Cache on Vercel's CDN for 5 minutes, serve stale for 1 hour while revalidating
+    response.headers.set(
+      'Cache-Control',
+      'public, s-maxage=300, stale-while-revalidate=3600'
+    );
+  }
+
+  return response;
 });

@@ -7,7 +7,7 @@ Disallow: /admin/
 Disallow: /api/
 
 # Sitemap
-Sitemap: https://findabacare.com/sitemap.xml
+Sitemap: https://autism.place/sitemap.xml
 
 # Crawl delay (be nice to our servers)
 Crawl-delay: 1
