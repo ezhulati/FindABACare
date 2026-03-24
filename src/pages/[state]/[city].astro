@@ -74,6 +74,25 @@ const { ogImage, ogImageAlt } = generateCityOGImage(cityData.name);
 // Check SEO in development mode
 checkSEOInDev({ title, description, ogImage, ogImageAlt }, `/${state}/${city}`);
 
+// Compute venue type links for quick nav
+const typeSlugMap: Record<string, string> = {
+  'Museum': 'museums', 'Park': 'parks', 'Library': 'libraries',
+  'Restaurant': 'restaurants', 'Indoor Play': 'indoor-play',
+  'Movie Theater': 'movie-theaters', 'Playground': 'playgrounds',
+  'Bowling Alley': 'bowling-alleys', 'Aquarium': 'aquariums',
+  'Zoo': 'zoos', "Children's Museum": 'childrens-museums',
+  'Science Museum': 'science-museums', 'Nature Center': 'nature-centers',
+};
+const typeCounts = venues.reduce((acc: Record<string, number>, v: any) => {
+  if (v.type) acc[v.type] = (acc[v.type] || 0) + 1;
+  return acc;
+}, {} as Record<string, number>);
+const venueTypeLinks = Object.entries(typeCounts)
+  .filter(([name]) => typeSlugMap[name])
+  .sort(([, a], [, b]) => b - a)
+  .slice(0, 6)
+  .map(([name, count]) => ({ name, count, slug: typeSlugMap[name] }));
+
 // JSON-LD ItemList schema for city page
 const itemListSchema = {
   "@context": "https://schema.org",
@@ -127,35 +146,14 @@ const itemListSchema = {
       >
         Events
       </a>
-      {(() => {
-        const typeSlugMap: Record<string, string> = {
-          'Museum': 'museums', 'Park': 'parks', 'Library': 'libraries',
-          'Restaurant': 'restaurants', 'Indoor Play': 'indoor-play',
-          'Movie Theater': 'movie-theaters', 'Playground': 'playgrounds',
-          'Bowling Alley': 'bowling-alleys', 'Aquarium': 'aquariums',
-          'Zoo': 'zoos', "Children's Museum": 'childrens-museums',
-          'Science Museum': 'science-museums', 'Nature Center': 'nature-centers',
-        };
-        const typeCounts = venues.reduce((acc: Record<string, number>, v: any) => {
-          if (v.type) acc[v.type] = (acc[v.type] || 0) + 1;
-          return acc;
-        }, {});
-        const sortedTypes = Object.entries(typeCounts)
-          .sort(([,a], [,b]) => (b as number) - (a as number))
-          .slice(0, 6);
-        return sortedTypes.map(([typeName, count]) => {
-          const slug = typeSlugMap[typeName];
-          if (!slug) return null;
-          return (
-            <a
-              href={`/${state}/${city}/${slug}`}
-              class="px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:border-gray-300 hover:bg-gray-50 whitespace-nowrap transition-colors"
-            >
-              {typeName}s ({count})
-            </a>
-          );
-        });
-      })()}
+      {venueTypeLinks.map((vt) => (
+        <a
+          href={`/${state}/${city}/${vt.slug}`}
+          class="px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:border-gray-300 hover:bg-gray-50 whitespace-nowrap transition-colors"
+        >
+          {vt.name}s ({vt.count})
+        </a>
+      ))}
     </div>
 
     <!-- Main Grid -->
