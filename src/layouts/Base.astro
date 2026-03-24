@@ -1,6 +1,7 @@
 ---
 import AuthButton from '../components/AuthButton';
 import { createClient } from '@supabase/supabase-js';
+import { getStateName } from '../lib/states';
 
 interface Props {
   title?: string;
@@ -8,6 +9,7 @@ interface Props {
   ogImage?: string;
   ogImageAlt?: string;
   canonical?: string;
+  currentPath?: string;
 }
 
 const {
@@ -15,12 +17,32 @@ const {
   description = 'Discover autism-friendly venues with quiet hours, visual guides, and sensory accommodations. Parent-verified places across 40+ major US cities.',
   ogImage = '/og-image.svg',
   ogImageAlt = 'autism.place - Trusted roadmap to sensory-friendly experiences',
-  canonical
+  canonical,
+  currentPath
 } = Astro.props;
 
 const url = canonical || Astro.url.pathname;
 const fullUrl = `https://autism.place${url}`;
 const fullOgImage = new URL(ogImage, Astro.url.origin).href;
+const activePath = currentPath || Astro.url.pathname;
+
+// Helper to check if nav item is active
+function isActive(href: string): boolean {
+  if (href === '/') return activePath === '/';
+  return activePath.startsWith(href);
+}
+
+function navClass(href: string): string {
+  return isActive(href)
+    ? 'text-sm font-medium text-blue-600 border-b-2 border-blue-600 pb-0.5 transition-colors'
+    : 'text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors';
+}
+
+function mobileNavClass(href: string): string {
+  return isActive(href)
+    ? 'block px-3 py-2 rounded-md text-base font-medium text-blue-600 bg-blue-50'
+    : 'block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50';
+}
 
 // Fetch cities dynamically for navigation
 const supabase = createClient(
@@ -40,6 +62,9 @@ const { data: cities } = await supabase
 
 // Top 6 cities for header navigation
 const topCities = (cities || []).slice(0, 6);
+
+// Dynamic stats for footer
+const totalCities = (cities || []).length;
 
 // Group all cities by state for footer
 const citiesByState = (cities || []).reduce((acc, city) => {
@@ -109,6 +134,13 @@ const sortedStates = Object.keys(citiesByState).sort();
     <meta property="twitter:image:alt" content={ogImageAlt} />
 
     <title>{title}</title>
+
+    <!-- Visited link styling -->
+    <style>
+      a:visited:not(.no-visited):not(nav a):not(header a):not(footer a) {
+        color: #6b21a8;
+      }
+    </style>
   </head>
   <body class="min-h-screen bg-white text-gray-900">
     <header class="border-b border-gray-200 bg-white sticky top-0 z-50">
@@ -123,28 +155,39 @@ const sortedStates = Object.keys(citiesByState).sort();
           </div>
 
           <!-- Navigation -->
-          <nav class="hidden md:flex items-center space-x-8">
-            <a href="/cities" class="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors">
-              Browse Cities
+          <nav class="hidden md:flex items-center space-x-8" aria-label="Main navigation">
+            <a href="/cities" class={navClass('/cities')} aria-current={isActive('/cities') ? 'page' : undefined}>
+              Find Places
             </a>
-            <a href="/events" class="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors">
+            <a href="/events" class={navClass('/events')} aria-current={isActive('/events') ? 'page' : undefined}>
               Events
             </a>
             {user && (
-              <a href="/profile/favorites" class="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors flex items-center gap-1">
+              <a href="/profile/favorites" class={`${navClass('/profile/favorites')} flex items-center gap-1`} aria-current={isActive('/profile/favorites') ? 'page' : undefined}>
                 <svg class="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 20 20">
                   <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
                 </svg>
                 Favorites
               </a>
             )}
-            <a href="/about" class="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors">
+            <a href="/about" class={navClass('/about')} aria-current={isActive('/about') ? 'page' : undefined}>
               About
             </a>
           </nav>
 
-          <!-- Auth (desktop only) -->
-          <div class="hidden md:flex items-center space-x-4">
+          <!-- Search + Auth (desktop) -->
+          <div class="hidden md:flex items-center space-x-3">
+            <!-- Search toggle -->
+            <button
+              id="search-toggle"
+              class="p-2 rounded-md text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+              aria-label="Search venues"
+              title="Search venues"
+            >
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </button>
             <div id="auth-container">
               <AuthButton client:load />
             </div>
@@ -152,33 +195,84 @@ const sortedStates = Object.keys(citiesByState).sort();
 
           <!-- Mobile menu button -->
           <div class="md:hidden">
-            <button id="mobile-menu-button" class="p-2 rounded-md text-gray-700 hover:text-gray-900 hover:bg-gray-100" aria-label="Toggle menu">
-              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <button id="mobile-menu-button" class="p-2 rounded-md text-gray-700 hover:text-gray-900 hover:bg-gray-100" aria-label="Open menu" aria-expanded="false">
+              <!-- Hamburger icon -->
+              <svg id="menu-icon-open" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+              <!-- Close icon -->
+              <svg id="menu-icon-close" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
         </div>
       </div>
 
+      <!-- Search bar (expandable) -->
+      <div id="search-bar" class="hidden border-t border-gray-200 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+          <form action="/search" method="get" class="flex items-center gap-3" id="venue-search-form">
+            <div class="flex-1 relative">
+              <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input
+                type="text"
+                name="q"
+                id="venue-search-input"
+                placeholder="Search venues by name, city, or type..."
+                class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                autocomplete="off"
+              />
+              <!-- Search suggestions dropdown -->
+              <div id="search-suggestions" class="hidden absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
+              </div>
+            </div>
+            <button type="submit" class="px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+              Search
+            </button>
+            <button type="button" id="search-close" class="p-2 text-gray-500 hover:text-gray-700" aria-label="Close search">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </form>
+        </div>
+      </div>
+
       <!-- Mobile menu -->
       <div id="mobile-menu" class="hidden md:hidden border-t border-gray-200">
         <div class="px-4 pt-2 pb-3 space-y-1">
-          <a href="/cities" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
-            Browse Cities
+          <!-- Mobile search -->
+          <form action="/search" method="get" class="px-3 py-2">
+            <div class="relative">
+              <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input
+                type="text"
+                name="q"
+                placeholder="Search venues..."
+                class="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </form>
+          <a href="/cities" class={mobileNavClass('/cities')} aria-current={isActive('/cities') ? 'page' : undefined}>
+            Find Places
           </a>
-          <a href="/events" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
+          <a href="/events" class={mobileNavClass('/events')} aria-current={isActive('/events') ? 'page' : undefined}>
             Events
           </a>
           {user && (
-            <a href="/profile/favorites" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 flex items-center gap-2">
+            <a href="/profile/favorites" class={`${mobileNavClass('/profile/favorites')} flex items-center gap-2`} aria-current={isActive('/profile/favorites') ? 'page' : undefined}>
               <svg class="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
               </svg>
               Favorites
             </a>
           )}
-          <a href="/about" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
+          <a href="/about" class={mobileNavClass('/about')} aria-current={isActive('/about') ? 'page' : undefined}>
             About
           </a>
           <div class="px-3 py-2">
@@ -201,7 +295,7 @@ const sortedStates = Object.keys(citiesByState).sort();
           <div>
             <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wider">About</h3>
             <p class="mt-4 text-sm text-gray-600">
-              autism.place helps families find autism-friendly venues across 40+ major US cities.
+              autism.place helps families find autism-friendly venues across {totalCities} cities in {sortedStates.length} states.
             </p>
           </div>
 
@@ -220,7 +314,7 @@ const sortedStates = Object.keys(citiesByState).sort();
               ))}
               <li>
                 <a href="/cities" class="text-sm text-blue-600 hover:text-blue-700 font-medium">
-                  View all cities →
+                  View all cities &rarr;
                 </a>
               </li>
             </ul>
@@ -230,6 +324,7 @@ const sortedStates = Object.keys(citiesByState).sort();
             <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wider">Resources</h3>
             <ul class="mt-4 space-y-2">
               <li><a href="/about" class="text-sm text-gray-600 hover:text-gray-900">About Us</a></li>
+              <li><a href="/events" class="text-sm text-gray-600 hover:text-gray-900">Events</a></li>
               <li><a href="/privacy" class="text-sm text-gray-600 hover:text-gray-900">Privacy Policy</a></li>
               <li><a href="/terms" class="text-sm text-gray-600 hover:text-gray-900">Terms of Service</a></li>
             </ul>
@@ -249,7 +344,11 @@ const sortedStates = Object.keys(citiesByState).sort();
           <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
             {sortedStates.map(state => (
               <div>
-                <h4 class="text-xs font-semibold text-gray-900 uppercase tracking-wider mb-2">{state}</h4>
+                <h4 class="text-xs font-semibold text-gray-900 uppercase tracking-wider mb-2">
+                  <a href={`/${state.toLowerCase()}`} class="hover:text-blue-600 transition-colors">
+                    {getStateName(state)}
+                  </a>
+                </h4>
                 <ul class="space-y-1">
                   {citiesByState[state].slice(0, 5).map(city => (
                     <li>
@@ -279,19 +378,96 @@ const sortedStates = Object.keys(citiesByState).sort();
 
         <div class="mt-8 pt-8 border-t border-gray-200">
           <p class="text-sm text-gray-500 text-center">
-            © 2025 autism.place. All rights reserved. <a href="https://enrizhulati.com" target="_blank" rel="noopener noreferrer" class="hover:text-gray-700 transition-colors">Made in Texas</a>
+            &copy; {new Date().getFullYear()} autism.place. All rights reserved. <a href="https://enrizhulati.com" target="_blank" rel="noopener noreferrer" class="hover:text-gray-700 transition-colors">Made in Texas</a>
           </p>
         </div>
       </div>
     </footer>
 
     <script>
-      // Mobile menu toggle
+      // Mobile menu toggle with close icon
       const mobileMenuButton = document.getElementById('mobile-menu-button');
       const mobileMenu = document.getElementById('mobile-menu');
+      const menuIconOpen = document.getElementById('menu-icon-open');
+      const menuIconClose = document.getElementById('menu-icon-close');
 
       mobileMenuButton?.addEventListener('click', () => {
+        const isOpen = !mobileMenu?.classList.contains('hidden');
         mobileMenu?.classList.toggle('hidden');
+        menuIconOpen?.classList.toggle('hidden');
+        menuIconClose?.classList.toggle('hidden');
+        mobileMenuButton.setAttribute('aria-expanded', isOpen ? 'false' : 'true');
+        mobileMenuButton.setAttribute('aria-label', isOpen ? 'Open menu' : 'Close menu');
+      });
+
+      // Search bar toggle
+      const searchToggle = document.getElementById('search-toggle');
+      const searchBar = document.getElementById('search-bar');
+      const searchClose = document.getElementById('search-close');
+      const searchInput = document.getElementById('venue-search-input') as HTMLInputElement;
+
+      searchToggle?.addEventListener('click', () => {
+        searchBar?.classList.toggle('hidden');
+        if (!searchBar?.classList.contains('hidden')) {
+          searchInput?.focus();
+        }
+      });
+
+      searchClose?.addEventListener('click', () => {
+        searchBar?.classList.add('hidden');
+      });
+
+      // Close search on Escape
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !searchBar?.classList.contains('hidden')) {
+          searchBar?.classList.add('hidden');
+        }
+      });
+
+      // Venue name search suggestions
+      const suggestionsEl = document.getElementById('search-suggestions');
+      let debounceTimer: ReturnType<typeof setTimeout>;
+
+      searchInput?.addEventListener('input', () => {
+        clearTimeout(debounceTimer);
+        const query = searchInput.value.trim();
+
+        if (query.length < 2) {
+          suggestionsEl?.classList.add('hidden');
+          return;
+        }
+
+        debounceTimer = setTimeout(async () => {
+          try {
+            const res = await fetch(`/api/venues?search=${encodeURIComponent(query)}&limit=6`);
+            if (!res.ok) return;
+            const data = await res.json();
+            const venues = data.venues || data || [];
+
+            if (venues.length === 0) {
+              suggestionsEl!.innerHTML = '<div class="px-4 py-3 text-sm text-gray-500">No venues found. Try a different search.</div>';
+              suggestionsEl?.classList.remove('hidden');
+              return;
+            }
+
+            suggestionsEl!.innerHTML = venues.map((v: any) => `
+              <a href="/venue/${v.slug || v.id}" class="block px-4 py-3 hover:bg-gray-50 border-b border-gray-100 last:border-0">
+                <div class="text-sm font-medium text-gray-900">${v.name}</div>
+                <div class="text-xs text-gray-500">${v.type || ''} ${v.address ? '· ' + v.address : ''}</div>
+              </a>
+            `).join('');
+            suggestionsEl?.classList.remove('hidden');
+          } catch {
+            suggestionsEl?.classList.add('hidden');
+          }
+        }, 300);
+      });
+
+      // Close suggestions on click outside
+      document.addEventListener('click', (e) => {
+        if (!(e.target as Element)?.closest('#venue-search-form')) {
+          suggestionsEl?.classList.add('hidden');
+        }
       });
     </script>
   </body>

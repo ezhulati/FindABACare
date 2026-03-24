@@ -5,7 +5,7 @@ import { SEO_TEMPLATES } from '../lib/seo';
 const { title, description, ogImage, ogImageAlt } = SEO_TEMPLATES.about;
 ---
 
-<Base title={title} description={description} ogImage={ogImage} ogImageAlt={ogImageAlt}>
+<Base title={title} description={description} ogImage={ogImage} ogImageAlt={ogImageAlt} currentPath={Astro.url.pathname}>
   <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
     <!-- Header -->
     <div class="text-center mb-16">
@@ -107,7 +107,7 @@ const { title, description, ogImage, ogImageAlt } = SEO_TEMPLATES.about;
             2
           </div>
           <div>
-            <h3 class="text-lg font-semibold text-gray-900 mb-2">Check Go Now Meter</h3>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">Check the Go Now™ Meter</h3>
             <p class="text-gray-600">
               Our predictive meter shows whether venues are likely to be Quiet, Moderate, or
               Busy based on time of day, day of week, and historical patterns.

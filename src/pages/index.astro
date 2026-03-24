@@ -65,7 +65,7 @@ const cities = topCitiesByVenues.map((city, index) => ({
 }));
 ---
 
-<Base title={title} description={description} ogImage={ogImage} ogImageAlt={ogImageAlt}>
+<Base title={title} description={description} ogImage={ogImage} ogImageAlt={ogImageAlt} currentPath={Astro.url.pathname}>
   <div class="bg-gradient-to-b from-gray-50 to-white">
     <!-- Hero Section -->
     <section class="relative overflow-hidden">
@@ -85,12 +85,18 @@ const cities = topCitiesByVenues.map((city, index) => ({
               <MapboxAddressSearch client:load mapboxToken={MAPBOX_TOKEN} />
             </div>
 
-            <div class="flex flex-col sm:flex-row gap-4">
+            <div class="flex flex-col sm:flex-row gap-3">
               <a
                 href="/cities"
-                class="px-8 py-4 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors text-center"
+                class="px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors text-center text-sm"
               >
-                Or browse by city
+                Browse all cities
+              </a>
+              <a
+                href="/events"
+                class="px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors text-center text-sm"
+              >
+                View events
               </a>
             </div>
           </div>
@@ -271,7 +277,7 @@ const cities = topCitiesByVenues.map((city, index) => ({
           <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-900 text-white font-bold mb-4">
             2
           </div>
-          <h3 class="font-semibold text-gray-900 mb-2">Check the Go Now meter</h3>
+          <h3 class="font-semibold text-gray-900 mb-2">Check the Go Now™ Meter</h3>
           <p class="text-sm text-gray-600">
             See predicted occupancy to plan visits during quieter times
           </p>
@@ -287,6 +293,15 @@ const cities = topCitiesByVenues.map((city, index) => ({
           </p>
         </div>
       </div>
+
+      <div class="text-center mt-10">
+        <a
+          href="/cities"
+          class="inline-block px-8 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          Find places near you
+        </a>
+      </div>
     </section>
 
     <!-- CTA Section -->
@@ -298,12 +313,20 @@ const cities = topCitiesByVenues.map((city, index) => ({
         <p class="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
           Join hundreds of families finding places that work for their kids
         </p>
-        <a
-          href="/cities"
-          class="inline-block px-8 py-4 bg-white text-blue-600 font-medium rounded-lg hover:bg-gray-50 transition-colors"
-        >
-          Get started
-        </a>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+          <a
+            href="/cities"
+            class="inline-block px-8 py-4 bg-white text-blue-600 font-medium rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            Explore venues
+          </a>
+          <a
+            href="/auth/login"
+            class="inline-block px-8 py-4 border-2 border-white text-white font-medium rounded-lg hover:bg-white/10 transition-colors"
+          >
+            Create free account
+          </a>
+        </div>
       </div>
     </section>
   </div>

@@ -55,7 +55,7 @@ const title = `${totalCities} Cities with Autism-Friendly Venues`;
 const description = `Browse ${totalVenues.toLocaleString()}+ autism-friendly venues across ${totalCities} major US cities. Find museums, parks, libraries, and more with sensory accommodations.`;
 ---
 
-<Base title={title} description={description}>
+<Base title={title} description={description} currentPath={Astro.url.pathname}>
   <div class="min-h-screen bg-gray-50">
     <!-- Header -->
     <div class="bg-white border-b border-gray-200">

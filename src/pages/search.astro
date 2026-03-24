@@ -64,7 +64,7 @@ const description = `Found ${venuesWithDistance.length} autism-friendly venues w
 const MAPBOX_TOKEN = import.meta.env.PUBLIC_MAPBOX_TOKEN;
 ---
 
-<Base title={title} description={description}>
+<Base title={title} description={description} currentPath={Astro.url.pathname}>
   <!-- Mapbox GL JS -->
   <link href="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css" rel="stylesheet" />
   <script src="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js"></script>
@@ -72,6 +72,14 @@ const MAPBOX_TOKEN = import.meta.env.PUBLIC_MAPBOX_TOKEN;
     <!-- Search Header -->
     <div class="bg-white border-b border-gray-200 sticky top-16 z-40">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <!-- Breadcrumbs -->
+        <nav class="flex items-center gap-2 text-xs text-gray-500 mb-2" aria-label="Breadcrumb">
+          <a href="/" class="hover:text-gray-700">Home</a>
+          <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+          <span class="text-gray-700">Search Results</span>
+        </nav>
         <div class="flex items-center justify-between gap-4">
           <div class="flex-1">
             <h1 class="text-2xl font-bold text-gray-900">

@@ -3,33 +3,10 @@ import Base from '../layouts/Base.astro';
 import RSVPButtonIsland from '../components/RSVPButtonIsland';
 import { getServerClient } from '../lib/supabaseServer';
 import { formatTime, generateICS } from '../lib/utils';
+import { getStateName } from '../lib/states';
 import dayjs from 'dayjs';
 
 const supabase = getServerClient(Astro.request);
-
-// State names map for display
-const stateNames: Record<string, string> = {
-  'TX': 'Texas',
-  'CA': 'California',
-  'NY': 'New York',
-  'FL': 'Florida',
-  'AZ': 'Arizona',
-  'PA': 'Pennsylvania',
-  'GA': 'Georgia',
-  'NC': 'North Carolina',
-  'MI': 'Michigan',
-  'OH': 'Ohio',
-  'TN': 'Tennessee',
-  'IN': 'Indiana',
-  'MD': 'Maryland',
-  'WI': 'Wisconsin',
-  'CO': 'Colorado',
-  'VA': 'Virginia',
-  'WA': 'Washington',
-  'MA': 'Massachusetts',
-  'OR': 'Oregon',
-  'IL': 'Illinois'
-};
 
 // Fetch all upcoming events nationwide
 const { data: events } = await supabase
@@ -52,7 +29,7 @@ const processedEvents = (events || []).map(event => ({
   ...event,
   rsvpCount: event.rsvp_count?.[0]?.count || 0,
   cityName: event.city?.name || '',
-  stateName: stateNames[event.city?.state] || event.city?.state || '',
+  stateName: event.city?.state ? getStateName(event.city.state) : '',
   stateCode: event.city?.state || '',
   citySlug: event.city?.slug || ''
 }));
@@ -79,7 +56,7 @@ const title = 'Nationwide Events | autism.place';
 const description = `Find autism-friendly micro-events happening nationwide. ${totalEvents} upcoming events across ${totalStates} states. Small group meetups at sensory-friendly venues.`;
 ---
 
-<Base title={title} description={description}>
+<Base title={title} description={description} currentPath={Astro.url.pathname}>
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <!-- Hero Header -->
     <div class="text-center mb-12">
@@ -192,12 +169,13 @@ const description = `Find autism-friendly micro-events happening nationwide. ${t
           All States ({totalEvents})
         </button>
         {Object.keys(eventsByState).sort().map((stateCode) => (
-          <button
+          <a
+            href={`/${stateCode.toLowerCase()}/events`}
             class="state-filter px-4 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors"
             data-state={stateCode}
           >
-            {stateNames[stateCode] || stateCode} ({eventsByState[stateCode].length})
-          </button>
+            {getStateName(stateCode)} ({eventsByState[stateCode].length})
+          </a>
         ))}
       </div>
     </div>
