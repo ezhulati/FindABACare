@@ -12,6 +12,7 @@ import { getServerClient } from '../../../lib/supabaseServer';
 import { goNow } from '../../../lib/goNow';
 import { timeAgo, formatTime } from '../../../lib/utils';
 import { generateVenueOGImage } from '../../../lib/seo';
+import { getStateName } from '../../../lib/states';
 
 const { slug } = Astro.params;
 
@@ -75,6 +76,24 @@ const topTriggers = Object.entries(triggerCounts)
   .slice(0, 5)
   .map(([trigger]) => trigger);
 
+// Fetch related venues (same city, same type, or nearby)
+const { data: relatedVenues = [] } = await supabase
+  .from('venues')
+  .select('id, name, slug, type, address, photo_keys, meter, google_rating')
+  .eq('city_id', venue.city?.id)
+  .eq('status', 'active')
+  .neq('id', venue.id)
+  .order('google_rating', { ascending: false, nullsFirst: false })
+  .limit(20);
+
+// Prioritize same type, then others
+const sameType = relatedVenues.filter(v => v.type === venue.type);
+const otherType = relatedVenues.filter(v => v.type !== venue.type);
+const sortedRelated = [...sameType, ...otherType].slice(0, 4);
+
+const stateCode = venue.city?.state?.toLowerCase() || 'tx';
+const stateNameFull = getStateName(venue.city?.state || 'TX');
+
 const title = `${venue.name} - Autism-Friendly in ${venue.city?.name}`;
 const description = `${venue.name} - Autism-friendly venue in ${venue.city?.name}. ${venue.description?.substring(0, 100) || 'See sensory hours, amenities, and parent reviews.'}`;
 const { ogImage, ogImageAlt } = generateVenueOGImage(venue.type);
@@ -129,7 +148,7 @@ const placeSchema = {
 };
 ---
 
-<Base title={title} description={description} ogImage={ogImage} ogImageAlt={ogImageAlt}>
+<Base title={title} description={description} ogImage={ogImage} ogImageAlt={ogImageAlt} currentPath={Astro.url.pathname}>
   <SEO
     title={title}
     description={description}
@@ -138,17 +157,21 @@ const placeSchema = {
   />
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <!-- Breadcrumbs -->
-    <div class="flex items-center gap-2 text-sm text-gray-600 mb-6">
+    <nav class="flex items-center gap-2 text-sm text-gray-600 mb-6" aria-label="Breadcrumb">
       <a href="/" class="hover:text-gray-900">Home</a>
-      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
       </svg>
-      <a href={`/${venue.city?.state?.toLowerCase() || 'tx'}/${venue.city?.slug}`} class="hover:text-gray-900">{venue.city?.name}</a>
-      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <a href={`/${stateCode}`} class="hover:text-gray-900">{stateNameFull}</a>
+      <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
       </svg>
-      <span class="text-gray-900">{venue.name}</span>
-    </div>
+      <a href={`/${stateCode}/${venue.city?.slug}`} class="hover:text-gray-900">{venue.city?.name}</a>
+      <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+      </svg>
+      <span class="text-gray-900 truncate">{venue.name}</span>
+    </nav>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
       <!-- Main Content -->
@@ -481,5 +504,64 @@ const placeSchema = {
         </div>
       </div>
     </div>
+
+    <!-- Related Venues -->
+    {sortedRelated.length > 0 && (
+      <div class="mt-12">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">More Venues in {venue.city?.name}</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {sortedRelated.map((related) => (
+            <a
+              href={`/venue/${related.slug || related.id}`}
+              class="block bg-white border border-gray-200 rounded-lg overflow-hidden hover:border-gray-300 hover:shadow-md transition-all group"
+            >
+              <div class="aspect-video relative overflow-hidden bg-gray-100">
+                {related.photo_keys && related.photo_keys.length > 0 ? (
+                  <img
+                    src={related.photo_keys[0].startsWith('http') ? related.photo_keys[0] : related.photo_keys[0].startsWith('/venue-photos/') ? `https://gvfkyfzukwnjomksuvaq.supabase.co/storage/v1/object/public/venue-photos/${related.photo_keys[0].replace('/venue-photos/', '')}` : related.photo_keys[0]}
+                    alt={related.name}
+                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div class="w-full h-full flex items-center justify-center text-gray-400">
+                    <svg class="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                  </div>
+                )}
+                {related.type === venue.type && (
+                  <span class="absolute top-2 left-2 px-2 py-0.5 bg-blue-600 text-white text-xs font-medium rounded">
+                    Same type
+                  </span>
+                )}
+              </div>
+              <div class="p-3">
+                <h3 class="text-sm font-semibold text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-1">
+                  {related.name}
+                </h3>
+                <p class="text-xs text-gray-500 mt-0.5">{related.type}</p>
+                {related.google_rating && (
+                  <div class="flex items-center gap-1 mt-1">
+                    <svg class="w-3.5 h-3.5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                    <span class="text-xs text-gray-600">{related.google_rating.toFixed(1)}</span>
+                  </div>
+                )}
+              </div>
+            </a>
+          ))}
+        </div>
+        <div class="mt-4 text-center">
+          <a
+            href={`/${stateCode}/${venue.city?.slug}`}
+            class="text-sm font-medium text-blue-600 hover:text-blue-700"
+          >
+            View all venues in {venue.city?.name} &rarr;
+          </a>
+        </div>
+      </div>
+    )}
   </div>
 </Base>

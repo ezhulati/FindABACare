@@ -255,7 +255,7 @@ export const SEO_TEMPLATES = {
   home: {
     title: 'autism.place - Find Autism-Friendly Places for Your Child',
     description:
-      'Discover sensory-friendly venues, quiet hours, and parent-verified places for children with autism in Dallas and Houston. Real experiences from real families.',
+      'Discover sensory-friendly venues, quiet hours, and parent-verified places for children with autism nationwide. Real experiences from real families.',
     ogImage: STOCK_IMAGES.cityKids,
     ogImageAlt: 'Children enjoying autism-friendly activities in the city',
   },

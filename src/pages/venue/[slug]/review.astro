@@ -2,6 +2,7 @@
 import Base from '../../../layouts/Base.astro';
 import ReviewForm from '../../../components/ReviewForm';
 import { getServerClient, getAuthUser } from '../../../lib/supabaseServer';
+import { getStateName } from '../../../lib/states';
 
 const { slug } = Astro.params;
 
@@ -43,21 +44,25 @@ const description = `Share your experience at ${venue.name} to help other famili
 <Base title={title} description={description}>
   <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <!-- Breadcrumbs -->
-    <div class="flex items-center gap-2 text-sm text-gray-600 mb-6">
+    <nav class="flex items-center gap-2 text-sm text-gray-600 mb-6 flex-wrap" aria-label="Breadcrumb">
       <a href="/" class="hover:text-gray-900">Home</a>
-      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+      </svg>
+      <a href={`/${venue.city?.state?.toLowerCase() || 'tx'}`} class="hover:text-gray-900">{getStateName(venue.city?.state || 'TX')}</a>
+      <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
       </svg>
       <a href={`/${venue.city?.state?.toLowerCase() || 'tx'}/${venue.city?.slug}`} class="hover:text-gray-900">{venue.city?.name}</a>
-      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
       </svg>
       <a href={`/venue/${venue.slug}`} class="hover:text-gray-900">{venue.name}</a>
-      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
       </svg>
       <span class="text-gray-900">Review</span>
-    </div>
+    </nav>
 
     <!-- Header -->
     <div class="mb-8">
@@ -77,7 +82,7 @@ const description = `Share your experience at ${venue.name} to help other famili
           <div class="flex-1">
             <h3 class="text-lg font-semibold text-blue-900 mb-1">You've already reviewed this venue</h3>
             <p class="text-blue-800 mb-4">
-              You can only submit one review per venue. If you'd like to update your review, please contact us.
+              You can only submit one review per venue. If you'd like to update your review, please <a href="mailto:hello@autism.place" class="text-blue-600 hover:text-blue-700 underline">contact us</a>.
             </p>
             <a
               href={`/venue/${venue.slug}`}

@@ -3,7 +3,7 @@ import { getServerClient } from '../lib/supabaseServer';
 
 /**
  * Generate XML sitemap for SEO
- * Includes all public pages: cities, venues, events, static pages
+ * Includes all public pages: static pages, state directories, cities, venues, events
  */
 export const GET: APIRoute = async ({ request }) => {
   const supabase = getServerClient(request);
@@ -12,7 +12,7 @@ export const GET: APIRoute = async ({ request }) => {
   // Fetch all active cities
   const { data: cities } = await supabase
     .from('cities')
-    .select('slug, state, updated_at')
+    .select('slug, state, created_at')
     .eq('status', 'active')
     .order('name');
 
@@ -24,6 +24,9 @@ export const GET: APIRoute = async ({ request }) => {
     .order('updated_at', { ascending: false });
 
   const now = new Date().toISOString();
+
+  // Get unique states from cities
+  const states = [...new Set((cities || []).map(c => c.state?.toLowerCase()).filter(Boolean))].sort();
 
   // Build sitemap XML
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
@@ -39,6 +42,22 @@ export const GET: APIRoute = async ({ request }) => {
     <lastmod>${now}</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
+  </url>
+
+  <!-- Cities Directory -->
+  <url>
+    <loc>${baseUrl}/cities</loc>
+    <lastmod>${now}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Nationwide Events -->
+  <url>
+    <loc>${baseUrl}/events</loc>
+    <lastmod>${now}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
   </url>
 
   <!-- About Page -->
@@ -65,6 +84,29 @@ export const GET: APIRoute = async ({ request }) => {
     <priority>0.3</priority>
   </url>
 
+  ${states
+    .map(
+      (state) => `
+  <!-- State: ${state.toUpperCase()} -->
+  <url>
+    <loc>${baseUrl}/${state}</loc>
+    <lastmod>${now}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- State Events: ${state.toUpperCase()} -->
+  <url>
+    <loc>${baseUrl}/${state}/events</loc>
+    <lastmod>${now}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+`
+    )
+    .join('')
+  }
+
   ${cities && cities.length > 0
     ? cities
         .map(
@@ -72,7 +114,7 @@ export const GET: APIRoute = async ({ request }) => {
   <!-- City: ${city.slug} -->
   <url>
     <loc>${baseUrl}/${city.state?.toLowerCase()}/${city.slug}</loc>
-    <lastmod>${city.updated_at || now}</lastmod>
+    <lastmod>${city.created_at || now}</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
@@ -80,7 +122,7 @@ export const GET: APIRoute = async ({ request }) => {
   <!-- City Events -->
   <url>
     <loc>${baseUrl}/${city.state?.toLowerCase()}/${city.slug}/events</loc>
-    <lastmod>${city.updated_at || now}</lastmod>
+    <lastmod>${city.created_at || now}</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>

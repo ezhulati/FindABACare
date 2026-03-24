@@ -5,42 +5,17 @@ import VenueFiltersIsland from '../../components/VenueFiltersIsland';
 import MapIsland from '../../components/MapIsland';
 import { getServerClient } from '../../lib/supabaseServer';
 import { generateCityTitle, generateCityDescription, generateCityOGImage, checkSEOInDev } from '../../lib/seo';
+import { getStateName, isValidStateCode } from '../../lib/states';
 
 const { state, city } = Astro.params;
 
-// Validate state
-const validStates = ['tx', 'ca', 'ny', 'fl', 'az', 'pa', 'ga', 'nc', 'mi', 'oh', 'tn', 'in', 'md', 'wi', 'co', 'va', 'wa', 'ma', 'or', 'il'];
-if (!validStates.includes(state?.toLowerCase() || '')) {
-  return Astro.redirect('/');
+// Validate state using centralized state utility
+if (!state || !isValidStateCode(state)) {
+  return Astro.redirect('/cities');
 }
 
 const stateUpper = state!.toUpperCase();
-
-// State names map
-const stateNames: Record<string, string> = {
-  'TX': 'Texas',
-  'CA': 'California',
-  'NY': 'New York',
-  'FL': 'Florida',
-  'AZ': 'Arizona',
-  'PA': 'Pennsylvania',
-  'GA': 'Georgia',
-  'NC': 'North Carolina',
-  'MI': 'Michigan',
-  'OH': 'Ohio',
-  'TN': 'Tennessee',
-  'IN': 'Indiana',
-  'MD': 'Maryland',
-  'WI': 'Wisconsin',
-  'CO': 'Colorado',
-  'VA': 'Virginia',
-  'WA': 'Washington',
-  'MA': 'Massachusetts',
-  'OR': 'Oregon',
-  'IL': 'Illinois'
-};
-
-const stateName = stateNames[stateUpper];
+const stateName = getStateName(stateUpper);
 
 // Get Supabase client
 const supabase = getServerClient(Astro.request);
@@ -98,9 +73,30 @@ const { ogImage, ogImageAlt } = generateCityOGImage(cityData.name);
 
 // Check SEO in development mode
 checkSEOInDev({ title, description, ogImage, ogImageAlt }, `/${state}/${city}`);
+
+// JSON-LD ItemList schema for city page
+const itemListSchema = {
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "name": `Autism-Friendly Venues in ${cityData.name}, ${stateName}`,
+  "description": description,
+  "numberOfItems": venues.length,
+  "itemListElement": venues.slice(0, 20).map((v: any, i: number) => ({
+    "@type": "ListItem",
+    "position": i + 1,
+    "item": {
+      "@type": "Place",
+      "name": v.name,
+      "url": `https://autism.place/venue/${v.slug}`,
+      ...(v.address ? { "address": v.address } : {}),
+      ...(v.lat && v.lng ? { "geo": { "@type": "GeoCoordinates", "latitude": v.lat, "longitude": v.lng } } : {})
+    }
+  }))
+};
 ---
 
-<Base title={title} description={description} ogImage={ogImage} ogImageAlt={ogImageAlt}>
+<Base title={title} description={description} ogImage={ogImage} ogImageAlt={ogImageAlt} currentPath={Astro.url.pathname}>
+  <script type="application/ld+json" set:html={JSON.stringify(itemListSchema)} />
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <!-- Header -->
     <div class="mb-8">
@@ -183,7 +179,7 @@ checkSEOInDev({ title, description, ogImage, ogImageAlt }, `/${state}/${city}`);
             >
               <option value="name">Sort by name</option>
               <option value="recent">Recently verified</option>
-              <option value="meter">Go Now meter</option>
+              <option value="meter">Go Now™ Meter</option>
             </select>
           </div>
 
