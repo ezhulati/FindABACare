@@ -231,7 +231,7 @@ export default function VenueReviewForm({
 
         {/* CTA Button */}
         <a
-          href="/auth/login"
+          href={`/auth/login?redirect=${encodeURIComponent(typeof window !== 'undefined' ? window.location.pathname : '/')}`}
           className="inline-block bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
         >
           Create Free Account

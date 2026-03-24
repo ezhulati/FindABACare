@@ -1,0 +1,215 @@
+---
+import Base from '../../layouts/Base.astro';
+import RSVPButtonIsland from '../../components/RSVPButtonIsland';
+import { getServerClient } from '../../lib/supabaseServer';
+import { formatTime } from '../../lib/utils';
+import { getStateName, isValidStateCode } from '../../lib/states';
+import dayjs from 'dayjs';
+
+const { state } = Astro.params;
+
+if (!state || !isValidStateCode(state)) {
+  return Astro.redirect('/events');
+}
+
+const stateUpper = state!.toUpperCase();
+const stateName = getStateName(stateUpper);
+
+const supabase = getServerClient(Astro.request);
+
+// Fetch cities in this state
+const { data: cities } = await supabase
+  .from('cities')
+  .select('id, name, slug, state')
+  .eq('status', 'active')
+  .ilike('state', stateUpper)
+  .order('population', { ascending: false });
+
+if (!cities || cities.length === 0) {
+  return Astro.redirect('/events');
+}
+
+const cityIds = cities.map(c => c.id);
+
+// Fetch upcoming events in this state
+const { data: events = [] } = await supabase
+  .from('events')
+  .select(`
+    *,
+    venue:venues(*),
+    city:cities(*),
+    rsvp_count:rsvps(count)
+  `)
+  .in('city_id', cityIds)
+  .eq('status', 'published')
+  .eq('approval_status', 'approved')
+  .gte('date', dayjs().format('YYYY-MM-DD'))
+  .order('date')
+  .order('start_time')
+  .limit(50);
+
+const processedEvents = events.map(event => ({
+  ...event,
+  rsvpCount: event.rsvp_count?.[0]?.count || 0,
+  cityName: event.city?.name || '',
+  citySlug: event.city?.slug || ''
+}));
+
+// Group by city
+const eventsByCity = processedEvents.reduce((acc, event) => {
+  const key = event.cityName;
+  if (!acc[key]) acc[key] = [];
+  acc[key].push(event);
+  return acc;
+}, {} as Record<string, typeof processedEvents>);
+
+const totalEvents = processedEvents.length;
+
+const title = `${stateName} Autism-Friendly Events | autism.place`;
+const description = `Find ${totalEvents} autism-friendly micro-events across ${cities.length} cities in ${stateName}. Small group meetups at sensory-friendly venues.`;
+---
+
+<Base title={title} description={description} currentPath={Astro.url.pathname}>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Breadcrumbs -->
+    <nav class="flex items-center gap-2 text-sm text-gray-600 mb-6" aria-label="Breadcrumb">
+      <a href="/" class="hover:text-gray-900">Home</a>
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+      </svg>
+      <a href={`/${state}`} class="hover:text-gray-900">{stateName}</a>
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+      </svg>
+      <span class="text-gray-900">Events</span>
+    </nav>
+
+    <!-- Header -->
+    <div class="text-center mb-12">
+      <h1 class="text-4xl font-bold text-gray-900 mb-4">
+        {stateName} Events
+      </h1>
+      <p class="text-lg text-gray-600 mb-2">
+        Autism-friendly micro-events across {cities.length} cities in {stateName}
+      </p>
+      <div class="flex items-center justify-center gap-4 text-sm text-gray-500">
+        <span>{totalEvents} upcoming events</span>
+        <span>{cities.length} cities</span>
+      </div>
+    </div>
+
+    <!-- City filter pills -->
+    {Object.keys(eventsByCity).length > 1 && (
+      <div class="flex flex-wrap gap-2 mb-8 justify-center">
+        {Object.entries(eventsByCity).map(([cityName, cityEvents]) => (
+          <a
+            href={`#${cityName.toLowerCase().replace(/\s+/g, '-')}`}
+            class="px-4 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors"
+          >
+            {cityName} ({cityEvents.length})
+          </a>
+        ))}
+      </div>
+    )}
+
+    <!-- Events by City -->
+    {totalEvents === 0 ? (
+      <div class="text-center py-16 bg-gray-50 rounded-lg">
+        <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+        <h3 class="text-xl font-semibold text-gray-900 mb-2">No upcoming events in {stateName}</h3>
+        <p class="text-gray-600 mb-6">Check back soon or browse venues in the area</p>
+        <div class="flex gap-4 justify-center">
+          <a href={`/${state}`} class="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors">
+            Browse {stateName} venues
+          </a>
+          <a href="/events" class="px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors">
+            View all events
+          </a>
+        </div>
+      </div>
+    ) : (
+      <div class="space-y-12">
+        {Object.entries(eventsByCity).map(([cityName, cityEvents]) => {
+          const firstEvent = cityEvents[0];
+          return (
+            <section id={cityName.toLowerCase().replace(/\s+/g, '-')}>
+              <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-gray-900">{cityName}</h2>
+                <a
+                  href={`/${state}/${firstEvent.citySlug}/events`}
+                  class="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                >
+                  View all {cityName} events &rarr;
+                </a>
+              </div>
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {cityEvents.map((event) => (
+                  <article class="bg-white border border-gray-200 rounded-xl p-6 hover:border-gray-300 hover:shadow-lg transition-all">
+                    <div class="flex items-start justify-between gap-4 mb-4">
+                      <div class="flex-1">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-1">{event.title}</h3>
+                        {event.venue && (
+                          <a
+                            href={`/venue/${event.venue.slug}`}
+                            class="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                          >
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            </svg>
+                            {event.venue.name}
+                          </a>
+                        )}
+                      </div>
+                      <div class="text-right">
+                        <div class="text-2xl font-bold text-gray-900">{dayjs(event.date).format('D')}</div>
+                        <div class="text-xs text-gray-600 uppercase">{dayjs(event.date).format('MMM')}</div>
+                      </div>
+                    </div>
+
+                    <div class="space-y-2 mb-4 text-sm text-gray-600">
+                      <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span>{formatTime(event.start_time)} - {formatTime(event.end_time)}</span>
+                      </div>
+                    </div>
+
+                    {event.description && (
+                      <p class="text-gray-700 text-sm leading-relaxed mb-4 line-clamp-2">{event.description}</p>
+                    )}
+
+                    <div class="pt-4 border-t border-gray-200">
+                      <RSVPButtonIsland
+                        client:load
+                        eventId={event.id}
+                        currentCount={event.rsvpCount}
+                        capacity={event.capacity || 12}
+                      />
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+          );
+        })}
+      </div>
+    )}
+
+    <!-- CTA -->
+    <div class="mt-16 bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl p-8 text-center">
+      <h2 class="text-2xl font-bold text-white mb-3">Want to host an event in {stateName}?</h2>
+      <p class="text-purple-100 mb-6 max-w-2xl mx-auto">
+        Submit your autism-friendly event and reach families across {stateName}.
+      </p>
+      <a
+        href="/submit-event"
+        class="inline-block px-6 py-3 bg-white text-purple-600 font-medium rounded-lg hover:bg-gray-50 transition-colors"
+      >
+        Submit an Event
+      </a>
+    </div>
+  </div>
+</Base>
