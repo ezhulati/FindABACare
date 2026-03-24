@@ -36,16 +36,15 @@ export function getServerClient(request: Request) {
     supabaseAnonKey,
     {
       cookies: {
-        get: (key) => {
+        getAll: () => {
           const cookie = request.headers.get('cookie') || '';
-          const match = cookie.match(new RegExp(`${key}=([^;]+)`));
-          return match ? decodeURIComponent(match[1]) : undefined;
+          return cookie.split(';').filter(Boolean).map((c) => {
+            const [name, ...rest] = c.trim().split('=');
+            return { name, value: decodeURIComponent(rest.join('=')) };
+          });
         },
-        set: () => {
+        setAll: () => {
           // Cookies are set on the response, not here
-        },
-        remove: () => {
-          // Cookies are removed on the response, not here
         },
       },
     }
@@ -79,7 +78,7 @@ export async function getUserProfile(request: Request) {
   const { data: profile } = await supabase
     .from('profiles')
     .select('*')
-    .eq('auth_user', user.id)
+    .eq('id', user.id)
     .single();
 
   return profile;

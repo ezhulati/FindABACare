@@ -1,7 +1,31 @@
 /**
- * Rate limiting using Upstash Redis
+ * Rate limiting using Upstash Redis with in-memory fallback
  * Protects API endpoints from abuse
  */
+
+// In-memory fallback when Redis is unavailable
+const memoryStore = new Map<string, { count: number; expires: number }>();
+
+function memoryRateLimit(key: string, limit: number, windowSec: number): boolean {
+  const now = Date.now();
+  const bucketKey = `${key}:${Math.floor(now / 1000 / windowSec)}`;
+
+  // Clean expired entries periodically
+  if (memoryStore.size > 10000) {
+    for (const [k, v] of memoryStore) {
+      if (v.expires < now) memoryStore.delete(k);
+    }
+  }
+
+  const entry = memoryStore.get(bucketKey);
+  if (!entry || entry.expires < now) {
+    memoryStore.set(bucketKey, { count: 1, expires: now + windowSec * 1000 });
+    return true;
+  }
+
+  entry.count++;
+  return entry.count <= limit;
+}
 
 export async function rateLimit(
   key: string,
@@ -12,8 +36,7 @@ export async function rateLimit(
   const token = import.meta.env.UPSTASH_REDIS_REST_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
 
   if (!url || !token) {
-    console.warn('Upstash Redis not configured. Rate limiting disabled.');
-    return true; // Allow request if rate limiting not configured
+    return memoryRateLimit(key, limit, windowSec);
   }
 
   try {
@@ -35,8 +58,8 @@ export async function rateLimit(
 
     return count <= limit;
   } catch (error) {
-    console.error('Rate limit check error:', error);
-    return true; // Allow on error to avoid blocking legitimate traffic
+    console.error('Rate limit check error, falling back to memory:', error);
+    return memoryRateLimit(key, limit, windowSec);
   }
 }
 
