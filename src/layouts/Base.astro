@@ -135,6 +135,8 @@ const sortedStates = Object.keys(citiesByState).sort();
 
     <title>{title}</title>
 
+    <slot name="head" />
+
     <!-- Visited link styling -->
     <style>
       a:visited:not(.no-visited):not(nav a):not(header a):not(footer a) {

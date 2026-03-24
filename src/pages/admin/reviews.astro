@@ -69,8 +69,9 @@ const { data: recentlyModerated } = await supabase
                       href={`/venue/${review.venue?.slug}`}
                       class="text-lg font-semibold text-blue-600 hover:text-blue-700"
                       target="_blank"
+                      rel="noopener noreferrer"
                     >
-                      {review.venue?.name}
+                      {review.venue?.name}<span class="sr-only">(opens in new tab)</span>
                     </a>
                     <p class="text-sm text-gray-500">{review.venue?.city?.name}</p>
                   </div>
