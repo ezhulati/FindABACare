@@ -20,38 +20,25 @@ const supabase = createClient(
   import.meta.env.PUBLIC_SUPABASE_ANON_KEY!
 );
 
-// Fetch all cities in this state
-console.log(`[state]/index.astro: Fetching cities for state="${state}"`);
+// Fetch all cities in this state with venue counts in a single query
 const { data: cities, error: citiesError } = await supabase
   .from('cities')
-  .select('id, name, slug, state, center_lat, center_lng, population, priority_tier')
+  .select('id, name, slug, state, center_lat, center_lng, population, priority_tier, venues(count)')
   .eq('status', 'active')
+  .eq('venues.status', 'active')
   .ilike('state', state!)
   .order('population', { ascending: false });
 
-console.log(`[state]/index.astro: Query result:`, { citiesCount: cities?.length, error: citiesError });
-
 // If no cities found, redirect to cities page
 if (!cities || cities.length === 0) {
-  console.log(`[state]/index.astro: No cities found for "${state}", redirecting to /cities`);
   return Astro.redirect('/cities');
 }
 
-// Get venue counts for each city
-const citiesWithCounts = await Promise.all(
-  cities.map(async (city) => {
-    const { count } = await supabase
-      .from('venues')
-      .select('id', { count: 'exact', head: true })
-      .eq('city_id', city.id)
-      .eq('status', 'active');
-
-    return {
-      ...city,
-      venueCount: count || 0
-    };
-  })
-);
+// Map to include venueCount from the joined query
+const citiesWithCounts = cities.map(city => ({
+  ...city,
+  venueCount: (city as any).venues?.[0]?.count ?? 0
+}));
 
 const totalVenues = citiesWithCounts.reduce((sum, city) => sum + city.venueCount, 0);
 const stateNameFull = getStateName(state!);

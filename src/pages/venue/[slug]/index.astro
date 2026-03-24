@@ -116,8 +116,8 @@ const placeSchema = {
     "latitude": venue.lat,
     "longitude": venue.lng
   } : undefined,
-  "amenityFeature": venue.amenities ? Object.keys(venue.amenities)
-    .filter(key => venue.amenities[key] === true)
+  "amenityFeature": (venue.amenities || {}) ? Object.keys(venue.amenities || {})
+    .filter(key => (venue.amenities || {})[key] === true)
     .map(key => ({
       "@type": "LocationFeatureSpecification",
       "name": key.replace(/_/g, ' '),
@@ -140,7 +140,7 @@ const placeSchema = {
     "datePublished": review.created_at,
     "reviewRating": {
       "@type": "Rating",
-      "ratingValue": ((review.predictability + review.sensory_level + review.staff_knowledge) / 3).toFixed(1),
+      "ratingValue": (((review.predictability || 0) + (review.sensory_level || 0) + (review.staff_knowledge || 0)) / 3).toFixed(1),
       "bestRating": "5",
       "worstRating": "1"
     }
@@ -159,15 +159,15 @@ const placeSchema = {
     <!-- Breadcrumbs -->
     <nav class="flex items-center gap-2 text-sm text-gray-600 mb-6" aria-label="Breadcrumb">
       <a href="/" class="hover:text-gray-900">Home</a>
-      <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
       </svg>
       <a href={`/${stateCode}`} class="hover:text-gray-900">{stateNameFull}</a>
-      <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
       </svg>
       <a href={`/${stateCode}/${venue.city?.slug}`} class="hover:text-gray-900">{venue.city?.name}</a>
-      <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
       </svg>
       <span class="text-gray-900 truncate">{venue.name}</span>
@@ -183,7 +183,7 @@ const placeSchema = {
               <h1 class="text-3xl font-bold text-gray-900 mb-2">{venue.name}</h1>
               {venue.address && (
                 <p class="text-gray-600 flex items-center gap-2">
-                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
@@ -283,7 +283,7 @@ const placeSchema = {
         {topTriggers.length > 0 && (
           <div class="bg-red-50 border border-red-200 rounded-lg p-6">
             <div class="flex items-start gap-3">
-              <svg class="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+              <svg class="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                 <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
               </svg>
               <div class="flex-1">
@@ -351,7 +351,7 @@ const placeSchema = {
                   href={`tel:${venue.phone}`}
                   class="flex items-center gap-3 w-full px-4 py-3 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-colors group"
                 >
-                  <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                  <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                     <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/>
                   </svg>
                   <div class="flex-1 text-left">
@@ -369,13 +369,14 @@ const placeSchema = {
                   rel="noopener noreferrer"
                   class="flex items-center gap-3 w-full px-4 py-3 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-lg transition-colors group"
                 >
-                  <svg class="w-5 h-5 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                  <svg class="w-5 h-5 text-purple-600" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                     <path fill-rule="evenodd" d="M4.083 9h1.946c.089-1.546.383-2.97.837-4.118A6.004 6.004 0 004.083 9zM10 2a8 8 0 100 16 8 8 0 000-16zm0 2c-.076 0-.232.032-.465.262-.238.234-.497.623-.737 1.182-.389.907-.673 2.142-.766 3.556h3.936c-.093-1.414-.377-2.649-.766-3.556-.24-.56-.5-.948-.737-1.182C10.232 4.032 10.076 4 10 4zm3.971 5c-.089-1.546-.383-2.97-.837-4.118A6.004 6.004 0 0115.917 9h-1.946zm-2.003 2H8.032c.093 1.414.377 2.649.766 3.556.24.56.5.948.737 1.182.233.23.389.262.465.262.076 0 .232-.032.465-.262.238-.234.498-.623.737-1.182.389-.907.673-2.142.766-3.556zm1.166 4.118c.454-1.147.748-2.572.837-4.118h1.946a6.004 6.004 0 01-2.783 4.118zm-6.268 0C6.412 13.97 6.118 12.546 6.03 11H4.083a6.004 6.004 0 002.783 4.118z" clip-rule="evenodd"/>
                   </svg>
                   <div class="flex-1 text-left">
                     <div class="text-xs text-gray-600">Website</div>
                     <div class="text-sm font-medium text-gray-900 group-hover:text-purple-700 truncate">Visit Website →</div>
                   </div>
+                  <span class="sr-only">(opens in new tab)</span>
                 </a>
               )}
 
@@ -387,20 +388,21 @@ const placeSchema = {
                   rel="noopener noreferrer"
                   class="flex items-center gap-3 w-full px-4 py-3 bg-green-50 hover:bg-green-100 border border-green-200 rounded-lg transition-colors group"
                 >
-                  <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                  <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                     <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
                   </svg>
                   <div class="flex-1 text-left">
                     <div class="text-xs text-gray-600">Navigate</div>
                     <div class="text-sm font-medium text-gray-900 group-hover:text-green-700">Get Directions →</div>
                   </div>
+                  <span class="sr-only">(opens in new tab)</span>
                 </a>
               )}
 
               <!-- Price Level -->
               {priceLabel && (
                 <div class="flex items-center gap-3 px-4 py-3 bg-gray-50 rounded-lg">
-                  <svg class="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                  <svg class="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                     <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/>
                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd"/>
                   </svg>
@@ -440,6 +442,7 @@ const placeSchema = {
                         class={`w-4 h-4 ${i < Math.round(venue.google_rating || 0) ? 'text-yellow-400' : 'text-gray-300'}`}
                         fill="currentColor"
                         viewBox="0 0 20 20"
+                        aria-hidden="true"
                       >
                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                       </svg>
@@ -472,7 +475,7 @@ const placeSchema = {
                 <div>
                   <dt class="text-gray-600">Verification</dt>
                   <dd class="flex items-center gap-1 text-green-700">
-                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                       <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                     </svg>
                     Verified
@@ -518,14 +521,14 @@ const placeSchema = {
               <div class="aspect-video relative overflow-hidden bg-gray-100">
                 {related.photo_keys && related.photo_keys.length > 0 ? (
                   <img
-                    src={related.photo_keys[0].startsWith('http') ? related.photo_keys[0] : related.photo_keys[0].startsWith('/venue-photos/') ? `https://gvfkyfzukwnjomksuvaq.supabase.co/storage/v1/object/public/venue-photos/${related.photo_keys[0].replace('/venue-photos/', '')}` : related.photo_keys[0]}
+                    src={(() => { const key = related.photo_keys[0].replace(/\.\.\//g, '').replace(/^\/+/, ''); return key.startsWith('http') ? key : key.startsWith('venue-photos/') ? `https://gvfkyfzukwnjomksuvaq.supabase.co/storage/v1/object/public/${key}` : key; })()}
                     alt={related.name}
                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     loading="lazy"
                   />
                 ) : (
                   <div class="w-full h-full flex items-center justify-center text-gray-400">
-                    <svg class="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg class="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                     </svg>
                   </div>
@@ -543,7 +546,7 @@ const placeSchema = {
                 <p class="text-xs text-gray-500 mt-0.5">{related.type}</p>
                 {related.google_rating && (
                   <div class="flex items-center gap-1 mt-1">
-                    <svg class="w-3.5 h-3.5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                    <svg class="w-3.5 h-3.5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                       <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                     </svg>
                     <span class="text-xs text-gray-600">{related.google_rating.toFixed(1)}</span>

@@ -16,33 +16,22 @@ const supabase = createClient(
   import.meta.env.PUBLIC_SUPABASE_ANON_KEY!
 );
 
-// Fetch top 6 cities by venue count dynamically
+// Fetch top cities with venue counts in a single query
 const { data: citiesData } = await supabase
   .from('cities')
-  .select('id, name, slug, state')
+  .select('id, name, slug, state, venues(count)')
   .eq('status', 'active')
+  .eq('venues.status', 'active')
   .order('priority_tier', { ascending: true })
   .order('population', { ascending: false })
-  .limit(20); // Get top 20 to calculate venue counts
+  .limit(20);
 
-// Get venue counts for each city
-const citiesWithCounts = await Promise.all(
-  (citiesData || []).map(async (city) => {
-    const { count } = await supabase
-      .from('venues')
-      .select('id', { count: 'exact', head: true })
-      .eq('city_id', city.id)
-      .eq('status', 'active');
-
-    return {
-      ...city,
-      venueCount: count || 0
-    };
-  })
-);
-
-// Sort by venue count and take top 6
-const topCitiesByVenues = citiesWithCounts
+// Map to include venueCount and sort by it, take top 6
+const topCitiesByVenues = (citiesData || [])
+  .map(city => ({
+    ...city,
+    venueCount: (city as any).venues?.[0]?.count ?? 0
+  }))
   .sort((a, b) => b.venueCount - a.venueCount)
   .slice(0, 6);
 
