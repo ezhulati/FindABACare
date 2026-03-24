@@ -49,6 +49,8 @@ const typeMap: Record<string, string> = {
   'planetariums': 'Planetarium',
   'amusement-parks': 'Amusement Park',
   'tourist-attractions': 'Tourist Attraction',
+  'swimming-pools': 'Swimming Pool',
+  'trampoline-parks': 'Trampoline Park',
 };
 
 const venueType = typeMap[type || ''];
@@ -154,7 +156,7 @@ const itemListSchema = {
           <div class="bg-white rounded-lg border border-gray-200 p-4">
             <h2 class="text-lg font-semibold text-gray-900 mb-4">Map View</h2>
             <MapIsland
-              client:load
+              client:visible
               venues={venues.map(v => ({
                 id: v.id,
                 name: v.name,

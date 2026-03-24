@@ -220,7 +220,7 @@ const placeSchema = {
               triggers: venue.triggers || {},
               sensory_hours: venue.sensory_hours || []
             }}
-            client:load
+            client:idle
           />
         </div>
 
@@ -251,7 +251,7 @@ const placeSchema = {
           <div class="bg-white rounded-lg border border-gray-200 p-6">
             <h2 class="text-xl font-semibold text-gray-900 mb-4">Location</h2>
             <MapIsland
-              client:load
+              client:visible
               venues={[{
                 id: venue.id,
                 name: venue.name,
@@ -272,7 +272,7 @@ const placeSchema = {
           <div>
             <h2 class="text-xl font-semibold text-gray-900 mb-4">Photos</h2>
             <PhotoGallery
-              client:load
+              client:visible
               photos={venue.photo_keys}
               venueName={venue.name}
             />
@@ -324,7 +324,7 @@ const placeSchema = {
             upvotes={venue.upvotes || 0}
             downvotes={venue.downvotes || 0}
             voteScore={venue.vote_score || 0}
-            client:load
+            client:idle
           />
 
           <!-- Write Review Form -->
@@ -332,7 +332,7 @@ const placeSchema = {
             <VenueReviewForm
               venueId={venue.id}
               venueName={venue.name}
-              client:load
+              client:idle
             />
           </div>
         </div>

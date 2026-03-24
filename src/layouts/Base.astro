@@ -143,6 +143,9 @@ const sortedStates = Object.keys(citiesByState).sort();
     </style>
   </head>
   <body class="min-h-screen bg-white text-gray-900">
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:bg-white focus:px-4 focus:py-2 focus:rounded focus:shadow-lg focus:text-purple-700 focus:underline">
+      Skip to main content
+    </a>
     <header class="border-b border-gray-200 bg-white sticky top-0 z-50">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16">
@@ -284,7 +287,7 @@ const sortedStates = Object.keys(citiesByState).sort();
       </div>
     </header>
 
-    <main class="min-h-[calc(100vh-4rem)]">
+    <main id="main-content" class="min-h-[calc(100vh-4rem)]">
       <slot />
     </main>
 
@@ -378,7 +381,7 @@ const sortedStates = Object.keys(citiesByState).sort();
 
         <div class="mt-8 pt-8 border-t border-gray-200">
           <p class="text-sm text-gray-500 text-center">
-            &copy; {new Date().getFullYear()} autism.place. All rights reserved. <a href="https://enrizhulati.com" target="_blank" rel="noopener noreferrer" class="hover:text-gray-700 transition-colors">Made in Texas</a>
+            &copy; {new Date().getFullYear()} autism.place. All rights reserved. <a href="https://enrizhulati.com" target="_blank" rel="noopener noreferrer" class="hover:text-gray-700 transition-colors">Made in Texas<span class="sr-only">(opens in new tab)</span></a>
           </p>
         </div>
       </div>

@@ -82,6 +82,9 @@ const typeSlugMap: Record<string, string> = {
   'Bowling Alley': 'bowling-alleys', 'Aquarium': 'aquariums',
   'Zoo': 'zoos', "Children's Museum": 'childrens-museums',
   'Science Museum': 'science-museums', 'Nature Center': 'nature-centers',
+  'Art Gallery': 'art-galleries', 'Planetarium': 'planetariums',
+  'Amusement Park': 'amusement-parks', 'Swimming Pool': 'swimming-pools',
+  'Trampoline Park': 'trampoline-parks', 'Tourist Attraction': 'tourist-attractions',
 };
 const typeCounts = venues.reduce((acc: Record<string, number>, v: any) => {
   if (v.type) acc[v.type] = (acc[v.type] || 0) + 1;
@@ -165,7 +168,7 @@ const itemListSchema = {
           <div class="bg-white rounded-lg border border-gray-200 p-4 mb-6">
             <h2 class="text-lg font-semibold text-gray-900 mb-4">Map View</h2>
             <MapIsland
-              client:load
+              client:visible
               venues={venues.map(v => ({
                 id: v.id,
                 name: v.name,
