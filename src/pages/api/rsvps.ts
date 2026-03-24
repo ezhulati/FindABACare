@@ -36,7 +36,18 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     // Parse and validate request body
-    const body = await request.json();
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return new Response(
+        JSON.stringify({ error: 'Invalid or malformed JSON in request body' }),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+    }
     const validation = RSVPCreate.safeParse(body);
 
     if (!validation.success) {
@@ -131,7 +142,7 @@ export const POST: APIRoute = async ({ request }) => {
     // Send confirmation email
     try {
       await sendEmail({
-        to: user.email,
+        to: user.email!,
         template: 'rsvp_confirmation',
         data: {
           eventTitle: event.title,

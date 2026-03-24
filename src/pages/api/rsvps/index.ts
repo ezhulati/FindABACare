@@ -28,7 +28,7 @@ export const POST: APIRoute = async ({ request }) => {
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('id')
-      .eq('auth_user', user.id)
+      .eq('id', user.id)
       .single();
 
     if (profileError || !profile) {

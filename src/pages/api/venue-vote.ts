@@ -22,7 +22,16 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    const { venue_id, vote_type } = await request.json();
+    let parsedBody;
+    try {
+      parsedBody = await request.json();
+    } catch {
+      return new Response(
+        JSON.stringify({ error: 'Invalid or malformed JSON in request body' }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+    const { venue_id, vote_type } = parsedBody;
 
     // Validate input
     if (!venue_id) {

@@ -35,6 +35,8 @@ export default function VenueReviewForm({
   const [content, setContent] = useState('');
   const [bestTime, setBestTime] = useState('');
   const [triggers, setTriggers] = useState<string[]>([]);
+  const [formError, setFormError] = useState('');
+  const [formSuccess, setFormSuccess] = useState('');
 
   // Available trigger options
   const triggerOptions = [
@@ -75,20 +77,21 @@ export default function VenueReviewForm({
     e.preventDefault();
 
     if (!isAuthenticated) {
-      window.location.href = '/login';
+      window.location.href = '/auth/login';
       return;
     }
 
     // Validation
     if (predictability === 0 || sensoryLevel === 0 || staffKnowledge === 0) {
-      alert('Please provide all three ratings');
+      setFormError('Please provide all three ratings');
       return;
     }
 
     if (!content.trim()) {
-      alert('Please write a review');
+      setFormError('Please write a review');
       return;
     }
+    setFormError('');
 
     setIsSubmitting(true);
 
@@ -110,7 +113,7 @@ export default function VenueReviewForm({
 
       if (error) throw error;
 
-      alert('Thank you! Your review has been submitted and will be published after admin approval.');
+      setFormSuccess('Thank you! Your review has been submitted and will be published after admin approval.');
 
       // Reset form
       setShowForm(false);
@@ -126,7 +129,7 @@ export default function VenueReviewForm({
 
     } catch (error: any) {
       console.error('Review submission error:', error);
-      alert(error.message || 'Failed to submit review. Please try again.');
+      setFormError(error.message || 'Failed to submit review. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -259,6 +262,17 @@ export default function VenueReviewForm({
         Review {venueName}
       </h3>
 
+      {formError && (
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+          {formError}
+        </div>
+      )}
+      {formSuccess && (
+        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
+          {formSuccess}
+        </div>
+      )}
+
       <form onSubmit={handleSubmit}>
         {/* Predictability Rating */}
         <StarRating
@@ -272,7 +286,7 @@ export default function VenueReviewForm({
         <StarRating
           value={sensoryLevel}
           onChange={setSensoryLevel}
-          label="Sensory-Friendliness"
+          label="Sensory-Friendly"
           description="How sensory-friendly is this venue? (1=overwhelming, 5=calm)"
         />
 
@@ -319,7 +333,7 @@ export default function VenueReviewForm({
         {/* Trigger Warnings */}
         <div className="mb-6">
           <label className="block text-sm font-semibold text-gray-900 mb-2">
-            Sensory Triggers Present
+            Sensory Triggers
           </label>
           <div className="grid grid-cols-2 gap-2">
             {triggerOptions.map(trigger => (

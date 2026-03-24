@@ -1,17 +1,11 @@
 ---
 import Base from '../../layouts/Base.astro';
-import { getServerClient } from '../../lib/supabaseServer';
+import { getServerClient, requireAdmin } from '../../lib/supabaseServer';
 import { formatTime } from '../../lib/utils';
 import dayjs from 'dayjs';
 
-// Simple auth check (you'll want to replace this with proper auth)
-const authHeader = Astro.request.headers.get('authorization');
-const isAuthorized = authHeader === 'Bearer your-admin-token-here'; // TODO: Replace with real auth
-
-if (!isAuthorized) {
-  // For now, just show a warning - you can add Supabase auth later
-  console.warn('Admin access - add proper authentication!');
-}
+// Require admin authentication
+await requireAdmin(Astro.request);
 
 const supabase = getServerClient(Astro.request);
 
@@ -308,6 +302,7 @@ const counts = {
         const eventId = button.getAttribute('data-event-id');
         const reason = prompt('Rejection reason (optional, will be sent to submitter):');
         if (reason === null) return; // User cancelled
+        const trimmedReason = reason.trim();
 
         button.disabled = true;
         button.textContent = 'Rejecting...';
@@ -319,7 +314,7 @@ const counts = {
             body: JSON.stringify({
               eventId,
               action: 'reject',
-              reason
+              reason: trimmedReason || undefined
             })
           });
 

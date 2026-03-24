@@ -13,6 +13,7 @@ export const GET: APIRoute = async ({ request, url }) => {
   const hasSensoryHours = url.searchParams.get('has_sensory_hours');
   const hasVisualSupports = url.searchParams.get('amenities.visual_supports');
   const type = url.searchParams.get('type');
+  const search = url.searchParams.get('search');
   const limit = parseInt(url.searchParams.get('limit') || '50');
   const offset = parseInt(url.searchParams.get('offset') || '0');
 
@@ -37,6 +38,12 @@ export const GET: APIRoute = async ({ request, url }) => {
       if (city) {
         query = query.eq('city_id', city.id);
       }
+    }
+
+    // Full-text search by venue name, type, or address
+    if (search) {
+      const escaped = search.replace(/[%_]/g, '\\$&');
+      query = query.or(`name.ilike.%${escaped}%,type.ilike.%${escaped}%,address.ilike.%${escaped}%`);
     }
 
     // Filter by type
@@ -82,7 +89,7 @@ export const GET: APIRoute = async ({ request, url }) => {
     // Add Go Now meter to each venue
     const venuesWithMeter = (data || []).map((venue) => ({
       ...venue,
-      meter: venue.meter || goNow(venue.type),
+      meter: venue.meter || goNow(venue.type ?? undefined),
     }));
 
     return new Response(

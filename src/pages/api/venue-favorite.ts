@@ -85,7 +85,15 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   // Get body
-  const body = await request.json();
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return new Response(JSON.stringify({ error: 'Invalid or malformed JSON in request body' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
   const { venue_id } = body;
 
   if (!venue_id) {

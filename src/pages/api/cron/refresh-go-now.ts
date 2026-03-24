@@ -9,10 +9,15 @@ import { goNow } from '../../../lib/goNow';
  */
 export const GET: APIRoute = async ({ request }) => {
   // Verify cron secret to prevent unauthorized access
-  const authHeader = request.headers.get('authorization');
   const cronSecret = import.meta.env.CRON_SECRET || process.env.CRON_SECRET;
+  const authHeader = request.headers.get('authorization');
+  const vercelCronHeader = request.headers.get('x-vercel-cron-auth-token');
 
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+  const isAuthorized =
+    (authHeader === `Bearer ${cronSecret}`) ||
+    (vercelCronHeader === cronSecret);
+
+  if (!cronSecret || !isAuthorized) {
     return new Response(
       JSON.stringify({ error: 'Unauthorized' }),
       {

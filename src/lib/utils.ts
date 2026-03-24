@@ -119,7 +119,7 @@ export function generateICS(data: {
     'VERSION:2.0',
     'PRODID:-//autism.place//Event Calendar//EN',
     'BEGIN:VEVENT',
-    `UID:${Date.now()}@findabacare.com`,
+    `UID:${Date.now()}@autism.place`,
     `DTSTAMP:${dayjs().format('YYYYMMDDTHHmmss')}`,
     `DTSTART:${start}`,
     `DTEND:${end}`,

@@ -65,14 +65,14 @@ export const GET: APIRoute = async ({ params, request }) => {
           : '';
 
         return `BEGIN:VEVENT
-UID:${event.id}@findabacare.com
+UID:${event.id}@autism.place
 DTSTAMP:${dtstamp}
 DTSTART:${dtstart}
 DTEND:${dtend}
 SUMMARY:${event.title}
 DESCRIPTION:${description}
 LOCATION:${event.venue?.name ? `${event.venue.name}, ` : ''}${location}
-URL:https://findabacare.com/venue/${event.venue_id}
+URL:https://autism.place/venue/${event.venue_id}
 STATUS:CONFIRMED
 SEQUENCE:0
 END:VEVENT`;

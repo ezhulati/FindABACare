@@ -63,7 +63,7 @@ async function sendDirectEmail(options: EmailOptions): Promise<boolean> {
     return false;
   }
 
-  const from = options.from || import.meta.env.EMAIL_FROM || process.env.EMAIL_FROM || 'hello@findabacare.com';
+  const from = options.from || import.meta.env.EMAIL_FROM || process.env.EMAIL_FROM || 'hello@autism.place';
 
   try {
     const res = await fetch('https://api.resend.com/emails', {

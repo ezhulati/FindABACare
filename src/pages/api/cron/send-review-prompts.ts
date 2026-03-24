@@ -10,10 +10,15 @@ import dayjs from 'dayjs';
  */
 export const GET: APIRoute = async ({ request }) => {
   // Verify cron secret
-  const authHeader = request.headers.get('authorization');
   const cronSecret = import.meta.env.CRON_SECRET || process.env.CRON_SECRET;
+  const authHeader = request.headers.get('authorization');
+  const vercelCronHeader = request.headers.get('x-vercel-cron-auth-token');
 
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+  const isAuthorized =
+    (authHeader === `Bearer ${cronSecret}`) ||
+    (vercelCronHeader === cronSecret);
+
+  if (!cronSecret || !isAuthorized) {
     return new Response(
       JSON.stringify({ error: 'Unauthorized' }),
       {
@@ -61,7 +66,7 @@ export const GET: APIRoute = async ({ request }) => {
           // Skip if user already reviewed this venue
           if (existingReview) continue;
 
-          const reviewUrl = `${import.meta.env.PUBLIC_SITE_URL || 'https://findabacare.com'}/venue/${event.venue?.slug}?review=true`;
+          const reviewUrl = `${import.meta.env.PUBLIC_SITE_URL || 'https://autism.place'}/venue/${event.venue?.slug}?review=true`;
 
           try {
             await sendEmail({

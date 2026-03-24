@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { createClient } from '@supabase/supabase-js';
+import { rateLimitMiddleware } from '../../lib/rateLimit';
 
 const supabase = createClient(
   import.meta.env.PUBLIC_SUPABASE_URL!,
@@ -8,6 +9,10 @@ const supabase = createClient(
 
 export const POST: APIRoute = async ({ request }) => {
   try {
+    // Rate limit: 5 submissions per 10 minutes per IP
+    const rateLimitResponse = await rateLimitMiddleware(request, 5, 600);
+    if (rateLimitResponse) return rateLimitResponse;
+
     const data = await request.json();
 
     // Validate required fields
@@ -33,9 +38,9 @@ export const POST: APIRoute = async ({ request }) => {
       }
     }
 
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(data.submitter_email)) {
+    // Basic email format check (not exhaustive — full validation requires sending a confirmation)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(data.submitter_email) || data.submitter_email.length > 254) {
       return new Response(
         JSON.stringify({ error: 'Invalid email address' }),
         { status: 400, headers: { 'Content-Type': 'application/json' } }
@@ -51,13 +56,21 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
+    // Validate start_time is before end_time
+    if (data.start_time >= data.end_time) {
+      return new Response(
+        JSON.stringify({ error: 'Start time must be before end time' }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Find or create venue
     const { data: existingVenue } = await supabase
       .from('venues')
       .select('id')
       .eq('city_id', data.city_id)
-      .ilike('name', `%${data.venue_name}%`)
-      .single();
+      .ilike('name', `%${data.venue_name.replace(/%/g, '\\%').replace(/_/g, '\\_')}%`)
+      .maybeSingle();
 
     let venueId = existingVenue?.id;
 

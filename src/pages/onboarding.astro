@@ -11,7 +11,7 @@ const supabase = getServerClient(Astro.request);
 const { data: existingProfile } = await supabase
   .from('profiles')
   .select('*')
-  .eq('auth_user', user.id)
+  .eq('id', user.id)
   .single();
 
 // If profile exists, redirect to home
@@ -165,7 +165,7 @@ const description = 'Tell us a bit about your family to personalize your experie
           </div>
 
           <!-- Submit Button -->
-          <div class="pt-4">
+          <div class="pt-4 space-y-3">
             <button
               type="submit"
               id="submit-btn"
@@ -173,6 +173,11 @@ const description = 'Tell us a bit about your family to personalize your experie
             >
               Complete setup
             </button>
+            <div class="text-center">
+              <a href="/" class="text-sm text-gray-500 hover:text-gray-700 transition-colors">
+                Skip for now &mdash; I'll do this later
+              </a>
+            </div>
           </div>
 
           <div id="error-message" class="hidden p-4 rounded-lg bg-red-50 border border-red-200 text-red-800"></div>
@@ -230,7 +235,7 @@ const description = 'Tell us a bit about your family to personalize your experie
         const { error } = await supabase
           .from('profiles')
           .insert({
-            auth_user: user.id,
+            id: user.id,
             role: 'parent',
             display_name: formData.get('display_name') as string,
             city_id: formData.get('city_id') as string || null,
