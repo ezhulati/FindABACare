@@ -102,7 +102,7 @@ export default function VenueFiltersIsland({ onFilterChange, venues = [] }: Prop
           >
             <option value="name">Name (A-Z)</option>
             <option value="recent">Recently Verified</option>
-            <option value="meter">Go Now Meter</option>
+            <option value="meter">Go Now™ Meter</option>
           </select>
         </div>
 

@@ -1,11 +1,15 @@
 import type { APIRoute } from 'astro';
 import { createClient } from '@supabase/supabase-js';
+import { requireAdmin } from '../../../lib/supabaseServer';
 
 /**
  * Admin endpoint to seed cities into the database
  * POST /api/admin/seed-cities
  */
 export const POST: APIRoute = async ({ request }) => {
+  // Require admin authentication
+  await requireAdmin(request);
+
   // Use service role key for admin operations
   const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL || import.meta.env.SUPABASE_URL;
   const supabaseServiceKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY;

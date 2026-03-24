@@ -11,6 +11,7 @@
 interface IconProps {
   className?: string;
   size?: number;
+  title?: string;
 }
 
 // ============================================

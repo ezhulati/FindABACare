@@ -30,7 +30,6 @@ export default function FavoriteButton({
   const [isFavorited, setIsFavorited] = useState(false);
   const [favoriteCount, setFavoriteCount] = useState(initialFavoriteCount);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [showLoginModal, setShowLoginModal] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

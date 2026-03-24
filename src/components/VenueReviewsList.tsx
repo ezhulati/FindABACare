@@ -129,7 +129,7 @@ export default function VenueReviewsList({
       {stats && (
         <div className="bg-gradient-to-br from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-6 mb-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Community Feedback
+            Rating Summary
           </h3>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">

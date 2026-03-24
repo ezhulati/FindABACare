@@ -4,7 +4,10 @@
  * Approve or reject pending reviews
  */
 
-import { getServerClient } from '../../lib/supabaseServer';
+import { getServerClient, requireAdmin } from '../../lib/supabaseServer';
+
+// Require admin authentication
+await requireAdmin(Astro.request);
 
 const supabase = getServerClient(Astro.request);
 

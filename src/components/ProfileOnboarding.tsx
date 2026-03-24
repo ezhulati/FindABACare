@@ -160,7 +160,7 @@ export default function ProfileOnboarding({ isOpen, onComplete }: ProfileOnboard
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg max-w-md w-full p-6 shadow-xl max-h-[90vh] overflow-y-auto">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">
-          Welcome to FindABACare!
+          Welcome to autism.place!
         </h2>
         <p className="text-sm text-gray-600 mb-6">
           Complete your profile to start voting on venues and leaving reviews.

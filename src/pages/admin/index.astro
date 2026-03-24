@@ -4,7 +4,10 @@
  * Protected by middleware - only accessible to users with admin role
  */
 
-import { getServerClient } from '../../lib/supabaseServer';
+import { getServerClient, requireAdmin } from '../../lib/supabaseServer';
+
+// Require admin authentication
+await requireAdmin(Astro.request);
 
 const supabase = getServerClient(Astro.request);
 

@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { createClient } from '@supabase/supabase-js';
+import { requireAdmin } from '../../../lib/supabaseServer';
 
 const supabase = createClient(
   import.meta.env.PUBLIC_SUPABASE_URL!,
@@ -8,6 +9,9 @@ const supabase = createClient(
 
 export const POST: APIRoute = async ({ request }) => {
   try {
+    // Require admin authentication
+    await requireAdmin(request);
+
     const data = await request.json();
 
     // Validate required fields
