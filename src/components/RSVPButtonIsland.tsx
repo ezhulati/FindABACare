@@ -21,16 +21,28 @@ export default function RSVPButtonIsland({ eventId, currentCount = 0, capacity =
       // Check if user is authenticated
       const user = await getCurrentUser();
       if (!user) {
-        alert('Please sign in to RSVP');
-        setLoading(false);
+        window.location.href = `/auth/login?redirect=${encodeURIComponent(window.location.pathname)}`;
         return;
       }
 
-      // Check capacity
+      // Check capacity using local count
       if (count >= capacity) {
         setError('This event is full');
         setLoading(false);
         return;
+      }
+
+      // Re-fetch the current RSVP count from the server to prevent race conditions
+      const countRes = await fetch(`/api/rsvps?event_id=${eventId}`);
+      if (countRes.ok) {
+        const countData = await countRes.json();
+        const freshCount = countData.count ?? count;
+        setCount(freshCount);
+        if (freshCount >= capacity) {
+          setError('This event just filled up. Please try again later.');
+          setLoading(false);
+          return;
+        }
       }
 
       const res = await authedFetch('/api/rsvps', {
@@ -93,6 +105,12 @@ export default function RSVPButtonIsland({ eventId, currentCount = 0, capacity =
         >
           {loading ? 'RSVPing...' : count >= capacity ? 'Event Full' : 'RSVP'}
         </button>
+      )}
+
+      {count >= capacity && !rsvped && (
+        <p className="text-sm text-gray-500 text-center">
+          This event has reached capacity. Check back later or <a href="/events" className="text-blue-600 hover:text-blue-700 underline">browse other events</a>.
+        </p>
       )}
 
       {error && (

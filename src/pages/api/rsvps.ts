@@ -4,6 +4,45 @@ import { RSVPCreate } from '../../lib/validation';
 import { rateLimit } from '../../lib/rateLimit';
 import { sendEmail } from '../../lib/email';
 
+export const GET: APIRoute = async ({ request, url }) => {
+  const supabase = getServerClient(request);
+
+  try {
+    const eventId = url.searchParams.get('event_id');
+
+    if (!eventId) {
+      return new Response(
+        JSON.stringify({ error: 'event_id is required' }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const { count, error } = await supabase
+      .from('rsvps')
+      .select('*', { count: 'exact', head: true })
+      .eq('event_id', eventId)
+      .eq('status', 'confirmed');
+
+    if (error) {
+      return new Response(
+        JSON.stringify({ error: error.message }),
+        { status: 500, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    return new Response(
+      JSON.stringify({ count: count || 0 }),
+      { status: 200, headers: { 'Content-Type': 'application/json' } }
+    );
+  } catch (err: any) {
+    console.error('RSVP count error:', err);
+    return new Response(
+      JSON.stringify({ error: 'Internal server error' }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
+    );
+  }
+};
+
 export const POST: APIRoute = async ({ request }) => {
   const supabase = getServerClient(request);
 

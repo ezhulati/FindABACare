@@ -1,8 +1,12 @@
 import type { APIRoute } from 'astro';
 import { getServerClient } from '../../lib/supabaseServer';
+import { rateLimitMiddleware } from '../../lib/rateLimit';
 import dayjs from 'dayjs';
 
 export const GET: APIRoute = async ({ request, url }) => {
+  const rateLimitResponse = await rateLimitMiddleware(request, 120, 60);
+  if (rateLimitResponse) return rateLimitResponse;
+
   const supabase = getServerClient(request);
 
   // Parse query parameters

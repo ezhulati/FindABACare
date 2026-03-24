@@ -1,7 +1,10 @@
 import type { APIRoute } from 'astro';
 import { createClient } from '@supabase/supabase-js';
+import { rateLimitMiddleware } from '../../lib/rateLimit';
 
-export const GET: APIRoute = async () => {
+export const GET: APIRoute = async ({ request }) => {
+  const rateLimitResponse = await rateLimitMiddleware(request, 120, 60);
+  if (rateLimitResponse) return rateLimitResponse;
   const supabase = createClient(
     import.meta.env.PUBLIC_SUPABASE_URL!,
     import.meta.env.PUBLIC_SUPABASE_ANON_KEY!

@@ -10,15 +10,33 @@ export default function AuthIsland() {
 
   useEffect(() => {
     // Check initial auth state
-    getCurrentUser().then(setUser);
+    getCurrentUser().then((u) => {
+      setUser(u);
+      if (u) checkProfile();
+    });
 
     // Listen to auth changes
     const { data: { subscription } } = onAuthStateChange((session) => {
-      setUser(session?.user || null);
+      const newUser = session?.user || null;
+      setUser(newUser);
+      if (newUser) checkProfile();
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const checkProfile = async () => {
+    const path = window.location.pathname;
+    if (path.startsWith('/onboarding') || path.startsWith('/auth/')) return;
+    try {
+      const res = await fetch('/api/profile');
+      if (!res.ok) {
+        window.location.href = '/onboarding';
+      }
+    } catch {
+      // Network error — don't redirect
+    }
+  };
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,6 +59,7 @@ export default function AuthIsland() {
       setUser(null);
       setSent(false);
       setEmail('');
+      window.location.href = '/';
     } catch (err: any) {
       setError(err.message || 'Failed to sign out');
     }

@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { getServerClient, getAuthUser } from '../../lib/supabaseServer';
 import { ReviewCreate } from '../../lib/validation';
-import { rateLimit } from '../../lib/rateLimit';
+import { rateLimit, rateLimitMiddleware } from '../../lib/rateLimit';
 
 export const POST: APIRoute = async ({ request }) => {
   const supabase = getServerClient(request);
@@ -138,6 +138,9 @@ export const POST: APIRoute = async ({ request }) => {
 
 // Get reviews for a venue
 export const GET: APIRoute = async ({ request, url }) => {
+  const rateLimitResponse = await rateLimitMiddleware(request, 120, 60);
+  if (rateLimitResponse) return rateLimitResponse;
+
   const supabase = getServerClient(request);
 
   try {

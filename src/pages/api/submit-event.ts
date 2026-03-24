@@ -9,6 +9,20 @@ const supabase = createClient(
 
 export const POST: APIRoute = async ({ request }) => {
   try {
+    // CSRF protection: verify the request Origin header
+    const origin = request.headers.get('origin');
+    const allowedOrigins = [
+      import.meta.env.PUBLIC_SITE_URL || 'https://autism.place',
+      'http://localhost:4321',
+      'http://localhost:3000',
+    ];
+    if (origin && !allowedOrigins.some((allowed: string) => origin.startsWith(allowed))) {
+      return new Response(JSON.stringify({ error: 'Forbidden' }), {
+        status: 403,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
     // Rate limit: 5 submissions per 10 minutes per IP
     const rateLimitResponse = await rateLimitMiddleware(request, 5, 600);
     if (rateLimitResponse) return rateLimitResponse;
@@ -47,7 +61,10 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    // Validate date is in the future
+    // Validate date is in the future.
+    // Note: new Date() uses the server timezone (UTC on Vercel), which is
+    // consistent across all serverless invocations. This means the comparison
+    // is stable — a date like "2025-12-01" will be compared against UTC "now".
     const eventDate = new Date(data.date);
     if (eventDate < new Date()) {
       return new Response(
@@ -61,6 +78,22 @@ export const POST: APIRoute = async ({ request }) => {
       return new Response(
         JSON.stringify({ error: 'Start time must be before end time' }),
         { status: 400, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Check for duplicate events (same title, date, and city)
+    const { data: existingEvent } = await supabase
+      .from('events')
+      .select('id')
+      .ilike('title', data.title.trim())
+      .eq('date', data.date)
+      .eq('city_id', data.city_id)
+      .maybeSingle();
+
+    if (existingEvent) {
+      return new Response(
+        JSON.stringify({ error: 'A similar event already exists for this date and location' }),
+        { status: 409, headers: { 'Content-Type': 'application/json' } }
       );
     }
 

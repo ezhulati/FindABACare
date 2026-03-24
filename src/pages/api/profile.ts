@@ -40,6 +40,20 @@ export const GET: APIRoute = async ({ request }) => {
 };
 
 export const PUT: APIRoute = async ({ request }) => {
+  // CSRF protection: verify the request Origin header
+  const origin = request.headers.get('origin');
+  const allowedOrigins = [
+    import.meta.env.PUBLIC_SITE_URL || 'https://autism.place',
+    'http://localhost:4321',
+    'http://localhost:3000',
+  ];
+  if (origin && !allowedOrigins.some((allowed: string) => origin.startsWith(allowed))) {
+    return new Response(JSON.stringify({ error: 'Forbidden' }), {
+      status: 403,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
   const supabase = getServerClient(request);
 
   // Get authenticated user

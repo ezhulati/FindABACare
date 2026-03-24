@@ -33,6 +33,7 @@ export default function FavoriteButton({
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const supabase = getSupabaseBrowserClient();
 
   useEffect(() => {
@@ -62,7 +63,7 @@ export default function FavoriteButton({
     e.preventDefault();
 
     if (!isAuthenticated) {
-      setShowLoginModal(true);
+      window.location.href = `/auth/login?redirect=${encodeURIComponent(window.location.pathname)}`;
       return;
     }
 
@@ -105,7 +106,8 @@ export default function FavoriteButton({
       // Revert optimistic update
       setIsFavorited(!isFavorited);
       setFavoriteCount(prev => isFavorited ? prev + 1 : prev - 1);
-      alert('Failed to update favorite. Please try again.');
+      setError('Failed to update favorite. Please try again.');
+      setTimeout(() => setError(null), 3000);
     } finally {
       setIsLoading(false);
     }
@@ -179,76 +181,7 @@ export default function FavoriteButton({
         )}
       </button>
 
-      {/* Enticing Login Modal */}
-      {showLoginModal && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 px-4"
-          onClick={() => setShowLoginModal(false)}
-        >
-          <div
-            className="bg-white rounded-2xl p-8 max-w-md mx-4 shadow-2xl transform scale-100 animate-in"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Heart Icon */}
-            <div className="flex justify-center mb-4">
-              <div className="w-16 h-16 bg-gradient-to-br from-red-400 to-pink-500 rounded-full flex items-center justify-center">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="white">
-                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                </svg>
-              </div>
-            </div>
-
-            {/* Heading */}
-            <h3 className="text-2xl font-bold text-gray-900 mb-2 text-center">
-              Save Your Favorites
-            </h3>
-
-            {/* Description */}
-            <p className="text-gray-600 mb-6 text-center leading-relaxed">
-              Create a free account to save <span className="font-semibold text-gray-900">{venueName}</span> and other autism-friendly venues you love
-            </p>
-
-            {/* Benefits */}
-            <div className="space-y-3 mb-6 bg-blue-50 rounded-xl p-4">
-              <div className="flex items-start gap-3">
-                <svg className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                <span className="text-sm text-gray-700">Save unlimited venues to your favorites</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <svg className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                <span className="text-sm text-gray-700">Share reviews to help other families</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <svg className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                <span className="text-sm text-gray-700">Upvote your favorite places</span>
-              </div>
-            </div>
-
-            {/* CTA Buttons */}
-            <div className="flex gap-3">
-              <a
-                href="/auth/login"
-                className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-3 rounded-xl text-center font-semibold hover:from-purple-700 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
-              >
-                Create Free Account
-              </a>
-            </div>
-
-            <button
-              onClick={() => setShowLoginModal(false)}
-              className="w-full mt-3 text-gray-500 hover:text-gray-700 text-sm font-medium transition-colors"
-            >
-              Maybe later
-            </button>
-          </div>
-        </div>
-      )}
+      {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
     </>
   );
 }

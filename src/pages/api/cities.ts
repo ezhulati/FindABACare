@@ -1,7 +1,11 @@
 import type { APIRoute } from 'astro';
 import { getServerClient } from '../../lib/supabaseServer';
+import { rateLimitMiddleware } from '../../lib/rateLimit';
 
 export const GET: APIRoute = async ({ request }) => {
+  const rateLimitResponse = await rateLimitMiddleware(request, 120, 60);
+  if (rateLimitResponse) return rateLimitResponse;
+
   const supabase = getServerClient(request);
 
   // Debug: log env vars

@@ -38,17 +38,20 @@ export default function VenueReviewForm({
   const [formError, setFormError] = useState('');
   const [formSuccess, setFormSuccess] = useState('');
 
-  // Available trigger options
-  const triggerOptions = [
-    'loud_music',
-    'hand_dryers',
+  // Whitelist of allowed trigger values — must stay in sync with the database schema
+  const ALLOWED_TRIGGERS = [
+    'hand_dryer',
     'strong_scents',
-    'crowded',
-    'bright_lights',
-    'sudden_noises',
+    'loud_music',
     'open_water',
-    'long_wait_times',
-  ];
+    'flashing_lights',
+    'crowded_spaces',
+    'echoing_sounds',
+    'strong_smells',
+  ] as const;
+
+  // Available trigger options shown in the UI (subset of allowed values)
+  const triggerOptions: string[] = [...ALLOWED_TRIGGERS];
 
   const supabase = getSupabaseBrowserClient();
 
@@ -99,6 +102,11 @@ export default function VenueReviewForm({
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('Not authenticated');
 
+      // Filter triggers to only include allowed values before submission
+      const validatedTriggers = triggers.filter((t) =>
+        (ALLOWED_TRIGGERS as readonly string[]).includes(t)
+      );
+
       const { error } = await supabase.from('reviews').insert({
         venue_id: venueId,
         profile_id: session.user.id,
@@ -107,7 +115,7 @@ export default function VenueReviewForm({
         staff_knowledge: staffKnowledge,
         content: content.trim(),
         best_time: bestTime.trim() || null,
-        triggers: triggers.length > 0 ? triggers : null,
+        triggers: validatedTriggers.length > 0 ? validatedTriggers : null,
         status: 'pending', // Awaiting admin approval
       });
 
