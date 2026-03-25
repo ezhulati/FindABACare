@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build && node scripts/patch-vercel-runtime.js",
+    "build": "astro build",
     "preview": "astro preview",
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit"
@@ -27,6 +27,9 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "zod": "^3.23.8"
+  },
+  "overrides": {
+    "path-to-regexp": "^8.3.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.56.0",
