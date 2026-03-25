@@ -8,12 +8,6 @@ export const GET: APIRoute = async ({ request }) => {
 
   const supabase = getServerClient(request);
 
-  // Debug: log env vars
-  console.log('ENV CHECK:', {
-    hasPublicUrl: !!import.meta.env.PUBLIC_SUPABASE_URL,
-    hasPublicKey: !!import.meta.env.PUBLIC_SUPABASE_ANON_KEY,
-  });
-
   try {
     const { data, error } = await supabase
       .from('cities')
@@ -22,7 +16,6 @@ export const GET: APIRoute = async ({ request }) => {
       .order('name');
 
     if (error) {
-      console.log('Supabase error:', error);
       return new Response(
         JSON.stringify({ error: error.message, details: error }),
         {

@@ -241,8 +241,9 @@ async function backfillContactInfo(limit: number = 100, offset: number = 0) {
 
   for (let i = 0; i < venues.length; i++) {
     const venue = venues[i];
-    const cityName = venue.cities?.name || 'Unknown';
-    const state = venue.cities?.state || '??';
+    const cities = venue.cities as any;
+    const cityName = cities?.name || 'Unknown';
+    const state = cities?.state || '??';
 
     console.log(`[${i + 1}/${stats.total}] ${venue.name} (${cityName}, ${state})`);
 

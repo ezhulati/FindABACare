@@ -91,10 +91,6 @@ const description = 'Sign in to leave reviews and access personalized features.'
     const supabaseUrl = document.querySelector('meta[name="supabase-url"]')?.getAttribute('content');
     const supabaseKey = document.querySelector('meta[name="supabase-key"]')?.getAttribute('content');
 
-    console.log('Initializing Supabase client...');
-    console.log('Supabase URL:', supabaseUrl);
-    console.log('Redirect after login:', redirect);
-
     if (!supabaseUrl || !supabaseKey) {
       console.error('Missing Supabase credentials');
       const messageDiv = document.getElementById('message');
@@ -114,7 +110,6 @@ const description = 'Sign in to leave reviews and access personalized features.'
       e.preventDefault();
 
       const email = emailInput.value;
-      console.log('Attempting to send magic link to:', email);
 
       submitBtn.disabled = true;
       submitBtn.textContent = 'Sending...';
@@ -125,8 +120,6 @@ const description = 'Sign in to leave reviews and access personalized features.'
         if (redirect && redirect !== '/') {
           callbackUrl.searchParams.set('redirect', redirect);
         }
-        console.log('Email redirect URL:', callbackUrl.toString());
-
         const { data, error } = await supabase.auth.signInWithOtp({
           email,
           options: {
@@ -134,15 +127,12 @@ const description = 'Sign in to leave reviews and access personalized features.'
           },
         });
 
-        console.log('Supabase response:', { data, error });
-
         if (error) throw error;
 
         // Show success message
         messageDiv.className = 'block p-4 rounded-lg bg-green-50 border border-green-200 text-green-800';
         messageDiv.textContent = '✅ Check your email for the magic link! (Check spam folder if not received)';
         emailInput.value = '';
-        console.log('Magic link sent successfully!');
       } catch (error) {
         console.error('Error sending magic link:', error);
 

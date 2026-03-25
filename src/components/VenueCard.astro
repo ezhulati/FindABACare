@@ -35,6 +35,10 @@ const meterColors = {
 
 const meterClass = meterColors[meter as keyof typeof meterColors] || meterColors.Moderate;
 
+// Derive Supabase Storage base URL from the public env var
+const SUPABASE_URL = import.meta.env.PUBLIC_SUPABASE_URL || 'https://gvfkyfzukwnjomksuvaq.supabase.co';
+const SUPABASE_STORAGE = `${SUPABASE_URL}/storage/v1/object/public`;
+
 // Convert photo URL to full Supabase Storage URL if it's a relative path
 const getPhotoUrl = (photoKey: string | null | undefined): string => {
   if (!photoKey) return '/placeholder-venue.svg';
@@ -47,7 +51,7 @@ const getPhotoUrl = (photoKey: string | null | undefined): string => {
   // If it's a relative path starting with /venue-photos/, convert to Supabase Storage URL
   if (photoKey.startsWith('/venue-photos/')) {
     const filename = photoKey.replace('/venue-photos/', '');
-    return `https://gvfkyfzukwnjomksuvaq.supabase.co/storage/v1/object/public/venue-photos/${filename}`;
+    return `${SUPABASE_STORAGE}/venue-photos/${filename}`;
   }
 
   // Otherwise, assume it's a relative public path

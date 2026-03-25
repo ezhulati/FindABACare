@@ -30,11 +30,6 @@ export default function MapIsland({
   const [error, setError] = useState('');
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  // Debug log for troubleshooting
-  useEffect(() => {
-    console.log('[MapIsland] Component mounted, isFullscreen:', isFullscreen);
-  }, []);
-
   // Initialize map
   useEffect(() => {
     if (!mapContainer.current || map.current) return;

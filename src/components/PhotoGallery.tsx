@@ -5,6 +5,10 @@ interface PhotoGalleryProps {
   venueName: string;
 }
 
+// Derive Supabase Storage base URL from the public env var
+const SUPABASE_URL = import.meta.env.PUBLIC_SUPABASE_URL || 'https://gvfkyfzukwnjomksuvaq.supabase.co';
+const SUPABASE_STORAGE = `${SUPABASE_URL}/storage/v1/object/public`;
+
 // Convert photo URL to full Supabase Storage URL if it's a relative path
 const getPhotoUrl = (photoKey: string): string => {
   // If it's already a full URL (starts with http/https), return as-is
@@ -15,7 +19,7 @@ const getPhotoUrl = (photoKey: string): string => {
   // If it's a relative path starting with /venue-photos/, convert to Supabase Storage URL
   if (photoKey.startsWith('/venue-photos/')) {
     const filename = photoKey.replace('/venue-photos/', '');
-    return `https://gvfkyfzukwnjomksuvaq.supabase.co/storage/v1/object/public/venue-photos/${filename}`;
+    return `${SUPABASE_STORAGE}/venue-photos/${filename}`;
   }
 
   // Otherwise, assume it's a relative public path

@@ -98,8 +98,8 @@ async function getVenuesMissingPhotos(): Promise<VenueMissingPhoto[]> {
     name: v.name,
     slug: v.slug,
     type: (v.type || 'other').toLowerCase(),
-    city: v.cities?.name || 'Unknown',
-    state: v.cities?.state || '??',
+    city: (v.cities as any)?.name || 'Unknown',
+    state: (v.cities as any)?.state || '??',
     latitude: v.lat,
     longitude: v.lng,
     website: v.website

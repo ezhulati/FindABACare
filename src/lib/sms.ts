@@ -49,15 +49,6 @@ export async function sendSMS(to: string, body: string): Promise<boolean> {
  * SMS message templates
  */
 
-export function rsvpConfirmationSMS(data: {
-  eventTitle: string;
-  venueName: string;
-  date: string;
-  time: string;
-}): string {
-  return `autism.place: You're confirmed for "${data.eventTitle}" at ${data.venueName} on ${data.date} at ${data.time}. See you there!`;
-}
-
 export function rsvpReminderSMS(data: {
   eventTitle: string;
   venueName: string;
@@ -66,12 +57,4 @@ export function rsvpReminderSMS(data: {
 }): string {
   const timing = data.hoursUntil === 24 ? 'tomorrow' : `in ${data.hoursUntil} hours`;
   return `autism.place Reminder: "${data.eventTitle}" at ${data.venueName} is ${timing} (${data.time}). Looking forward to seeing you!`;
-}
-
-export function eventCancellationSMS(data: {
-  eventTitle: string;
-  reason?: string;
-}): string {
-  const reasonText = data.reason ? ` Reason: ${data.reason}` : '';
-  return `autism.place: Unfortunately, "${data.eventTitle}" has been cancelled.${reasonText} We apologize for any inconvenience.`;
 }

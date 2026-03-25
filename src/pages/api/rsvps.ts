@@ -185,10 +185,10 @@ export const POST: APIRoute = async ({ request }) => {
         template: 'rsvp_confirmation',
         data: {
           eventTitle: event.title,
-          eventDate: event.date,
-          eventTime: event.start_time,
+          date: event.date,
+          time: event.start_time,
           venueName: event.venue?.name || '',
-          venueAddress: event.venue?.address || '',
+          address: event.venue?.address || '',
         },
       });
     } catch (emailError) {

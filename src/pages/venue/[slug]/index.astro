@@ -521,7 +521,7 @@ const placeSchema = {
               <div class="aspect-video relative overflow-hidden bg-gray-100">
                 {related.photo_keys && related.photo_keys.length > 0 ? (
                   <img
-                    src={(() => { const key = related.photo_keys[0].replace(/\.\.\//g, '').replace(/^\/+/, ''); return key.startsWith('http') ? key : key.startsWith('venue-photos/') ? `https://gvfkyfzukwnjomksuvaq.supabase.co/storage/v1/object/public/${key}` : key; })()}
+                    src={(() => { const key = related.photo_keys[0].replace(/\.\.\//g, '').replace(/^\/+/, ''); const sbUrl = import.meta.env.PUBLIC_SUPABASE_URL || 'https://gvfkyfzukwnjomksuvaq.supabase.co'; return key.startsWith('http') ? key : key.startsWith('venue-photos/') ? `${sbUrl}/storage/v1/object/public/${key}` : key; })()}
                     alt={related.name}
                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     loading="lazy"

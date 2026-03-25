@@ -29,21 +29,24 @@ async function runMigration(filePath: string, name: string) {
     const sql = readFileSync(filePath, 'utf-8');
 
     // Execute the SQL via RPC
-    const { error } = await supabase.rpc('exec_sql', { sql_query: sql }).catch(async () => {
-      // If RPC doesn't exist, try direct query (this will work for most operations)
-      const statements = sql
-        .split(';')
-        .map(s => s.trim())
-        .filter(s => s.length > 0);
+    const { error } = await supabase.rpc('exec_sql', { sql_query: sql }).then(
+      (res: any) => res,
+      async () => {
+        // If RPC doesn't exist, try direct query (this will work for most operations)
+        const statements = sql
+          .split(';')
+          .map(s => s.trim())
+          .filter(s => s.length > 0);
 
-      for (const statement of statements) {
-        const { error } = await supabase.rpc('exec', { query: statement }).catch(() => ({error: null}));
-        if (error) {
-          console.log('⚠️  Statement may have failed (this is often okay):', statement.substring(0, 100) + '...');
+        for (const statement of statements) {
+          const res = await supabase.rpc('exec', { query: statement }).then((r: any) => r, () => ({error: null}));
+          if (res.error) {
+            console.log('⚠️  Statement may have failed (this is often okay):', statement.substring(0, 100) + '...');
+          }
         }
+        return { error: null };
       }
-      return { error: null };
-    });
+    );
 
     if (error) {
       throw error;

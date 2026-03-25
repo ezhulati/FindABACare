@@ -5,21 +5,6 @@
 import dayjs from 'dayjs';
 
 /**
- * Slugify a string for URLs
- */
-export function slugify(text: string): string {
-  return text
-    .toString()
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, '-')
-    .replace(/[^\w\-]+/g, '')
-    .replace(/\-\-+/g, '-')
-    .replace(/^-+/, '')
-    .replace(/-+$/, '');
-}
-
-/**
  * Format date for display
  */
 export function formatDate(date: string | Date, format: string = 'MMM D, YYYY'): string {
@@ -63,38 +48,6 @@ export function truncate(text: string, maxLength: number): string {
 }
 
 /**
- * Get initials from name
- */
-export function getInitials(name: string): string {
-  return name
-    .split(' ')
-    .map(word => word[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
-}
-
-/**
- * Calculate average rating
- */
-export function averageRating(ratings: number[]): number {
-  if (ratings.length === 0) return 0;
-  const sum = ratings.reduce((a, b) => a + b, 0);
-  return Math.round((sum / ratings.length) * 10) / 10;
-}
-
-/**
- * Format phone number
- */
-export function formatPhone(phone: string): string {
-  const cleaned = phone.replace(/\D/g, '');
-  if (cleaned.length === 10) {
-    return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
-  }
-  return phone;
-}
-
-/**
  * Generate calendar file (.ics) content
  */
 export function generateICS(data: {
@@ -133,40 +86,6 @@ export function generateICS(data: {
   ]
     .filter(Boolean)
     .join('\r\n');
-}
-
-/**
- * Validate email format
- */
-export function isValidEmail(email: string): boolean {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
-}
-
-/**
- * Generate random string
- */
-export function randomString(length: number = 16): string {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let result = '';
-  for (let i = 0; i < length; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return result;
-}
-
-/**
- * Check if date is in the past
- */
-export function isPast(date: string): boolean {
-  return dayjs(date).isBefore(dayjs());
-}
-
-/**
- * Check if date is today
- */
-export function isToday(date: string): boolean {
-  return dayjs(date).isSame(dayjs(), 'day');
 }
 
 /**

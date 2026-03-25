@@ -159,9 +159,9 @@ const { count: totalUsers } = await supabase
                 </span>
               )}
             </h2>
-            <a href="/admin/verifications" class="text-sm font-medium text-blue-600 hover:text-blue-500">
-              View all →
-            </a>
+            <span class="opacity-50 cursor-not-allowed inline-flex items-center gap-1 text-sm font-medium text-gray-400">
+              View all → <span class="text-xs bg-gray-200 text-gray-500 px-2 py-0.5 rounded-full">Coming soon</span>
+            </span>
           </div>
         </div>
         <div class="divide-y divide-gray-200">
@@ -201,9 +201,9 @@ const { count: totalUsers } = await supabase
                 </span>
               )}
             </h2>
-            <a href="/admin/venues" class="text-sm font-medium text-blue-600 hover:text-blue-500">
-              View all →
-            </a>
+            <span class="opacity-50 cursor-not-allowed inline-flex items-center gap-1 text-sm font-medium text-gray-400">
+              View all → <span class="text-xs bg-gray-200 text-gray-500 px-2 py-0.5 rounded-full">Coming soon</span>
+            </span>
           </div>
         </div>
         <div class="divide-y divide-gray-200">
@@ -245,9 +245,9 @@ const { count: totalUsers } = await supabase
                 </span>
               )}
             </h2>
-            <a href="/admin/incidents" class="text-sm font-medium text-blue-600 hover:text-blue-500">
-              View all →
-            </a>
+            <span class="opacity-50 cursor-not-allowed inline-flex items-center gap-1 text-sm font-medium text-gray-400">
+              View all → <span class="text-xs bg-gray-200 text-gray-500 px-2 py-0.5 rounded-full">Coming soon</span>
+            </span>
           </div>
         </div>
         <div class="divide-y divide-gray-200">
@@ -288,18 +288,18 @@ const { count: totalUsers } = await supabase
 
     <!-- Quick Actions -->
     <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-      <a href="/admin/venues" class="block p-6 bg-white rounded-lg shadow hover:shadow-md transition">
-        <h3 class="text-lg font-semibold text-gray-900">Manage Venues</h3>
+      <div class="block p-6 bg-white rounded-lg shadow opacity-50 cursor-not-allowed">
+        <h3 class="text-lg font-semibold text-gray-900 inline-flex items-center gap-2">Manage Venues <span class="text-xs bg-gray-200 text-gray-500 px-2 py-0.5 rounded-full">Coming soon</span></h3>
         <p class="mt-2 text-sm text-gray-600">Add, edit, and verify venue information</p>
-      </a>
+      </div>
       <a href="/admin/reviews" class="block p-6 bg-white rounded-lg shadow hover:shadow-md transition">
         <h3 class="text-lg font-semibold text-gray-900">Review Moderation</h3>
         <p class="mt-2 text-sm text-gray-600">Approve or reject community reviews</p>
       </a>
-      <a href="/admin/incidents" class="block p-6 bg-white rounded-lg shadow hover:shadow-md transition">
-        <h3 class="text-lg font-semibold text-gray-900">Incident Reports</h3>
+      <div class="block p-6 bg-white rounded-lg shadow opacity-50 cursor-not-allowed">
+        <h3 class="text-lg font-semibold text-gray-900 inline-flex items-center gap-2">Incident Reports <span class="text-xs bg-gray-200 text-gray-500 px-2 py-0.5 rounded-full">Coming soon</span></h3>
         <p class="mt-2 text-sm text-gray-600">Handle safety concerns and reports</p>
-      </a>
+      </div>
     </div>
   </div>
 </body>

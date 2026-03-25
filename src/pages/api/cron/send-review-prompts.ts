@@ -52,7 +52,7 @@ export const GET: APIRoute = async ({ request }) => {
       for (const event of recentEvents) {
         if (!event.rsvps || event.rsvps.length === 0) continue;
 
-        for (const rsvp of recentEvents) {
+        for (const rsvp of event.rsvps) {
           if (rsvp.status !== 'confirmed' || !rsvp.profile?.email) continue;
 
           // Check if we already sent a review prompt for this RSVP
