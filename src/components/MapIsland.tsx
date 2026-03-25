@@ -1,6 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
 
 interface Venue {
   id: string;
@@ -24,13 +22,14 @@ export default function MapIsland({
   initialZoom = 11
 }: Props) {
   const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<mapboxgl.Map | null>(null);
-  const markers = useRef<mapboxgl.Marker[]>([]);
+  const map = useRef<any>(null);
+  const markers = useRef<any[]>([]);
+  const mapboxRef = useRef<any>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [error, setError] = useState('');
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  // Initialize map
+  // Lazy-load mapbox-gl and initialize map
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
 
@@ -40,36 +39,47 @@ export default function MapIsland({
       return;
     }
 
-    mapboxgl.accessToken = token;
+    let cancelled = false;
 
-    try {
-      map.current = new mapboxgl.Map({
-        container: mapContainer.current,
-        style: 'mapbox://styles/mapbox/streets-v12',
-        center: initialCenter,
-        zoom: initialZoom,
-      });
+    (async () => {
+      try {
+        const mapboxgl = (await import('mapbox-gl')).default;
+        await import('mapbox-gl/dist/mapbox-gl.css');
 
-      map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
-      map.current.addControl(new mapboxgl.GeolocateControl({
-        positionOptions: { enableHighAccuracy: true },
-        trackUserLocation: true,
-      }), 'top-right');
+        if (cancelled || !mapContainer.current) return;
 
-      map.current.on('load', () => {
-        setMapLoaded(true);
-      });
+        mapboxRef.current = mapboxgl;
+        mapboxgl.accessToken = token;
 
-      map.current.on('error', (e) => {
-        console.error('Map error:', e);
-        setError('Failed to load map');
-      });
-    } catch (err) {
-      console.error('Map initialization error:', err);
-      setError('Failed to initialize map');
-    }
+        map.current = new mapboxgl.Map({
+          container: mapContainer.current,
+          style: 'mapbox://styles/mapbox/streets-v12',
+          center: initialCenter,
+          zoom: initialZoom,
+        });
+
+        map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+        map.current.addControl(new mapboxgl.GeolocateControl({
+          positionOptions: { enableHighAccuracy: true },
+          trackUserLocation: true,
+        }), 'top-right');
+
+        map.current.on('load', () => {
+          setMapLoaded(true);
+        });
+
+        map.current.on('error', (e: any) => {
+          console.error('Map error:', e);
+          setError('Failed to load map');
+        });
+      } catch (err) {
+        console.error('Map initialization error:', err);
+        if (!cancelled) setError('Failed to initialize map');
+      }
+    })();
 
     return () => {
+      cancelled = true;
       map.current?.remove();
       map.current = null;
     };
@@ -77,7 +87,9 @@ export default function MapIsland({
 
   // Update markers when venues change
   useEffect(() => {
-    if (!map.current || !mapLoaded) return;
+    if (!map.current || !mapLoaded || !mapboxRef.current) return;
+
+    const mapboxgl = mapboxRef.current;
 
     // Clear existing markers
     markers.current.forEach(marker => marker.remove());
